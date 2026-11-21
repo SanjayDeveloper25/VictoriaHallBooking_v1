@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}">
+	<meta charset="ISO-8859-1">
+	<!-- Include DataTables CSS -->
+</head>
+<style>
+	.block-content {
+		padding-bottom: 10px;
+	}
+
+	.small-input {
+		width: 150px;
+		/* Adjust the width as needed */
+	}
+
+	.small-table th,
+	.small-table td {
+		font-size: 14px;
+		/* Adjust font size as needed */
+	}
+
+	/* Reduce padding for table cells */
+	.small-table td,
+	.small-table th {
+		padding: 5px;
+		/* Adjust padding as needed */
+	}
+</style>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+		<!-- END Sidebar -->
+		<!-- Header -->
+		<header th:replace="~{fragments/header-admin :: header}"></header>
+		<!-- END Header -->
+		<!-- Main Container -->
+		<main id="main-container">
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<form id="userdetailsform">
+						<div class="block-header bg-primary text-white">
+							<h3 class="block-title">Manual Refund</h3>
+						</div>
+						<div class="block-content">
+							<div class="row">
+								<div class="col-sm-3">
+									<label class="form-label" for="bookingId">Booking Id:<span
+											class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="bookingId" id="bookingId"
+										placeholder="Booking Id"/>
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="transactionId">Transaction Id:<span
+											class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="transactionId" id="transactionId"
+										placeholder="TransactionId Id"/>
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="userId">User Id:<span
+											class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="userId" id="userId"
+										placeholder="User Id"/>
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="code">Code:<span
+											class="text-danger">*</span></label>
+									<input type="password" class="form-control" name="code" id="code"
+										placeholder="Code"/>
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="amount">Amount:<span
+											class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="amount" id="amount"
+										placeholder="Amount"/>
+								</div>
+								<div class="col-sm-3">
+									<br>
+									<button type="submit" class="btn btn-sm btn-primary" name="submit"
+										id="submit">Submit</button>
+									<button class="btn btn-danger" onclick="resetDate()" name="reset"
+										type="reset">Reset</button>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</main>
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	</div>
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		$(document).ready(function() {
+    // Handle submit button click
+    $('#submit').click(function(event) {
+        // Prevent default form submission (if button is of type "submit")
+        event.preventDefault();
+
+        // Collect form input values
+        var bookingId = $('#bookingId').val();
+        var transactionId = $('#transactionId').val(); // Corrected variable name
+        var userId = $('#userId').val();
+        var code = $('#code').val();
+        var amount = $('#amount').val();
+
+        // Check if required fields are filled
+        if (!bookingId || !transactionId || !userId || !code || !amount) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Please fill all the required fields.'
+            });
+            return;
+        }
+
+        // Show loading popup before AJAX request
+        const loadingSwal = Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we submit the refund request.',
+            allowOutsideClick: false, // Prevent closing the popup
+            didOpen: () => {
+                Swal.showLoading(); // Show the loading spinner
+            },
+            showConfirmButton: false, // Hide the confirm button during loading
+        });
+
+        // AJAX request
+        $.ajax({
+            url: '/victoriahallbooking_uat/admin/api/manualrefund',
+            type: 'POST',
+            //contentType: 'application/x-www-form-urlencoded',
+            data: {
+                bookingId: bookingId,
+                txansactionId: transactionId, // Use the correct variable
+                userId: userId,
+                code: code,
+                amount: amount
+            },
+            success: function(response) {
+                loadingSwal.close(); // Close the loading popup
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Refund request submitted successfully.'
+                }).then(() => {
+                    // Reload the page after the success message
+                    window.location.reload();
+                });
+            },
+            error: function(xhr) {
+                loadingSwal.close(); // Close the loading popup
+                // Handle error response
+                var responseText = xhr.responseText || 'An error occurred';
+
+                // Check if the response contains specific error for code mismatch
+                if (xhr.status === 400 && responseText.includes("Code is wrong")) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'The code you entered is wrong. Please try again.'
+                    });
+                } else {
+                    // Generic error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: responseText // This will show other error messages
+                    });
+                }
+            }
+        });
+    });
+});
+	</script>
+</body>
+
+</html>

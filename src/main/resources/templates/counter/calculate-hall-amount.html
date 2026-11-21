@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-counter :: head}">
+	<title>Calculate Hall Amount</title>
+</head>
+<style>
+	@media (min-width: 992px) {
+		.col-lg-12 {
+			flex: 0 0 auto;
+			width: 92%;
+			margin-left: 45px;
+		}
+	}
+</style>
+
+<body>
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<nav th:replace="~{fragments/nav-counter :: nav}"></nav>
+		<header th:replace="~{fragments/header-counter :: header}"></header>
+
+		<main id="main-container">
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header block-header-default">
+						<h3 class="block-title">Calculate Hall Amount</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="row justify-content-center">
+								<div class="col-sm-4 col-lg-4 col-md-4">
+									<label for="selecthall">Select Hall:</label>
+									<select id="selecthall" class="form-control" name="hallId" required>
+										<option value="">Select a hall</option>
+										<!-- Dynamically populated options will be inserted here -->
+									</select>
+								</div>
+								<br>
+								<br>
+								<div id="amountDetails" style="display:none;    margin-top: 26px;    width: 68%;">
+									<table class="table table-bordered">
+										<thead>
+											<tr>
+												<th scope="col">Description</th>
+												<th scope="col">Amount</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Full Day Amount</td>
+												<td id="fullDayAmount"></td>
+											</tr>
+											<tr>
+												<td>Half Day Amount</td>
+												<td id="halfDayAmount"></td>
+											</tr>
+											<tr>
+												<td>Deposit Amount</td>
+												<td id="depositAmount"></td>
+											</tr>
+											<tr>
+												<td>GST</td>
+												<td id="gst"></td>
+											</tr>
+										</tbody>
+									</table>
+									<div class="row justify-content-center">
+										<div class="col-sm-4 col-lg-4 col-md-4"> <label for="numDaysCount">Number of
+												Days:</label>
+											<select class="form-control" id="numDaysCount" name="days" required>
+												<option value="select">select</option>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+												<option value="5">5</option>
+												<option value="6">6</option>
+												<option value="7">7</option>
+											</select>
+										</div>
+										<div class="col-sm-4 col-lg-4 col-md-4"> <label for="startPeriodDropdown">Start
+												Period:</label>
+											<select id="startPeriodDropdown" name="startingSlot" class="form-control"
+												required>
+												<option value="">select</option>
+												<option value="1">Morning (6:00 AM)</option>
+												<option value="2">Evening (2:00 PM)</option>
+											</select>
+										</div>
+										<div class="col-sm-4 col-lg-4 col-md-4"> <label for="endPeriodDropdown">End
+												Period:</label>
+											<select id="endPeriodDropdown" name="endingSlot" class="form-control"
+												required>
+												<option value="">select</option>
+												<option value="1">Morning (2:00 PM)</option>
+												<option value="2">Evening (10:00 PM)</option>
+											</select>
+										</div>
+									</div>
+									<br>
+									<div class="text-center">
+										<button id="calculateButton" class="btn btn-primary">Calculate</button>
+									</div>
+									<div id="totalAmountDiv" class="text-center mt-3" style="display:none;">
+										<h3>Total Amount: <span id="totalAmount"></span></h3>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+
+	</div>
+
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script type="text/javascript">
+		function getHallDetails(hallId, callback) {
+			$.ajax({
+				type: 'GET',
+				url: '/victoriahallbooking_uat/user/api/gethalldetails/' + hallId,
+				success: function (response) {
+					callback(response);
+				},
+				error: function (xhr, status, error) {
+					console.error('Error fetching hall details:', error);
+				}
+			});
+		}
+
+		// Get hallId from URL parameters and fetch hall details
+		const urlParams = new URLSearchParams(window.location.search);
+		const hallId = urlParams.get('hallId');
+		// console.log("Hall ID:", hallId);
+		$(document).ready(function () {
+			if (hallId != null) {
+				getHallDetails(hallId, function (response) {
+					$('#selecthall').val(hallId);
+					$('#fullDayAmount').data('amount', response.fullDayRent);
+					$('#halfDayAmount').data('amount', response.halfDayRent);
+					$('#depositAmount').data('amount', response.depositAmount);
+					$('#gst').data('rate', response.gst);
+				});
+			}
+		});
+
+		// Populate the dropdown options with the received hall names
+		$(function () {
+			$("#selecthall").select2();
+		});
+
+		$.ajax({
+			type: 'GET',
+			url: '/victoriahallbooking_uat/user/api/gethallnames',
+			success: function (response) {
+				var selectHallDropdown = $('#selecthall');
+				$.each(response, function (index, hall) {
+					selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+					if (hallId == hall.hallId) {
+						selectHallDropdown.find('option[value="' + hall.hallId + '"]').prop('selected', true);
+					}
+				});
+			},
+			error: function (xhr, status, error) {
+				console.error('Error fetching hall names:', error);
+			}
+		});
+
+		// Event listener for the Select Hall dropdown change
+		$('#selecthall').change(function () {
+			var hallId = $(this).val();
+			if (hallId) {
+				getHallDetails(hallId, function (response) {
+					$('#fullDayAmount').text(response.fullDayRent.toFixed(2));
+					$('#halfDayAmount').text(response.halfDayRent.toFixed(2));
+					$('#depositAmount').text(response.depositAmount.toFixed(2));
+					$('#gst').text(response.gst.toFixed(2));
+
+					// Show the required amount details once hall is selected
+					$('#amountDetails').show();
+				});
+			} else {
+				// Hide the amount details if no hall is selected
+				$('#amountDetails').hide();
+			}
+		});
+
+		function calculateAmount(numDays, startPeriod, endPeriod, fullDayAmount, halfDayAmount) {
+			var amount = 0;
+
+			// If there is only one day
+			if (numDays === 1) {
+				if (startPeriod === "1" && endPeriod === "2") {
+					amount = fullDayAmount;
+				} else if (startPeriod === "1" && endPeriod === "1") {
+					amount = halfDayAmount;
+				} else if (startPeriod === "2" && endPeriod === "2") {
+					amount = halfDayAmount;
+				}
+			} else {
+				// For multiple days
+				if (startPeriod === "1" && endPeriod === "2") {
+					amount = fullDayAmount * numDays;
+				} else if (startPeriod === "1" && endPeriod === "1") {
+					amount = fullDayAmount * (numDays - 1) + halfDayAmount;
+				} else if (startPeriod === "2" && endPeriod === "2") {
+					amount = fullDayAmount * (numDays - 1) + halfDayAmount;
+				}
+				else if (startPeriod === "2" && endPeriod === "1") {
+					amount = fullDayAmount * (numDays - 2) + halfDayAmount * 2;
+				}
+			}
+
+			return amount;
+		}
+
+		function calculateGST(amount, gstRate) {
+			return (amount * gstRate) / 100;
+		}
+
+		function handlePeriodDropdowns(numDays, startPeriod) {
+			if (numDays === 1 && startPeriod === "2") {
+				$('#endPeriodDropdown').val("2");
+				$('#endPeriodDropdown').prop('disabled', true);
+			} else {
+				$('#endPeriodDropdown').prop('disabled', false);
+			}
+		}
+
+		$('#numDaysCount').change(function () {
+			var numDays = parseInt($(this).val(), 10);
+			var startPeriod = $('#startPeriodDropdown').val();
+			handlePeriodDropdowns(numDays, startPeriod);
+		});
+
+		$('#startPeriodDropdown').change(function () {
+			var numDays = parseInt($('#numDaysCount').val(), 10);
+			var startPeriod = $(this).val();
+			handlePeriodDropdowns(numDays, startPeriod);
+		});
+
+		$('#calculateButton').click(function () {
+			var numDays = parseInt($('#numDaysCount').val(), 10);
+			var startPeriod = $('#startPeriodDropdown').val();
+			var endPeriod = $('#endPeriodDropdown').val();
+
+			// Check if numDays is valid
+			if (isNaN(numDays) || numDays < 1 || numDays > 7) {
+				$('#numDaysCount')[0].setCustomValidity('Please select a valid number of days.');
+				$('#numDaysCount')[0].reportValidity();
+				return;
+			} else {
+				$('#numDaysCount')[0].setCustomValidity('');
+			}
+
+			// Check if startPeriod is selected
+			if (!startPeriod) {
+				$('#startPeriodDropdown')[0].setCustomValidity('Please select a start period.');
+				$('#startPeriodDropdown')[0].reportValidity();
+				return;
+			} else {
+				$('#startPeriodDropdown')[0].setCustomValidity('');
+			}
+
+			// Check if endPeriod is selected
+			if (!endPeriod) {
+				$('#endPeriodDropdown')[0].setCustomValidity('Please select an end period.');
+				$('#endPeriodDropdown')[0].reportValidity();
+				return;
+			} else {
+				$('#endPeriodDropdown')[0].setCustomValidity('');
+			}
+
+			var fullDayAmount = parseFloat($('#fullDayAmount').text());
+			var halfDayAmount = parseFloat($('#halfDayAmount').text());
+			var depositAmount = parseFloat($('#depositAmount').text());
+			var gstRate = parseFloat($('#gst').text());
+
+			var amount = calculateAmount(numDays, startPeriod, endPeriod, fullDayAmount, halfDayAmount);
+			var gst = calculateGST(amount, gstRate);
+			var totalAmount = amount + gst + depositAmount;
+
+			$('#totalAmount').text(totalAmount.toFixed(2));
+
+			// Show the total amount div
+			$('#totalAmountDiv').show();
+		});
+
+	</script>
+</body>
+
+</html>

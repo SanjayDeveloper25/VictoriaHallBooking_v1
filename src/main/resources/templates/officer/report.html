@@ -1,0 +1,1176 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-officer :: head}">
+</head>
+<style>
+.block-content {
+		padding-bottom: 10px;
+	}
+
+	.small-input {
+		width: 150px;
+		/* Adjust the width as needed */
+	}
+
+	.small-table th,
+	.small-table td {
+		font-size: 14px;
+		/* Adjust font size as needed */
+	}
+
+	/* Reduce padding for table cells */
+	.small-table td,
+	.small-table th {
+		padding: 5px;
+		/* Adjust padding as needed */
+	}
+
+	.card-body table {
+		width: 100%;
+		padding: 100px;
+	}
+
+	.card-body th,
+	td {
+		padding: 8px;
+		text-align: left;
+	}
+
+	.amount-cell {
+		text-align: right;
+		padding-right: 1rem;
+		/* Adjust padding as needed */
+	}
+
+	.table {
+		width: 100% !important;
+	}
+</style>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-officer :: nav}"></nav>
+		<!-- END Sidebar -->
+
+		<!-- Header -->
+		<header th:replace="~{fragments/header-officer :: header}"></header>
+		<!-- END Header -->
+
+		<!-- Main Container -->
+		<main id="main-container">
+
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<form id="myForm" th:action="@{/victoriahallbooking_uat/officer/getReport}" onsubmit="return validateme()" method="post">
+						<div class="block-header bg-primary text-white">
+							<h3 class="block-title">Zone:<span th:text="${zone} + ' - '"></span>Community Hall Reports
+							</h3>
+						</div>
+						<div class="block-content">
+							<div class="row">
+								<div class="col-sm-3">
+									<label class="form-label" for="fromdate">From:<span
+											class="text-danger">*</span></label> <input type="date"
+										th:value="${fromdate}" class="form-control" name="FromDate" id="fromdate"
+										placeholder="From Date" required="required" data-date-format="yyyy-mm-dd" />
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="todate">To:<span class="text-danger">*</span></label>
+									<input type="date" th:value="${todate}" class="form-control" name="ToDate"
+										id="todate" placeholder="To Date" required="required"
+										data-date-format="yyyy-mm-dd" />
+								</div>
+								<div class="col-sm-3">
+									<label class="form-label" for="request">Get Info:<span
+											class="text-danger">*</span></label>
+									<select type="text" class="form-control text-center" id="request" name="request"
+										onchange="myRequest()" required>
+										<option value="">Select</option>
+										<option value="1" th:selected="${request=='1'}">Booking Details</option>
+										<option value="2" th:selected="${request=='2'}">Refund Details</option>
+										<option value="3" th:selected="${request=='3'}">Payment Info</option>
+										<option value="4" th:selected="${request=='4'}">Hall Booking List</option>
+									</select>
+								</div>
+
+
+								<!-- bookingDetailsDropdown -->
+								<div class="col-sm-3 mb-2" id="bookingDetailsDropdown2" style="display: none;">
+								<label class="form-label" for="filterby">Filter by:</label>
+								<select class="form-control text-center" id="filterby" name="filterby" th:value="${filterby}">	
+									<option value="">Select Filterby</option>						
+									<option value="1" th:selected="${filterby == '1'}">Booking Date</option>
+        							<option value="2" th:selected="${filterby == '2'}">Event Date</option>							
+									<!-- Add more options as needed -->
+								</select>
+							</div>
+								<div class="col-sm-3" id="bookingDetailsDropdown" style="display: none;">
+									<label class="form-label" for="bookingStatus">Booking Status: </label>
+									<select class="form-control text-center" id="bookingStatus" name="bookingStatus"
+										th:value="${bookingStatus}">
+										<option value="">Select Booking Status</option>
+										<option value="APPROVED" th:selected="${bookingStatus == 'APPROVED'}">APPROVED
+										</option>
+										<option value="REJECTED" th:selected="${bookingStatus == 'REJECTED'}">REJECTED
+										</option>
+										<option value="CANCELED" th:selected="${bookingStatus == 'CANCELED'}">CANCELLED
+										</option>
+										<option value="PAYMENT_FAILURE"
+											th:selected="${bookingStatus == 'PAYMENT_FAILURE'}">PAYMENT_FAILURE</option>
+										<option value="GCC_BLOCKED" th:selected="${bookingStatus == 'GCC_BLOCKED'}">
+											GCC_BLOCKED</option>
+										<!-- Add more options as needed -->
+									</select>
+								</div>
+
+								<!-- refundDetailsDropdown -->
+								<div class="col-sm-3" id="refundDetailsDropdown" style="display: none;">
+									<label class="form-label" for="refundStatus">Refund Status: </label>
+									<select class="form-control text-center" id="refundStatus" name="refundStatus"
+										th:value="${refundStatus}">
+										<option value="">Select Refund Status</option>
+										<option value="WAITING" th:selected="${refundStatus == 'WAITING'}">WAITING
+										</option>
+										<option value="APPROVED" th:selected="${refundStatus == 'APPROVED'}">APPROVED
+										</option>
+										<option value="REJECTED" th:selected="${refundStatus == 'REJECTED'}">REJECTED
+										</option>
+										<option value="COMPLETED" th:selected="${refundStatus == 'COMPLETED'}">COMPLETED
+										</option>
+										<!-- Add more options as needed -->
+									</select>
+								</div>
+								<div class="col-sm-3" id="hallBookinglistDropdown" style="display: none;">
+								    <label class="form-label" for="hallname">Hallname: </label>
+								    <select class="form-control text-center" id="hallname" name="hallname" th:value="${hallnames}">
+								        <option value="0">Select Hall name</option>
+								        <!-- Iterate over hallnames and create an option for each -->
+								        <option th:each="hall : ${hallnames}"
+								                th:value="${hall.hallId}" 
+								                th:text="${hall.hallName}">
+								         </option>
+								    </select>
+								</div>
+								<div class="col-sm-3">
+									<br>
+									<button type="submit" class="btn btn-sm btn-primary" name="submit"
+										id="submit">Submit</button>
+									<button class="btn btn-danger" onclick="resetDate()" name="reset"
+										type="reset">Reset</button>
+								</div>
+							</div>
+
+						</div>
+					</form>
+				</div>
+
+				<div class="table-responsive" id="Bookingtable" th:if="${request}==1">
+					<table id="requestTable1" class="table table-striped table-bordered table-hover dataTable"
+						role="grid" width="99.5%">
+						<thead class="thead-dark">							
+							<tr role="row">
+								<th>S.No</th>
+								<th>Booking Id</th>
+								<th>Booking Date</th>
+								<th>Hall Name</th>
+								<th>User Name</th>
+								<th>Mobile</th>
+								<th>User type</th>
+								<th>Reason</th>
+								<th>Startdate-Enddate</th>
+								<th>Amount Paid</th>
+								<th>BookingStatus</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tr th:each="booking, iterStat : ${bookings}">
+
+							<td th:text="${iterStat.count}">0</td>
+							<td th:text="${booking.bookingId}"></td>
+							<td th:text="${booking.bookingDate}"></td>
+							<td th:text="${booking.hallDetails.hallName}"></td>
+							<td th:text="${booking.users.name}"></td>
+							<td th:text="${booking.users.mobileNo}"></td>
+							<td th:text="${booking.users.usertype}"></td>
+							<td th:text="${booking.reason}"></td>
+							<td th:text="${booking.startDate +' to '+ booking.endDate}"></td>
+							<td th:text="${booking.amountReceived}"></td>
+							<td th:text="${booking.bookingStatus}"></td>
+							<td>
+								<p>
+										<span class="badge bg-warning" style="cursor: pointer;"
+											th:onclick="viewDetails([[${booking.bookingId}]])">View</span>
+									</p>
+							</td>
+						</tr>
+
+					</table>
+				</div>
+				
+				<div class="table-responsive" id="BookingSettlementtable" th:if="${request}==2">
+					<table id="requestTable2" class="table table-striped table-bordered table-hover dataTable"
+						role="grid" width="99.5%">
+						<thead class="thead-dark">
+							<tr role="row">
+
+								<th>S.No</th>
+								<th>Name</th>
+								<th>Mobile</th>
+								<th>Booked Hall</th>
+								<th>Reason</th>
+								<th>Booking Dates</th>
+								<th>No of Days</th>
+								<th>User type</th>
+								<th>BookingStatus</th>
+
+							</tr>
+						</thead>
+						<tr th:each="settlementlist, iterStat : ${bookingSettlementList}">
+
+							<td th:text="${iterStat.count}">0</td>
+							<td th:text="${settlementlist.users.name}"></td>
+							<td th:text="${settlementlist.users.mobileNo}"></td>
+							<td th:text="${settlementlist.hallDetails.hallName}"></td>
+							<td th:text="${settlementlist.reason}"></td>
+							<td th:text="${settlementlist.startDate +' to '+ settlementlist.endDate}"></td>
+							<td th:text="${settlementlist.noOfDays}"></td>
+							<td th:text="${settlementlist.users.usertype}"></td>
+							<td th:text="${settlementlist.bookingStatus}"></td>
+
+						</tr>
+
+					</table>
+				</div>
+
+				<div class="table-responsive" id="Paymenttable" th:if="${request}==3">
+					<table id="requestTable3" class="table table-striped table-bordered table-hover dataTable"
+						role="grid" width="99.5%">
+						<thead class="thead-dark">
+							<tr role="row">
+								<th>S.No</th>
+								<th>Booking Id</th>
+								<th>Booking Date</th>
+								<th>Hall Name</th>
+								<th>User Name</th>
+								<th>User type</th>
+								<th>Transaction ID</th>
+								<th>Payment Type</th>
+								<th>Amount received</th>
+								<th>Reason</th>
+								<th>Start date & end Date</th>
+								<th>status</th>
+							</tr>
+						</thead>
+						<tr th:each="payment, iterStat : ${paymentLists}">
+							<td th:text="${iterStat.count}">0</td>
+							<td th:text="${payment[0]}"></td>
+							<td th:text="${payment[1]}"></td>
+							<td th:text="${payment[2]}"></td>
+							<td th:text="${payment[3]}"></td>
+							<td th:text="${payment[4]}"></td>
+							<td th:text="${payment[5]}"></td>
+							<td th:text="${payment[6]}"></td>
+							<td th:text="${payment[7]}"></td>
+							<td th:text="${payment[8]}"></td>
+							<td th:text="${payment[9] + ' to ' + payment[10]}"></td>
+							<td th:text="${payment[11]}"></td>
+						</tr>
+
+					</table>
+				</div>
+
+				<div class="table-responsive" id="hallBookingtable" th:if="${request}==4">
+					<table id="requestTable4" class="table table-striped table-bordered table-hover dataTable"
+						role="grid" width="99.5%">
+						<thead class="thead-dark">
+							<tr role="row">
+
+								<th>S.No</th>
+								<th>HallName</th>
+								<th>Zone</th>
+								<th>Division</th>
+								<th>Address</th>
+								<th>Total Bookings</th>
+								<th>Amount Received</th>
+								<th>Amount Refund</th>
+								<th>Refund %</th>
+								<th>Total Amount</th>
+								<th>Total Amount %</th>
+
+							</tr>
+						</thead>
+						<tr th:each="hallbookingList, iterStat : ${hallbookingLists}">
+
+							<td th:text="${iterStat.count}">0</td>
+							<td th:text="${hallbookingList[0]}"></td>
+							<td th:text="${hallbookingList[1]}"></td>
+							<td th:text="${hallbookingList[2]}"></td>
+							<td th:text="${hallbookingList[3]}"></td>
+							<td th:text="${hallbookingList[4]}"></td>
+							<td th:text="${hallbookingList[5]}"></td>
+							<td th:text="${hallbookingList[6]}"></td>
+							<td th:text="${(hallbookingList[6] / hallbookingList[5]) * 100 + '%'}"></td>
+							<td th:text="${hallbookingList[7]}"></td>
+							<td th:text="${(hallbookingList[7] / hallbookingList[5]) * 100 + '%'}"></td>
+						</tr>
+
+					</table>
+				</div>
+
+
+			</div>
+
+
+<div class="modal fade backdrop" id="showBookingDetails" data-backdrop="static" tabindex="-1" role="dialog"
+				aria-labelledby="staticBackdropLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content" id="printableContent">
+
+						<form id="regform" onsubmit="return rejectsubmit();">
+							<div class="block block-rounded block-themed block-transparent mb-0">
+
+								<div class="block-header bg-primary-dark">
+									<h3 class="block-title" id="2mtitle">Booking
+										Information</h3>
+									<div class="block-options">
+										<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+											aria-label="Close">
+											<i class="fa fa-fw fa-times"></i>
+										</button>
+									</div>
+								</div>
+
+								<div class="block-content row" style="margin-right:0px;margin:0;padding:0;">
+									<div class="col-md-12 col-lg-12 col-sm-12">
+										<div class="card-body" style="padding:20px;">
+											<table>
+												<tr>
+													<th colspan="10" style="background-color: #f2f2f2;">
+														User Details</th>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														User Name:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_userName"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Mobile Number:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_mobileNumber"></td>
+
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														User Type:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_usertype"></td>
+
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														User Address:</th>
+													<td colspan="5" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_useraddress"></td>
+
+												</tr>
+												<input type="hidden" class="form-control text-center" name="bookingid"
+													id="bookingid" disabled />
+												<tr>
+													<th colspan="10" style="background-color: #f2f2f2;">
+														Hall Details</th>
+												</tr>
+
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Hall Name:</th>
+													<td colspan="10" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_hallName"></td>
+
+												</tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+													Hall Address:</th>
+												<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_halladdress"></td>
+
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Caretaker Name:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_caretakername"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Caretaker Mobile Number:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_caretakermobileNumber">
+													</td>
+
+												</tr>
+
+
+												<tr>
+													<th colspan="10" style="background-color: #f2f2f2;">
+														Booking
+														Details (Booking Id:-<span id="booking_id"
+															style="color:blue"></span>)</th>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Booking Date:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_bookingDate"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Deposit Amount (in Rs):</th>
+													<td colspan="2" class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_depositeAmount"></td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Start Date:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_startDate"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Hall Amount (in Rs):</th>
+													<td colspan="2" class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_hallAmount"></td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														END
+														Date:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_endDate"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														GST @18% (in Rs):</th>
+													<td colspan="2" class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_gst"></td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Starting Slot:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_startingSlot"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Total Amount (in Rs):</th>
+													<td colspan="2" class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_totalAmount"></td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Ending Slot:</th>
+													<td colspan="2" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_endingSlot"></td>
+													<th style="display:none;padding: 0.45rem 0.45rem;border:none"
+														id="rejectionreasondiv">Rejection
+														Reason:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="reasonforrejection"></td>
+												</tr>
+											</table>
+										</div>
+									</div>
+									<div class="row col-md-12 col-lg-12 col-sm-12"
+										style="margin-left:6px;margin-top:-21px">
+										<div class="documents" id="documents"></div>
+									</div>
+									<div class="col-md-12 col-lg-12 col-sm-12 mb-2" id="paymentsdetails"
+										style="display:none;margin-top: -17px;width:758px;margin-left:20px;">
+										<div class="card-body">
+											<table>
+												<tr>
+													<th colspan="10" style="background-color: #f2f2f2;">
+														Booking Payment Details</th>
+												</tr>
+
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Transaction ID:</th>
+													<td colspan="10" class="fw-semibold"
+														style="padding: 0.45rem 0.45rem;" id="td_transactionId"></td>
+
+												</tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+													Amount Received (in Rs):</th>
+												<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_payamountReceived"></td>
+
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal;">
+														Transaction Status:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_paymentStatus"></td>
+
+												</tr>
+
+											</table>
+										</div>
+									</div>
+
+									<div class="row col-md-12 col-lg-12 col-sm-12" id="ebdetails"
+										style="display:none;margin-top: -17px;width:758px;margin-left:20px;">
+										<div class="card-body">
+											<table>
+												<tr>
+													<th colspan="4" style="background-color: #f2f2f2;">EB
+														Details</th>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														EB Number:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_EBNumber"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														EB Amount Per Unit (in Rs):</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_ebamountperunit"></td>
+												</tr>
+												<tr>
+
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Start Reading:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_startingReading"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Unit Consumed:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_usedunit"></td>
+
+												</tr>
+												<tr>
+
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														END Reading:</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_endingReading"></td>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														EB Amount (in Rs):</th>
+													<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+														id="td_electricityamount"></td>
+												</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+									<div class="row col-md-12 col-lg-12 col-sm-12" id="damagelist" style="disaply:none">
+										<div id="damageDetails"></div>
+									</div>
+
+									<div class="col-md-12 col-lg-12 col-sm-12" id="refunddetails"
+										style="margin-top:-17px;width:758px;margin-left:20px;">
+										<div class="card-body">
+											<table>
+												<tr>
+													<th colspan="2" style="background-color: #f2f2f2;">
+														Amount to be Refunded (in Rs) </th>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Deposit Amount:</th>
+													<td class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;"
+														id="td_depositeamountforrefund">0</td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														EB Amount:</th>
+													<td class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_ebAmount"></td>
+												</tr>
+												<tr>
+													<th style="padding: 0.45rem 0.45rem;font-weight: normal">
+														Damage Amount:</th>
+													<td class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem;" id="td_damage"></td>
+												</tr>
+												<tr id="pendingcolumn">
+													<th id="th_settel_label"
+														style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+														Collection Pending Amount:</th>
+													<td class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem; color: green;"
+														id="td_pending_amt">0</td>
+												</tr>
+												<tr>
+													<th
+														style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+														Actual refundable Amount:</th>
+													<td class="fw-semibold amount-cell"
+														style="padding: 0.45rem 0.45rem; color: green;"
+														id="td_settel_amt">0</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+
+
+									<!-- DD detail -->
+									<div id="ddTableContainer" style="display:none"></div>
+								</div>
+
+							</div>
+							<div class="block-content block-content-full text-end bg-body" id="mbutton">
+								<button type="button" style="background-color: rgb(21,69,93);color: white;"
+									class="btn btn-sm btn-alt-secondary" data-bs-dismiss="modal">Close</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			
+			
+			<div class="modal fade" id="fileModal" tabindex="-1" role="dialog"
+							aria-labelledby="fileModalLabel" aria-hidden="true">
+							<div class="modal-dialog modal-lg" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+										<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<embed id="filePreview" src="" width="100%" height="600px">
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary"
+											data-bs-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+		</main>
+		<!-- END Main Container -->
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+		<!-- Footer -->
+
+		<!-- END Footer -->
+	</div>
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<!-- Scripts -->
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+
+
+	<script type="text/javascript" th:inline="javascript">
+
+		$(document).ready(
+			function () {
+
+				// DataTables buttons configuration
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+
+				$('#requestTable1').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+					$('#requestTable2').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				$('#requestTable3').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				$('#requestTable4').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+
+			});
+
+		function validateme() {
+			return true;
+		}
+
+		var fromdate = document.getElementById("fromdate"), todate = document
+			.getElementById("todate");
+
+		function validateDate() {
+			if ($("#fromdate").val() == "" || $("#todate").val() == "") {
+				todate.setCustomValidity("FromDate and ToDate Must");
+			} else {
+				todate.setCustomValidity('');
+			}
+		}
+
+		fromdate.onchange = validateDate;
+		todate.onchange = validateDate;
+
+		$(document).ready(function () {
+			var today = new Date();
+			$('.datepicker').datepicker({
+				dateFormat: 'yy-mm-dd',
+				maxDate: '1'
+			})
+			$('.datepicker').keyup(function () {
+				if (this.value.match(/[^0-9]/g)) {
+					this.value = this.value.replace(/[^0-9^-]/g, '');
+				}
+			});
+		});
+
+		// Ensure proper dropdown visibility based on the pre-selected value
+		document.addEventListener("DOMContentLoaded", function () {
+			myRequest(); // Initial call to set dropdowns based on initial value
+		});
+document.addEventListener("DOMContentLoaded", function () {
+			var today = new Date();
+			var sixMonthsLater = new Date();
+			sixMonthsLater.setMonth(today.getMonth() + 6);
+
+			var minDate = today.toISOString().split('T')[0];
+			var maxDate = sixMonthsLater.toISOString().split('T')[0];
+			let fromDateInput=document.getElementById('fromdate');
+			let toDateInput=document.getElementById('todate');
+			fromDateInput.setAttribute('max', maxDate);
+			toDateInput.setAttribute('max', maxDate);
+			fromDateInput.addEventListener('change', function () {
+			let selectedFromDate = this.value;
+			let toDateInput = document.getElementById('todate');
+			toDateInput.setAttribute('min', selectedFromDate);
+			toDateInput.value = ''; // Reset the value of toDate
+		});
+		});
+		// Function to manage the display of dropdowns based on the request type
+		function myRequest() {
+			var requestValue = document.getElementById("request").value;
+
+			// Hide all dropdowns initially
+
+			document.getElementById("bookingDetailsDropdown").style.display = "none";
+			document.getElementById("refundDetailsDropdown").style.display = "none";
+			document.getElementById("hallBookinglistDropdown").style.display = "none";
+
+
+			// Show relevant dropdowns based on the selected request value
+			if (requestValue === "1") {
+				document.getElementById("bookingDetailsDropdown").style.display = "block";
+				document.getElementById("bookingDetailsDropdown2").style.display = "block";
+			}
+			else if (requestValue === "2") {
+				document.getElementById("bookingDetailsDropdown2").style.display = "block";
+				document.getElementById("refundDetailsDropdown").style.display = "block";
+			}
+			else if (requestValue === "4") {
+				document.getElementById("bookingDetailsDropdown2").style.display = "block";
+				document.getElementById("hallBookinglistDropdown").style.display = "block";
+			}
+		}
+
+		// Function to reset date fields
+		function resetDate() {
+
+			window.location.href = "/victoriahallbooking_uat/officer/reports";
+
+			document.getElementById('fromdate').value = '';
+			document.getElementById('todate').value = '';
+		}
+		
+		function viewDetails(bookingId) {
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+				method: 'GET',
+				data: {bookingId: bookingId},
+				success: function (response) {
+					document.getElementById("td_userName").innerHTML = response.users.name;
+					document.getElementById("td_mobileNumber").innerHTML = response.users.mobileNo;
+					document.getElementById("td_usertype").innerHTML = response.users.usertype;
+					var userDetails = response.users;
+					var userDetailsString =
+						userDetails.doorNo + ", " +
+						userDetails.street + ", " +
+						userDetails.area + ", " +
+						userDetails.location + " ,Chennai- " +
+						userDetails.pinCode;
+					document.getElementById("td_useraddress").innerHTML = userDetailsString;
+					document.getElementById("td_hallName").innerHTML = response.hallDetails.hallName;
+					var hallDetails = response.hallDetails;
+					var hallDetailsString =
+						hallDetails.doorNo + ", " +
+						hallDetails.street + ", " +
+						hallDetails.area + ", " +
+						hallDetails.city + "- " +
+						hallDetails.pinCode;
+					document.getElementById("td_halladdress").innerHTML = hallDetailsString;
+					document.getElementById("td_caretakername").innerHTML = response.hallDetails.hallInchargeName;
+					document.getElementById("td_caretakermobileNumber").innerHTML = response.hallDetails.hallInchargeMobno;
+					document.getElementById("td_bookingDate").innerHTML = response.bookingDate;
+					document.getElementById("td_depositeAmount").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+					document.getElementById("td_hallAmount").innerHTML = parseFloat(response.hallAmount).toFixed(2);
+					// Calculate GST and total amount
+					var gstAmount = (parseFloat(response.hallAmount) * (response.hallDetails.gst / 100)).toFixed(2);
+					var totalAmount = parseFloat(response.amountReceived).toFixed(2);
+
+					document.getElementById("td_gst").innerHTML = gstAmount;
+					document.getElementById("td_totalAmount").innerHTML = totalAmount;
+
+					document.getElementById("td_startDate").innerHTML = response.startDate;
+					document.getElementById("td_endDate").innerHTML = response.endDate;
+					document.getElementById("booking_id").innerHTML = response.bookingId;
+
+					function getTimeSlot(slotValue) {
+						var timeSlot;
+						var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+						if (trimmedSlotValue === '1') {
+							timeSlot = 'Morning';
+						} else if (trimmedSlotValue === '2') {
+							timeSlot = 'Evening';
+						} else {
+							timeSlot = 'Unknown';
+						}
+						return timeSlot;
+					}
+
+					document.getElementById("td_startingSlot").innerHTML = getTimeSlot(response.startingSlot);
+					document.getElementById("td_endingSlot").innerHTML = getTimeSlot(response.endingSlot);
+
+					let matchingComments = '';
+					response.bookingHistories.forEach(history => {
+						if (history.bookingStatus === 'REJECTED') {
+							matchingComments = history.comments;
+						}
+					});
+
+					if (matchingComments) {
+						document.getElementById("rejectionreasondiv").style.display = "block";
+						const rejectionCell = document.getElementById("reasonforrejection");
+						rejectionCell.innerHTML = matchingComments;
+						rejectionCell.setAttribute("colspan", "2");
+					} else {
+						document.getElementById("rejectionreasondiv").style.display = "none";
+						document.getElementById("reasonforrejection").style.display = "none";
+					}
+					showReasonDocuments(response);
+
+					if (response.payments) {
+						document.getElementById("paymentsdetails").style.display = "block";
+						document.getElementById("td_transactionId").innerHTML = response.payments.transactionId;
+						document.getElementById("td_payamountReceived").innerHTML = response.payments.amountReceived;
+						document.getElementById("td_paymentStatus").innerHTML = response.payments.paymentStatus;
+					} else {
+						document.getElementById("paymentsdetails").style.display = "none";
+					}
+					if (response.ebDetails) {
+						document.getElementById("ebdetails").style.display = "block";
+						document.getElementById("paymentsdetails").style.display = "none";
+						document.getElementById("td_EBNumber").innerHTML = response.hallDetails.ebNumber;
+						document.getElementById("td_startingReading").innerHTML = response.ebDetails.startingReading;
+						document.getElementById("td_endingReading").innerHTML = response.ebDetails.endingReading;
+						document.getElementById("td_usedunit").innerHTML = response.ebDetails.usedUnit;
+						document.getElementById("td_ebamountperunit").innerHTML = parseFloat(response.hallDetails.ebCostPerUnit).toFixed(2);
+						document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+
+					} else {
+						document.getElementById("ebdetails").style.display = "none";
+					}
+					if (response.damageList && response.damageList.length > 0) {
+						document.getElementById("damagelist").style.display = "block";
+						showDamageDetails(response);
+					} else {
+						document.getElementById("damagelist").style.display = "none";
+					}
+					if (response.settlement) {
+						document.getElementById("refunddetails").style.display = "block";
+						document.getElementById("td_depositeamountforrefund").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+						document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+						document.getElementById("td_ebAmount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+						document.getElementById("td_damage").innerHTML = parseFloat(response.settlement.damageAmount).toFixed(2);
+
+						var eb_amt = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+						var deposit_amt = parseFloat(response.depositAmount).toFixed(2);
+						var tem_total = (deposit_amt - eb_amt).toFixed(2);
+						$("#td_settel_amt").html(tem_total);
+					} else {
+						document.getElementById("refunddetails").style.display = "none";
+					}
+					// Show the modal
+					$('#showBookingDetails').modal('show');
+				},
+				error: function () {
+					console.error("An error occurred while fetching booking details.");
+				}
+			});
+		}
+
+
+		function showDamageDetails(data) {
+			var damageFieldContainer = $('#damageDetails');
+			damageFieldContainer.empty();
+
+			// Create a div for table responsiveness
+			var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({'margin-top': '0px', 'margin-left': '20px', 'width': '730px'});;
+
+			// Create table with similar classes and styles to the modal table
+			var table = $('<table>').addClass('table table-bordered table-striped').css({'width': '97%', 'border-color': 'black', 'border-top-color': 'white', 'width': ' 730px'});
+			var thead = $('<thead>').addClass('thead-light');
+			var tbody = $('<tbody>');
+
+			// Create Damage Details header row
+			var headerRow = $('<tr>').appendTo(thead);
+			$('<th>').attr('colspan', '6').text('Damage Details (if any)').css({
+				'padding': '0.45rem 0.45rem',
+				'background-color': '#f2f2f2',
+				'font-weight': 'bold',
+				'color': 'black',
+			}).appendTo(headerRow);
+
+			// Create table header row
+			var columnHeadersRow = $('<tr>').css('background-color', 'white').appendTo(thead);
+			$('<th>').text('S.No').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+			$('<th>').text('Asset Name').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+			$('<th>').text('Damage Img').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+			$('<th>').text('Cost').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+			$('<th>').text('Qty').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+			$('<th>').text('Amount').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+
+			var totalAmount = 0;
+			$.each(data.damageList, function (index, detail) {
+				var row = $('<tr>').appendTo(tbody);
+				$('<td>').text(index + 1).css('padding', '0.45rem 0.45rem').appendTo(row);
+				$('<td>').text(detail.assetName).css('padding', '0.45rem 0.45rem').appendTo(row);
+				var viewLink = $('<a>').attr('href', 'javascript:void(0)').text('View').on('click', function () {
+					showDamageImage(detail.damageImageUrl);
+				});
+				var assetamt = (detail.assetAmount / detail.quantity).toFixed(2);
+				$('<td>').css('padding', '0.45rem 0.45rem').append(viewLink).appendTo(row);
+				$('<td>').text(assetamt).css('padding', '0.45rem 0.45rem').appendTo(row);
+				$('<td>').text(detail.quantity).css('padding', '0.45rem 0.45rem').appendTo(row);
+				var amount = detail.assetAmount;
+				totalAmount += amount;
+				$('<td>').text(amount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(row);
+				$("#td_dam_amt").html(totalAmount.toFixed(2));
+			});
+
+			// Add row for total amount
+			var totalRow = $('<tr>').appendTo(tbody);
+			$('<td>').attr('colspan', '5').text('Total Amount').css('padding', '0.45rem 0.45rem; font-weight: bold; background-color: #f2f2f2').appendTo(totalRow);
+			$('<td>').text(totalAmount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(totalRow);
+
+			// Append the table elements to the container div
+			table.append(thead, tbody);
+			tableResponsiveDiv.append(table);
+			damageFieldContainer.append(tableResponsiveDiv);
+
+			var temp_total = parseFloat($("#td_settel_amt").html());
+			var settleAmount = temp_total - totalAmount;
+			if (settleAmount < 0) {
+				$("#td_settel_amt").html(0.00);
+				$("#pendingcolumn").show();
+				$("#td_pending_amt").html(Math.abs(settleAmount).toFixed(2));
+				$("#td_pending_amt").css("color", "red");
+			} else {
+				$("#td_settel_amt").html(settleAmount.toFixed(2));
+				$("#pendingcolumn").hide();
+				$("#td_settel_amt").css("color", "green"); // Set color to green for positive amounts
+			}
+		}
+
+
+
+		function showDamageImage(damageImageUrl) {
+			document.getElementById('filePreview').src = damageImageUrl;
+			$('#fileModal').modal('show');
+		}
+		function showReasonDocuments(list) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/api/officer/getReasonByName',
+				data: {
+					'reasonName': list.reason
+				},
+				success: function (x) {
+					showReasonWithDocument(x, list);
+				}
+			});
+		}
+
+		// Display booking documents
+		function showReasonWithDocument(reasonData, list) {
+			var reasonDocumentData = reasonData.reasonDocumentMasterList;
+			var bookingDocumentsList = list.bookingDocumentsList;
+
+			const reasonFieldsContainer = $('#documents');
+			reasonFieldsContainer.empty();
+
+			// Create a responsive table container
+			var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({'width': '730px', 'border': 'black'});
+
+			// Create the table with Bootstrap classes and custom styles
+			var table = $('<table>').addClass('table table-bordered table-striped table-vcenter js-dataTable-responsive').css({
+				'width': '100%',
+				'height': 'auto',
+				'border': '1px solid black'
+			});
+
+			// Create the table header (thead)
+			var thead = $('<thead>').appendTo(table);
+			var headerRow = $('<tr>').appendTo(thead);
+			$('<th>').attr('colspan', '3').text('Document Details').css({
+				'color': 'black',
+				'background-color': '#f2f2f2',
+				'padding': '0.45rem 0.45rem'
+			}).appendTo(headerRow);
+
+			// Create header row for columns
+			var columnHeadersRow = $('<tr>').appendTo(thead);
+			$('<th>').text('S.No').appendTo(columnHeadersRow);
+			$('<th>').text('Required Info').appendTo(columnHeadersRow);
+			$('<th>').text('Required Documents').appendTo(columnHeadersRow);
+
+			// Create the table body (tbody)
+			var tbody = $('<tbody>').appendTo(table);
+
+			// Iterate through the documents list and populate rows
+			for (var i = 0; i < bookingDocumentsList.length; i++) {
+				(function (index) {
+					var row = $('<tr>').appendTo(tbody);
+					$('<td>').text(index + 1).appendTo(row);
+					$('<td>').text(reasonDocumentData[index].fieldName + ': ' + bookingDocumentsList[index].name).appendTo(row);
+
+					// Create a link to view document image
+					var viewLink = $('<a>').attr('href', 'javascript:void(0)').text(reasonDocumentData[index].docFieldName).on('click', function () {
+						showDocumentImage(bookingDocumentsList[index].bookingDocUrl);
+					});
+					$('<td>').append(viewLink).appendTo(row);
+				})(i);
+			}
+
+			// Append table to the responsive container
+			tableResponsiveDiv.append(table);
+
+			// Append table to the container in the DOM
+			reasonFieldsContainer.append(tableResponsiveDiv);
+		}
+
+
+		function showDocumentImage(fileURL) {
+			//console.log(fileURL);
+			openFileModal(fileURL);
+		}
+		// Event delegation for dynamically added elements
+		$(document).on('click', '.view-document', function () {
+			const fileURL = $(this).data('url');
+			openFileModal(fileURL);
+		});
+
+		function openFileModal(fileURL) {
+			$('#filePreview').attr('src', fileURL);
+			$('#fileModal').modal('show');
+		}
+	</script>
+</body>
+
+</html>

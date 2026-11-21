@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}"></head>
+<style>
+	.header-class {
+		position: fixed;
+		top: 50;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+	}
+
+	.main-content {
+		margin-top: 70px;
+	}
+
+	body,
+	html {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+	}
+
+	.bookings-list {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		padding: 20px;
+		box-sizing: border-box;
+	}
+
+	.booking-card {
+		max-width: 600px;
+		width: 100%;
+		background-color: #fff;
+		border-radius: 8px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 20px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	.booking-details p {
+		margin: 10px 0;
+	}
+</style>
+
+<body>
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<nav th:replace="~{fragments/nav-caretaker :: nav}"></nav>
+		<header th:replace="~{fragments/header-caretaker :: header}"></header>
+
+		<div class="content" style="margin-top: 77px;">
+			<div class="block block-rounded">
+				<div class="block-header bg-info text-white" style="background-color: #2c726c !important">
+					<h3 class="block-title">Future Bookings (Next 2 Days)</h3>
+				</div>
+				<div class="block-content">
+					<div class="table-responsive">
+						<table id="futureBookingTable" class="table table-bordered table-vcenter">
+							<thead>
+								<tr>
+									<th>Hall Name</th>
+									<th>Booking Id</th>
+									<th>Reason for Booking</th>
+									<th>Start Date</th>
+									<th>End Date</th>
+									<th>No of Days</th>
+									<th>Starting Period</th>
+									<th>Ending Period</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Iterate over future bookings and display them -->
+								<tr th:each="booking : ${futureBookings}">
+									<td th:text="${booking.hallDetails.hallName}"></td>
+									<td th:text="${booking.bookingId}"></td>
+									<td th:text="${booking.reason}"></td>
+									<td th:text="${booking.startDate}"></td>
+									<td th:text="${booking.endDate}"></td>
+									<td th:text="${booking.noOfDays}"></td>
+									<td>
+										<span th:text="${booking.startingSlot == 1 ? 'Morning' : 'Evening'}"></span>
+									</td>
+									<td>
+										<span th:text="${booking.endingSlot == 1 ? 'Morning' : 'Evening'}"></span>
+									</td>
+									<td>
+										<!-- Implement your logic for viewing details -->
+										<button type="button" class="btn btn-primary view-details"
+											th:onclick="bookingDetails([[${booking.bookingId}]])">View</button>
+									</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade backdrop" id="bookingModal" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="block block-rounded block-themed block-transparent mb-0">
+						<div class="block-header bg-primary-dark">
+							<h3 class="block-title">Booking Details</h3>
+							<div class="block-options">
+								<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+									aria-label="Close">
+									<i class="fa fa-fw fa-times"></i>
+								</button>
+							</div>
+						</div>
+						<div class="block-content row">
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="name">Name<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="name" name="name"
+										placeholder="First Name" readonly>
+								</div>
+								<small id="emailHelp" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="mobileno">Mobile Number<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="mobileno" name="mobileno"
+										placeholder="Mobile Number" minlength="10" maxlength="10" pattern="[0-9]{10}"
+										readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="email">E-Mail ID<span class="required"></span>:</label>
+									<input type="email" class="form-control text-center" id="email" name="email"
+										placeholder="Email" maxlength="255" readonly>
+								</div>
+								<small id="emailHelps" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="doorNo">DoorNo<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="doorNo" name="doorNo"
+										placeholder="Door No" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="street">Street<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="street" name="street"
+										placeholder="Street" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="area">Area<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="area" name="area"
+										placeholder="Area" readonly>
+								</div>
+								<small id="emailHelped" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="location">Location<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="location" name="location"
+										placeholder="Location" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="pincode">Pincode<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="pincode" name="pincode"
+										placeholder="Pincode" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4" style="margin-left:0%">
+								<div class="form-group">
+									<label for="userType">User Type<span class="required">*</span>:</label>
+								<input class="form-control" id="userType" name="userType"
+										placeholder="User Type" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4 hidden" id="employeeFields">
+								<!-- Employee fields here -->
+							</div>
+							<div class="col-sm-4 hidden" id="pensionerFields">
+								<!-- Pensioner fields here -->
+							</div>
+							<div class="col-sm-4 hidden" id="wardnoFields">
+								<!-- Ward number fields here -->
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	</div>
+
+<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+	<script type="text/javascript">
+
+		$(document).ready(
+			function () {
+
+				// DataTables buttons configuration
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+
+				$('#futureBookingTable').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+
+			});
+
+		function bookingDetails(bookingId) {
+			$.ajax({
+				url: '/victoriahallbooking_uat/careTaker/api/viewuserDetails',
+				method: 'GET',
+				data: {bookingId: bookingId},
+				success: function (response) {
+					$('#name').val(response.users.name);
+					$('#mobileno').val(response.users.mobileNo);
+					$('#email').val(response.users.email);
+					$('#doorNo').val(response.users.doorNo);
+					$('#street').val(response.users.street);
+					$('#area').val(response.users.area);
+					$('#location').val(response.users.location);
+					$('#pincode').val(response.users.pinCode);
+					$('#userType').val(response.users.usertype);
+					// Show the modal
+					$('#bookingModal').modal('show');
+				},
+				error: function () {
+				}
+			});
+		}
+
+	</script>
+</body>
+
+</html>

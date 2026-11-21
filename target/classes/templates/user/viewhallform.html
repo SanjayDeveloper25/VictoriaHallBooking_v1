@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}"></head>
+<script src="https://cdn.jsdelivr.net/npm/compressorjs@5.0.3/dist/compressor.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/stompjs"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<style>
+    .table-align {
+        width: 100%;
+    }
+
+    .td-align {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+
+    @media (max-width: 600px) {
+        .td-align {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    .center-table {
+        justify-content: center;
+        align-items: center;
+    }
+
+    .highlight-blue .ui-state-default {
+        background: blue !important;
+        color: #FFF !important;
+    }
+
+    .highlight-greens .ui-state-default {
+        background: green !important;
+        color: #FFF !important;
+    }
+
+    .highlight-yellow .ui-state-default {
+        background: yellow !important;
+        color: #000 !important;
+    }
+
+    .highlight-violet .ui-state-default {
+        background: #a93da9 !important;
+        color: #000 !important;
+    }
+
+    .highlight-pink .ui-state-default {
+        background: red !important;
+        color: #000 !important;
+    }
+
+    .highlight-lightpink .ui-state-default {
+        background: lightpink !important;
+        color: #FFF !important;
+    }
+
+    .btn-square-md {
+        width: 16px !important;
+        max-width: 100% !important;
+        max-height: 50% !important;
+        height: 30px !important;
+        text-align: center;
+        padding: 0px;
+        font-size: 2px;
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 1;
+        /* Example: reduce opacity to indicate disabled state */
+    }
+
+    .ui-datepicker {
+        width: 100%;
+        background-color: #333;
+    }
+
+    .ui-datepicker-header {
+        background-color: #f0f0f0;
+        /* Light gray background for header */
+        border: none;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .ui-datepicker-title {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        margin: 0;
+        padding: 0;
+        color: white;
+        /* Text color for dates */
+        font-weight: bold;
+        /* Bold font for dates */
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+        text-align: center;
+    }
+
+    .ui-datepicker-week-end {
+        color: yellow;
+        font-weight: bold;
+    }
+
+    /* Style for the label */
+    .date-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+    }
+
+    .highlight-current-date a {
+        background-color: green;
+        /* Current date highlight color */
+        color: white;
+    }
+
+
+    .highlight-greens a {
+        background-color: green;
+        color: white;
+    }
+
+    .highlight-blue a {
+        background-color: blue;
+        color: white;
+
+    }
+
+    .highlight-yellow a {
+        background-color: yellow;
+        color: black;
+        /* Change text color for visibility */
+    }
+
+    .highlight-pink a,
+    input[type=button]:disabled {
+        background-color: pink;
+        /* Pink highlight for disabled or booked dates */
+        color: white;
+    }
+
+    .highlight-lightpink a,
+    input[type=button]:disabled {
+        background-color: lightpink;
+        color: white;
+
+    }
+
+    .highlight-orange a {
+        background-color: orange;
+        /* Orange highlight color */
+        color: white;
+    }
+
+    input[type=button]:disabled {
+        background: red;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #selecthall.select2-container--default .select2-selection--single {
+        height: 35px;
+        border: 1px solid #ddd;
+        padding-left: 10px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #444;
+        line-height: 28px;
+        margin-top: -8px;
+    }
+
+    #hallDetailsContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Center items horizontally */
+        justify-content: center;
+        /* Center items vertically */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    /* Style for the image */
+    #hallImagesCarousel {
+        margin-bottom: 20px;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    .col-md-6 {
+        width: 50%;
+        padding: 0 10px;
+        /* Optional: Add padding to columns */
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6 {
+            width: 100%;
+            /* Full width on smaller screens */
+        }
+    }
+
+    #hallDetailsContainer p {
+        margin: 0;
+        padding: 5px 0;
+    }
+
+    #hallDetailsContainer p:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* CSS styles for the amount details container */
+    #amountDetailsContainer {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    #amountDetailsContainer h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    #amountDetailsContainer div {
+        list-style: none;
+        padding: 0;
+    }
+
+    #amountDetailsContainer p {
+        margin-bottom: 10px;
+    }
+
+    #amountDetailsContainer p span {
+        font-weight: bold;
+    }
+
+    #amountDetailsContainer p:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Style for the image container */
+    #hallImagesCarousel {
+        display: flex;
+        justify-content: center;
+        /* Center content horizontally */
+        align-items: center;
+        /* Center content vertically */
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    /* Style for the images inside the carousel */
+    .carousel-item img {
+        max-width: 100%;
+        /* Ensure image does not exceed container width */
+        min-height: 9%;
+        /* Maintain aspect ratio */
+        display: block;
+        /* Ensure image is block-level element */
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+        margin: 0 auto;
+        /* Center the image horizontally */
+    }
+
+    .content-container {
+        padding: 20px;
+    }
+
+    .otp-input {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        margin-right: 10px;
+    }
+
+    /* Ensures content within these classes is centered */
+    .modal-header,
+    .modal-body,
+    .modal-footer,
+    #resend-container {
+        text-align: center;
+    }
+
+    /* Center content with Flexbox if needed */
+    .center-flex {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        /* Stack elements vertically */
+    }
+
+    /* Adjust the margin of the otp-input-box for better alignment */
+    .otp-input-box {
+        justify-content: center;
+        margin: 0 auto;
+        /* Centers the box horizontally */
+        align-items: center;
+        /* Align items in the center for flex containers */
+        width: 100%;
+    }
+
+    .center-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        /* Or set a specific height */
+        flex-direction: column;
+        /* Stack children vertically */
+    }
+
+    /* To ensure the form takes up the necessary width */
+    .form-group {
+        width: 100%;
+        /* Adjust based on your layout's needs */
+    }
+
+    /* Custom styles for the jQuery UI Dialog */
+    .custom-dialog .ui-dialog-content {
+        background-color: #fff;
+        color: #333;
+        padding: 20px;
+    }
+
+    .custom-dialog .ui-dialog-titlebar {
+        background: #007bff;
+        color: #ffffff;
+    }
+
+    .custom-dialog .ui-dialog-buttonpane {
+        background-color: #f1f1f1;
+    }
+
+    .custom-dialog .ui-dialog-buttonpane .ui-dialog-buttonset button {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
+    }
+
+    .custom-dialog a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .custom-dialog a:hover {
+        text-decoration: underline;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .date-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .checkbox-label {
+        display: block;
+        margin-top: 5px;
+    }
+
+    #calendar {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+
+    /* Style for date checkboxes */
+    .date-checkboxes {
+        margin-top: 10px;
+    }
+
+    label {
+        margin-right: 10px;
+    }
+
+    .ui-datepicker-container {
+        width: 100%
+    }
+
+    .fixedcontainer {
+        width: 250%;
+        margin: 40px 0;
+    }
+
+    .ui-widget {
+        width: 40%
+    }
+
+    .ui-datepicker {
+        padding: 3px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        left: 29.1418px;
+    }
+
+    .ui-datepicker-header {
+        background-color: #f0f0f0;
+        border: none;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .ui-datepicker-title {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        margin: 0;
+        padding: 0;
+        font-weight: bold;
+        /* Bold font for dates */
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+        padding: 5px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar .ui-state-default {
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .ui-datepicker-week-end {
+        color: black;
+        font-weight: bold;
+    }
+
+    .ui-datepicker-calendar th span {
+        color: black;
+        font-weight: bold;
+    }
+
+    .booking-form-container {
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 960px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-form-container label {
+        font-weight: bold;
+    }
+
+    .booking-form-container .form-control {
+        margin-bottom: 10px;
+    }
+
+    .booking-form-container .btn-primary {
+        background-color: #017bff;
+    }
+
+    .white-background {
+        background-color: white;
+        /* Set the background color as needed */
+        border: 1px solid #ccc;
+        /* Optional: Add border for better visualization */
+        padding: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        /* Hide overflow content during animation */
+        position: relative;
+    }
+
+    .slide-left {
+        animation: slideLeft 0.5s ease both;
+    }
+
+    .slide-right {
+        animation: slideRight 0.5s ease both;
+    }
+
+    @keyframes slideLeft {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+    }
+
+    @keyframes slideRight {
+        0% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Apply styles to the booking-section container */
+    .booking-section {
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 960px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-section label {
+        font-weight: bold;
+    }
+
+    .booking-section .form-control {
+        margin-bottom: 10px;
+    }
+
+    .booking-section .btn-primary {
+        background-color: #017bff;
+    }
+
+    /* Apply white background to the booking-section */
+    #reasonforbookingSection {
+        background-color: #ffffff;
+        /* White background color */
+        padding: 20px;
+        /* Optional: Add padding for spacing */
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .progressbar {
+        display: flex;
+        margin-bottom: 20px;
+    }
+
+    .progress-step {
+        width: 100%;
+        height: 9px;
+        background-color: #e0e0e0;
+        /* Light gray background */
+        border-radius: 10px;
+        /* Rounded corners */
+        margin-right: 10px;
+    }
+
+    .progress-step-active {
+        background-color: #4caf50;
+        /* Green active step */
+        color: white;
+        /* White text color */
+        font-weight: bold;
+        /* Bold font for active step */
+    }
+
+    .progress {
+        width: 100%;
+        height: 10px;
+        background-color: #ddd;
+        position: relative;
+    }
+
+    .progress-step::before {
+        content: attr(data-title);
+        display: block;
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: #888;
+    }
+
+    .form {
+        margin-bottom: 20px;
+    }
+
+    .form-step {
+        display: none;
+        margin-bottom: 20px;
+    }
+
+    .form-step-active {
+        display: block;
+    }
+
+    .btn-prev,
+    .btn-next {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        background-color: #337ab7;
+        color: #fff;
+    }
+
+    .btn-prev {
+        margin-right: 10px;
+    }
+
+    /* Media Query for small screens */
+    @media (max-width: 768px) {
+        .progress-step::before {
+            display: none;
+            /* Hide step titles on small screens */
+        }
+    }
+
+    #container {
+        max-width: 1183px;
+    }
+
+    .step-container {
+        position: relative;
+        text-align: center;
+        transform: translateY(-60%);
+    }
+
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        line-height: 29px;
+        text-align: center;
+        border-radius: 50%;
+        cursor: pointer;
+        background-color: #016d6f;
+        color: white;
+        border: 2px solid #016d6f;
+    }
+
+    .step-circle.active {
+        background-color: #FFFFFF;
+        color: #016d6f;
+    }
+
+    .step-line {
+        position: absolute;
+        top: 16px;
+        left: 50px;
+        width: calc(100% - 100px);
+        height: 2px;
+        background-color: #FFFFFF;
+        /* Set the line color here */
+        z-index: -1;
+    }
+
+    #multi-step-form {
+        overflow-x: hidden;
+
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .custom-container {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #FFFFFF;
+        border: 1px solid #CCCCCC;
+        overflow: auto;
+    }
+
+    .header {
+        z-index: 1000;
+        margin-bottom: 20px;
+    }
+
+    .logo-img {
+        height: 30px;
+        position: absolute;
+        left: 10px;
+        top: 10px;
+    }
+
+    .header h6 {
+        color: white;
+        text-align: center;
+        margin: 0;
+        line-height: 2.1;
+    }
+
+    .invoice-details h3 {
+        margin: 5px 0;
+
+    }
+
+    .invoice-details p {
+        margin: 5px 0;
+        /* Adjusted margin for <p> tags */
+    }
+
+    .total-section {
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    .step-content p {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 20px;
+    }
+
+    .error {
+        border: 1px solid red;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        padding-top: 5px;
+    }
+
+    /* Style for small thumbnail images */
+    .thumbnail-img {
+        width: 44px;
+        /* Adjust the width as needed */
+        height: 35px;
+        /* Adjust the height as needed */
+        cursor: pointer;
+        /* Show cursor as pointer on hover */
+        margin-right: 10px;
+        /* Optional margin between images */
+    }
+
+    .large-image-container {
+        position: fixed;
+        top: 10%;
+        left: 34%;
+        width: 36%;
+        height: 72%;
+        background-color: slategrey;
+        z-index: 1050;
+        /* High z-index to ensure it's on top of other content */
+        padding: 25px;
+        box-sizing: border-box;
+        overflow: hidden;
+        /* Prevents scrollbars from iframe from appearing outside the container */
+    }
+
+    #largeImage {
+        max-width: 90%;
+        /* Limit maximum width of large image */
+        max-height: 90vh;
+        /* Limit maximum height of large image */
+        display: block;
+        /* Ensure it behaves as a block element */
+        margin: 0 auto;
+        /* Center horizontally */
+    }
+
+    .btn-square-md {
+        width: 72px !important;
+        max-width: 100% !important;
+        max-height: 50% !important;
+        height: 18px !important;
+        text-align: center;
+        padding: 0px;
+        font-size: 2px;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 1051;
+        /* Ensure close button is above the iframe */
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        /* Take full size of the container minus any paddings if necessary */
+        border: none;
+    }
+
+    #uploadedDocsList {
+        list-style-type: none;
+        /* Removes the bullet points */
+        padding: 0;
+        /* Removes padding */
+        margin: 0;
+        /* Removes margin */
+    }
+
+    #uploadedDocsList li {
+        margin-bottom: 10px;
+        text-wrap: balance;
+        /* Adds space between items */
+    }
+
+    #termsModal .table td,
+    #termsModal .table th {
+        padding: 0.5rem;
+        /* Reducing padding */
+        font-size: 0.8rem;
+        /* Smaller font size */
+    }
+
+    .table-wrap td {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .swal2-container {
+        z-index: 9999999999999 !important;
+        /* Adjust this value if needed */
+    }
+
+    #ui-datepicker-div {
+        width: 40%;
+    }
+
+    /* Media query for mobile screens */
+    @media (max-width: 768px) {
+        #ui-datepicker-div {
+            width: 72%;
+        }
+    }
+
+    .highlight-disabled {
+        cursor: default !important;
+        /* Default cursor for disabled dates */
+    }
+
+    .form-check-label {
+        padding-left: 0px
+    }
+
+    h5 {
+        margin-left: 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid black;
+        /* Set the border color to black */
+    }
+
+    .table-bordered td,
+    .table-bordered th {
+        border-color: black;
+        /* Ensure that all table cells and headers have a black border */
+    }
+
+    .sand-clock::before {
+        content: "\231B";
+        /* Unicode for hourglass icon */
+        display: inline-block;
+        animation: move 1.5s infinite;
+        font-size: 1.2em;
+        /* Adjust size as needed */
+    }
+
+    /* Animation keyframes */
+    @keyframes move {
+        0% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+
+        100% {
+            transform: translateY(0);
+        }
+    }
+
+    .snackbar {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        bottom: 30px;
+        font-size: 17px;
+    }
+
+    .snackbar.show {
+        visibility: visible;
+        animation: fadeInOut 0.5s, fadeOut 0.5s 2.5s;
+    }
+
+    @keyframes fadeInOut {
+        from {
+            bottom: 0;
+            opacity: 0;
+        }
+
+        to {
+            bottom: 30px;
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            bottom: 30px;
+            opacity: 1;
+        }
+
+        to {
+            bottom: 0;
+            opacity: 0;
+        }
+    }
+
+    .highlight-blue .ui-state-default {
+        background: blue !important;
+        color: #FFF !important;
+    }
+
+    .highlight-blue a {
+        background-color: blue;
+        color: white;
+
+    }
+</style>
+
+<body>
+    <!-- Pre-loader start-->
+    <div class="theme-loader">
+        <div class="ball-scale">
+            <div class='contain'>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Pre-loader end\-->
+    <div id="pcoded" class="pcoded">
+        <div class="pcoded-container">
+            <!-- Menu header end ;-->
+            <div class="pcoded-main-container">
+                <!--Menu header start-->
+                <nav th:replace="~{fragments/nav-user :: nav}"></nav>
+                <!-- Menu header end-->
+                <div class="pcoded-main-container">
+                    <nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>
+                    <div class="pcoded-wrapper">
+                        <div class="pcoded-content">
+                            <div class="pcoded-inner-content">
+                                <div class="page-header m-t-20">
+                                </div>
+                                <!--Page-header end-->
+                                <!--Page body start -->
+                                <div class="page-body">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <!--Register your self card start -->
+                                            <div>
+                                                <div id="container" class="container mt-5">
+
+                                                    <div class="step step-1">
+                                                        <!--<h5>Step:1</h5>-->
+                                                        <div class="container custom-container"
+                                                            style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: #FFFFFF; border: 1px solid #CCCCCC;overflow-x: hidden;">
+                                                            <!-- Updated inline styles -->
+                                                            <div class="row justify-content-center">
+                                                                <div class="col-sm-6 col-md-6 col-lg-6">
+                                                                    <label class="form-check-label"
+                                                                        for="selecthall">Select Hall:</label>
+
+                                                                    <select id="selecthall" class="form-control"
+                                                                        name="hallId" required
+                                                                        onchange="toggleHallDetailsContainer()">
+                                                                        <option value="">Select a hall</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <br>
+                                                            <!-- Main content row-->
+                                                            <div id="hallDetailsContainer" style="display: none;">
+                                                                <!-- Initially hidden-->
+                                                                <div class="row">
+                                                                    <input type="hidden" id="serverDate"
+                                                                        th:value=${serverDate}>
+                                                                    <!--Hall Images Carousel -->
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <h6>Hall Images & Availability:</h6>
+                                                                        <br>
+                                                                        <div id="hallImagesCarousel"
+                                                                            class="carousel slide" data-ride="carousel">
+                                                                            <div class="carousel-inner">
+                                                                                <div class="carousel-item active">
+                                                                                    <img id="hallImage"
+                                                                                        class="d-block w-100"
+                                                                                        alt="Hall Image">
+                                                                                </div>
+                                                                            </div>
+                                                                            <a class="carousel-control-prev"
+                                                                                href="#hallImagesCarousel" role="button"
+                                                                                data-slide="prev">
+                                                                                <span class="carousel-control-prev-icon"
+                                                                                    aria-hidden="true"></span>
+                                                                                <span class="sr-only">Previous</span>
+                                                                            </a>
+                                                                            <a class="carousel-control-next"
+                                                                                href="#hallImagesCarousel" role="button"
+                                                                                data-slide="next">
+                                                                                <span class="carousel-control-next-icon"
+                                                                                    aria-hidden="true"></span>
+                                                                                <span class="sr-only">Next</span>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="datepicker-container"
+                                                                            class="fixedcontainer"></div>
+                                                                        <div class="row">
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color:#008000;"></button>
+                                                                                <span style="margin-left: 21px;">Available </span>
+                                                                            </div>
+
+
+                                                                            <!-- <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: #ac2bac;"></button>
+                                                                                <span style="margin-left: 14px;">Morning
+                                                                                    <br>
+                                                                                    (Available)</span>
+                                                                            </div>
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color:#FFEA00;"></button>
+                                                                                <span
+                                                                                    style="margin-left: 14px;">Evening<br>
+                                                                                    (Available)</span>
+                                                                            </div> -->
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: red;"></button>
+                                                                                <span style="margin-left: 14px;">Not
+                                                                                    Available</span>
+                                                                            </div>
+
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: blue;"></button>
+                                                                                <span style="margin-left: 14px;">GCC
+                                                                                    Blocked</span>
+                                                                            </div>
+                                                                            <!--<div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: lightpink"></button>
+                                                                            <span style="margin-left:-2px;">Temporary Blocked</span>
+                                                                        </div>-->
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+                                                                    <!-- Hall Details -->
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="hallDetails">
+                                                                            <br>
+                                                                            <h6><b>Hall Details:</b></h6>
+                                                                            <p>Zone: <span id="zone"></span></p>
+                                                                            <p>Address: <span id="address"></span></p>
+                                                                            <p>Landmark: <span id="landmark"></span></p>
+                                                                            <p>Total Area: <span
+                                                                                    id="hallareainsqft"></span></p>
+                                                                            <p>Seating Capacity: <span
+                                                                                    id="seatingCapacity"></span></p>
+                                                                            <p>Parking Capacity: <span
+                                                                                    id="parkingCapacity"></span></p>
+                                                                            <input type="hidden" id="statichallId">
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+                                                                    <!--&lt;!&ndash; Amount Details &ndash;&gt;-->
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="amountDetails">
+                                                                            <br>
+                                                                            <h6><b>Amount Details:</b></h6>
+                                                                            <p> Security Deposit: Rs <span
+                                                                                    id="rentAmount"></span></p>
+                                                                            <p> Rent: Rs <span
+                                                                                    id="fullDayAmount"></span></p>
+                                                                            <!-- <p>Half Day Security Deposit: Rs <span
+                                                                                id="halfrentAmount"></span></p>
+                                                                        <p>Half Day Rent: Rs <span
+                                                                                id="halfDayAmount"></span></p> -->
+                                                                            <p>GST: <span id="gst"></span>%</p>
+                                                                            <!-- <p>EB for 1 Unit:* Rs <span
+                                                                                id="ebunit"></span></p> -->
+                                                                            <p>CareTaker Number: <span
+                                                                                    id="caretakerNumber"></span></p>
+                                                                            <input type="hidden" id="depositAmount"
+                                                                                name="depositamount" value="100">
+                                                                            <input type="hidden" id="hallamount"
+                                                                                name="hallamount" value="100">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div
+                                                                    class="row d-flex justify-content-center align-items-center">
+
+                                                                    <button type="button"
+                                                                        class="btn btn-primary details-btn"
+                                                                        id="hallrent" onclick="calculatehallrent()">
+                                                                        Calculate Hall Rent
+                                                                    </button>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <!--&lt;!&ndash; Page body end &ndash;&gt;-->
+                                    </div>
+                                </div>
+                                <!--&lt;!&ndash; Main-body end &ndash;&gt;-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Modal HTML for Bootstrap 5-->
+                <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-content" style="height: 100vh;">
+                                <iframe src="media/images/CC Rules & Regulations for Online _Tamil.pdf" width="100%"
+                                    height="600px"></iframe>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/loginreg :: div}"></div>
+
+
+    <script th:replace="~{fragments/script :: script}"></script>
+    <script th:replace="~{fragments/logRegiOtpScript :: script}"></script>
+    <script th:replace="~{fragments/PaymentScript :: script}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@latest/dist/compressor.min.js"></script>
+
+
+    <script>
+        var hallIdDuplicate;
+        const urlParams = new URLSearchParams(window.location.search);
+        const hallId = urlParams.get('hallId');
+        $(document).ready(function () {
+            if (hallId != null) {
+                getHallDetails(hallId);
+                hallIdDuplicate = hallId;
+                $("#selecthall").val(hallId);
+            }
+        });
+
+
+        var index = 0;
+        var hall;
+
+        // Initialize select2 with closeOnSelect option
+        $("#selecthall").select2({
+            closeOnSelect: true  // Ensures dropdown closes on selecting an option
+        });
+
+        // Force close dropdown on change (fallback for any conflict)
+        $('#selecthall').on('change', function () {
+            $(this).select2('close');
+        });
+
+        $.ajax({
+            type: 'GET',
+            url: '/victoriahallbooking_uat/user/api/gethallnames',
+            success: function (response) {
+                // Populate the dropdown options with the received hall names
+                var selectHallDropdown = $('#selecthall');
+                $.each(response, function (index, hall) {
+                    if (hallId == hall.hallId) {
+                        selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+                        selectHallDropdown.find('option[value="' + hall.hallId + '"]').prop('selected', true);
+                    } else {
+                        selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+                    }
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error fetching hall names:', error);
+            }
+        });
+
+        $(document).ready(function () {
+            $('#selecthall').change(function () {
+                var selectedHallId = $(this).val();
+                // Call the getHallDetails function with the selected hall ID
+                // urlParams.set('hallId', selectedHallId);
+                hallIdDuplicate = selectedHallId;
+                getHallDetails(selectedHallId);
+            });
+        });
+
+        // Function to retrieve hall details based on hallId
+        function getHallDetails(hallId) {
+            $.ajax({
+                type: 'GET',
+                url: '/victoriahallbooking_uat/user/api/gethalldetails/' + hallId,
+                success: function (response) {
+                    // console.log(response);
+                    // Display the container
+                    $('#hallDetailsContainer').show();
+
+                    // Set hall details
+                    $('#zone').html('<strong>' + response.zone + '</strong>&nbsp;&nbsp;&nbsp;&nbsp; Division: <strong>' + response.division + '</strong>');
+                    $('#address').html('<strong>' + response.doorNo + ', ' + response.street + ', ' + response.area + ', ' + response.city + ', ' + response.pinCode + '</strong>');
+                    $('#landmark').html('<strong>' + response.landMark + '</strong>');
+                    $('#seatingCapacity').html('<strong>' + response.seatingCapacity + '</strong>');
+                    var parkingCapacity = response.parkingCapacity;
+                    var parkingAvailability = parkingCapacity > 0 ? "Yes" : "No";
+                    $('#parkingCapacity').html('<strong>' + parkingAvailability + '</strong>');
+                    $('#caretakerNumber').html('<strong>' + response.hallInchargeMobno + '</strong>');
+                    $('#rentAmount').html('<strong>' + response.depositAmount + '</strong>');
+                    $('#gst').html('<strong>' + response.gst + '</strong>');
+                    $('#fullDayAmount').html('<strong>' + response.fullDayRent + '</strong>');
+                    // $('#halfrentAmount').html('<strong>' + response.halfDepositAmount + '</strong>');
+                    // $('#halfDayAmount').html('<strong>' + response.halfDayRent + '</strong>');
+                    // $('#ebunit').html('<strong>' + response.ebCostPerUnit + '</strong>');
+                    $('#statichallId').val(response.hallId);
+
+                    // Set hall images
+                    var carouselInner = $('#hallImagesCarousel .carousel-inner');
+                    carouselInner.empty(); // Clear existing images
+
+                    $.each(response.hallImagesList, function (index, image) {
+                        var itemClass = (index === 0) ? 'carousel-item active' : 'carousel-item';
+                        var img = $('<img>').addClass('d-block w-100').attr('src', image.hallImage).attr('alt', 'Hall Image');
+                        var carouselItem = $('<div>').addClass(itemClass).append(img);
+                        carouselInner.append(carouselItem);
+                    });
+
+                    // Clear existing floor details to prevent duplicates
+                    $('#hallareainsqft').empty();
+
+                    // Use a Set to store unique floor details
+                    var uniqueFloorDetails = new Set();
+
+                    $.each(response.floorDetailsList, function (index, hallarea) {
+
+                        // Construct the text for each floor's details
+                        var floorDetailText = hallarea.floor + " - " + hallarea.hallarea + " Sq.ft  ,";
+
+                        // Add to the Set if it's not a duplicate
+                        if (!uniqueFloorDetails.has(floorDetailText)) {
+                            uniqueFloorDetails.add(floorDetailText);
+                            // Append the floor details to the target element
+                            $('#hallareainsqft').append('<strong>' + floorDetailText + '</strong>');
+                        }
+                    });
+
+                    // Initialize ViewerJS on the carousel after images are loaded
+                    initializeViewerJS();
+
+                    getBookingCalendar(hallId);
+                    //connectToWebSocket(hallId);
+
+                    // Set hall details in Step 2 and Step 3
+                    $('#hallNameDisplayStep2').text(response.hallName);
+                    $('#hallNameDisplayStep3').text(response.hallName);
+                    $('#zoneStep2').text(response.zone);
+                    $('#zoneStep3').text(response.zone);
+                    $('#divisionStep2').text(response.division);
+                    $('#divisionStep3').text(response.division);
+                },
+
+                error: function (xhr, status, error) {
+                    console.error('Error fetching hall details:', error);
+                }
+            });
+        }
+
+
+        function initializeViewerJS() {
+            // Ensure ViewerJS initialization after images are added to the DOM
+            var carouselInner = document.querySelector('#hallImagesCarousel .carousel-inner');
+            var floordetails = document.querySelector('#hallareainsqft');
+
+            // Destroy existing viewer instance if it exists
+            if (carouselInner.viewer) {
+                carouselInner.viewer.destroy();
+            }
+            if (floordetails.viewer) {
+                floordetails.viewer.destroy();
+            }
+            // Initialize ViewerJS
+            var viewer = new Viewer(carouselInner, {
+                inline: false,
+                viewed: function () {
+                    viewer.zoomTo(0.5); // Adjust the zoom level here
+                },
+                toolbar: {
+                    zoomIn: 4,
+                    zoomOut: 4,
+                    oneToOne: 4,
+                    reset: 4,
+                    prev: 4,
+                    play: {
+                        show: 4,
+                        size: 'large',
+                    },
+
+                    next: 4,
+                    rotateLeft: 4,
+                    rotateRight: 4,
+                    flipHorizontal: 4,
+                    flipVertical: 4,
+                },
+            });
+            carouselInner.viewer = viewer;
+        }
+
+
+        function getBookingCalendar(hall_id) {
+            // Make an AJAX call to fetch booking data
+            $.ajax({
+                type: 'GET',
+                url: '/victoriahallbooking_uat/user/api/getPastData',
+                data: {
+                    hall_id: hall_id
+                },
+                success: function (response) {
+                    // console.log(response);
+                    window.bookingResponse = {};
+                    if (response && Array.isArray(response)) {
+                        $("#startDateInput").datepicker("destroy");
+                        for (var i = 0; i < response.length; i++) {
+                            var dateString = datepickerFormat(response[i].bdate);
+                            window.bookingResponse[dateString] = [response[i].morningSlot, response[i].eveningSlot, response[i].is_blocked];
+                        }
+
+                        initializeDatepickerWithColors(hall_id);
+                        if (response.length == 0) {
+                            initializeDatepickerWithColors(hall_id);
+                        }
+                    } else {
+                        console.error('Invalid or empty response data.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching hall details:', error);
+                }
+            });
+        }
+
+
+        // Function to update the end date and slot availability
+
+        function initializeDatepickerWithColors(hallId) {
+            // Destroy existing datepicker to avoid duplicate initialization
+            $("#datepicker-container").datepicker("destroy");
+
+            const serverDate = new Date($("#serverDate").val() + "T00:00:00");
+            // console.log("serverDate:", serverDate);
+
+            const minDate = new Date(serverDate);
+            minDate.setDate(minDate.getDate() + 30);
+
+            const maxDate = new Date(serverDate);
+            maxDate.setMonth(maxDate.getMonth() + 6);
+            // console.log("Max Date: "+maxDate);
+
+            // Initialize the datepicker
+            $("#startDateInput,#datepicker-container").datepicker({
+                dateFormat: "yy-mm-dd",
+                minDate: minDate,
+                maxDate: maxDate,
+                beforeShowDay: function (eDate) {
+
+                    const day = eDate.getDay(); // 0=Sun, 5=Fri, 6=Sat
+
+                    // Allow only Friday, Saturday, Sunday
+                    if (![0, 5, 6].includes(day)) {
+                        return [false, "highlight-disabled", "Bookings allowed only on Fri, Sat & Sun"];
+                    }
+                    const dateString = $.datepicker.formatDate("yy-mm-dd", eDate);
+                    const bookingStatus = window.bookingResponse[dateString] || {};
+
+                    // const currentDate = new Date();
+                    serverDate.setHours(0, 0, 0, 0); // Normalize current date to midnight
+                    eDate.setHours(0, 0, 0, 0); // Normalize selected date to midnight
+
+                    // Logic for other dates
+                    if (eDate < serverDate) {
+                        return [false, "highlight-disabled", "Slot not Available"];
+                    }
+
+                    const isToday = eDate.getTime() === serverDate.getTime();
+                    const currentHour = new Date().getHours();
+                    const isBefore6AM = currentHour < 6;
+                    const isAfter2PM = currentHour >= 14;
+
+                    // Block 3-day logic for specific event types
+                    // const today = new Date();
+                    const blockedDate = new Date(serverDate);
+                    blockedDate.setDate(serverDate.getDate() + 2);
+
+                    if (eDate <= blockedDate && window.isThreeDayBlock) {
+                        return [false, "highlight-disabled", "Blocked due to event type"];
+                    }
+
+                    // Logic for today
+                    if (isToday) {
+                        if (isBefore6AM) {
+                            // Before 6 AM: Allow full-day booking or adjust based on booking status
+                            return handleBookingStatus(bookingStatus, "Full Day Available");
+                        } else if (isAfter2PM) {
+                            // After 2 PM: Block all bookings
+                            return handleAfter2PM(bookingStatus);
+                        } else {
+                            // Between 6 AM and 2 PM: Check status and disable morning slots
+                            return handleMorningSlots(bookingStatus);
+                        }
+                    }
+
+                    return handleBookingStatus(bookingStatus, "Slot Available");
+                },
+            });
+
+            // Show datepicker when hall is selected
+            $('#selecthall').off('click').on('click', function () {
+                $('#datepicker-container').datepicker('show');
+            });
+
+            // Handle changes in the start date input
+            $("#startDateInput").on("change", function () {
+                const selectedDate = $(this).val();
+                const bookingStatus = window.bookingResponse[selectedDate] || {};
+                const currentDate = new Date();
+                const currentHours = currentDate.getHours();
+                const currentDateString = currentDate.toISOString().split("T")[0];
+
+                $("#startPeriodDropdown").val(0).prop("disabled", false);
+                $("#endPeriodDropdown").val(0).prop("disabled", false);
+                $("#numDaysCount").val('');
+                validateForm();
+
+                if (selectedDate === currentDateString && currentHours >= 6) {
+                    $("#startPeriodDropdown").val(2).prop("disabled", true);
+                } else if (bookingStatus[0]) {
+                    $("#startPeriodDropdown").val(2).prop("disabled", true);
+                } else if (bookingStatus[1]) {
+                    $("#startPeriodDropdown").val(1).prop("disabled", true);
+                }
+                updateEndDate(selectedDate);
+            });
+
+            // Event type change logic
+            $("#reasonforbooking").on("change", function () {
+                const selectedEventType = $(this).find("option:selected").text().trim();
+                window.isThreeDayBlock = ["Commercial", "State Govt Event", "Central Govt Event"].includes(selectedEventType);
+                $("#datepicker-container").datepicker("refresh");
+            });
+        }
+
+        function handleBookingStatus(bookingStatus, defaultMessage) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } /*else if (bookingStatus[3]) {
+            return [true, "highlight-lightpink disabled", "Temporary Blocked"];
+        } */else if (bookingStatus[0] && bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (bookingStatus[0] && !bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (!bookingStatus[0] && bookingStatus[1]) {
+                return [true, "highlight-violet", "Only Morning Slot Available"];
+            }
+            return [true, "highlight-greens", defaultMessage];
+        }
+
+        // Helper function: Handles logic after 2 PM
+        function handleAfter2PM(bookingStatus) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } else if (bookingStatus[0] || bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            }
+            return [false, "highlight-disabled", "Not Allowed to Book"];
+        }
+
+        // Helper function: Handles morning slots between 6 AM and 2 PM
+        function handleMorningSlots(bookingStatus) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } else if (bookingStatus[0] && bookingStatus[1]) {
+                return [false, "highlight-pink disabled", "Slot Occupied"];
+            } else if (bookingStatus[0] && !bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (!bookingStatus[0] && bookingStatus[1]) {
+                return [false, "highlight-disabled", "Slot Occupied"];
+            }
+            return [true, "highlight-pink disabled", "Slot Occupied"];
+        }
+
+        function datepickerFormat(dateString) {
+            var dateObject = new Date(dateString);
+            var year = dateObject.getFullYear();
+            var month = (dateObject.getMonth() + 1).toString().padStart(2, "0");
+            var day = dateObject.getDate().toString().padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        function calculatehallrent() {
+            window.location.href = "/victoriahallbooking_uat/hallAmountCalculation?hallId=" + hallIdDuplicate;
+        }
+
+    </script>
+
+</body>
+
+</html>

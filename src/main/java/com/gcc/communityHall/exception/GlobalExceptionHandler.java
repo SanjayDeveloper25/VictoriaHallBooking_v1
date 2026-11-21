@@ -1,0 +1,78 @@
+package com.gcc.communityHall.exception;
+
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.gcc.communityHall.dto.ErrorResponseDto;
+
+import jakarta.validation.ConstraintViolationException;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@ControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        Map<String, String> validationErrors = new HashMap<>();
+        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
+
+        fieldErrors.forEach((error) -> {
+            String fieldName = error.getField();
+            String validationMsg = error.getDefaultMessage();
+            validationErrors.put(fieldName, validationMsg);
+        });
+        return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception exception, WebRequest webRequest) {
+        ErrorResponseDto errorResponseDTO = new ErrorResponseDto();
+        errorResponseDTO.setApiPath(webRequest.getDescription(false));
+        errorResponseDTO.setErrorTime(LocalDateTime.now());
+        errorResponseDTO.setErrorMessage(exception.getMessage());
+        errorResponseDTO.setErrorCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest webRequest) {
+        ErrorResponseDto errorResponseDTO = new ErrorResponseDto();
+        errorResponseDTO.setApiPath(webRequest.getDescription(false));
+        errorResponseDTO.setErrorTime(LocalDateTime.now());
+        errorResponseDTO.setErrorMessage(exception.getMessage());
+        errorResponseDTO.setErrorCode(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.NOT_FOUND);
+    }
+
+@ExceptionHandler(SlotOccupiedException.class)
+public ResponseEntity<ErrorResponseDto> handleSlotOccupiedException(SlotOccupiedException exception, WebRequest webRequest) {
+       ErrorResponseDto errorResponseDTO = new ErrorResponseDto();
+       errorResponseDTO.setErrorMessage(exception.getMessage());
+       errorResponseDTO.setErrorCode(HttpStatus.CONFLICT);
+       errorResponseDTO.setApiPath(webRequest.getDescription(false));
+       errorResponseDTO.setErrorTime(LocalDateTime.now());
+       return new ResponseEntity<>(errorResponseDTO, HttpStatus.CONFLICT);
+   }
+}

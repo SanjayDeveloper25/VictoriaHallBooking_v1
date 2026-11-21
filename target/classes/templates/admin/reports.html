@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}"></head>
+<meta charset="ISO-8859-1">
+<!-- Include DataTables CSS -->
+</head>
+<style>
+    .block-content {
+        padding-bottom: 10px;
+    }
+
+    .small-input {
+        width: 150px;
+        /* Adjust the width as needed */
+    }
+
+    .small-table th,
+    .small-table td {
+        font-size: 14px;
+        /* Adjust font size as needed */
+    }
+
+    /* Reduce padding for table cells */
+    .small-table td,
+    .small-table th {
+        padding: 5px;
+        /* Adjust padding as needed */
+    }
+
+    .card-body table {
+        width: 100%;
+        padding: 100px;
+    }
+
+    .card-body th,
+    td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .amount-cell {
+        text-align: right;
+        padding-right: 1rem;
+        /* Adjust padding as needed */
+    }
+
+    .table {
+        width: 100% !important;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .modal-fullscreen-custom {
+        max-width: 98% !important;
+        width: 98%;
+        margin: 0 auto;
+    }
+
+    /* Ensure second modal is on top of the first modal */
+    .modal-backdrop.show:nth-of-type(2) {
+        z-index: 1055 !important; /* slightly above the first modal */
+    }
+
+    #showBookingDetails.modal {
+        z-index: 1060 !important; /* higher than .modal-backdrop */
+    }
+</style>
+
+<body>
+<!-- Page Container -->
+<div id="page-container"
+     class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+    <!-- Side Overlay aside (right)-->
+    <aside th:replace="~{fragments/aside-right :: aside}"></aside>
+    <!-- END Side Overlay (right)-->
+    <!-- Sidebar Nav-->
+    <nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+    <!-- END Sidebar -->
+    <!-- Header -->
+    <header th:replace="~{fragments/header-admin :: header}"></header>
+    <!-- END Header -->
+    <!-- Main Container -->
+    <main id="main-container">
+
+        <!-- Page Content -->
+        <!-- Card Container -->
+        <div class="content">
+            <div class="block block-rounded">
+                <form id="myForm" th:action="@{/victoriahallbooking_uat/admin/getReport}" onsubmit="return validateme()"
+                      method="post">
+                    <div class="block-header bg-primary text-white">
+                        <h3 class="block-title">Community Hall Reports</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="row">
+                            <div class="col-sm-3 mb-2">
+                                <label class="form-label" for="fromdate">From:<span
+                                        class="text-danger">*</span></label> <input type="date"
+                                                                                    th:value="${fromdate}"
+                                                                                    class="form-control" name="FromDate"
+                                                                                    id="fromdate"
+                                                                                    placeholder="From Date"
+                                                                                    required="required"
+                                                                                    data-date-format="yyyy-mm-dd"/>
+                            </div>
+                            <div class="col-sm-3 mb-2">
+                                <label class="form-label" for="todate">To:<span class="text-danger">*</span></label>
+                                <input type="date" th:value="${todate}" class="form-control" name="ToDate"
+                                       id="todate" placeholder="To Date" required="required"
+                                       data-date-format="yyyy-mm-dd"/>
+                            </div>
+                            <div class="col-sm-3 mb-2">
+                                <label class="form-label" for="request">Get Info:<span
+                                        class="text-danger">*</span></label>
+                                <select type="text" class="form-control text-center" id="request" name="request"
+                                        onchange="myRequest()" required>
+                                    <option value="">Select</option>
+                                    <option value="1" th:selected="${request=='1'}">Users</option>
+                                    <option value="2" th:selected="${request=='2'}">Booking Details</option>
+                                    <option value="3" th:selected="${request=='3'}">Payment Info</option>
+                                    <option value="8" th:selected="${request=='8'}">Extra Payments Info</option>
+                                    <option value="4" th:selected="${request=='4'}">Users Booking List</option>
+                                    <option value="5" th:selected="${request=='5'}">Hall Booking List</option>
+                                    <option value="6" th:selected="${request=='6'}">Refund Details</option>
+                                    <option value="7" th:selected="${request=='7'}">Total Count</option>
+                                    <option value="9" th:selected="${request=='9'}">Counter Details</option>
+                                    <option value="10" th:selected="${request=='10'}">Review Report</option>
+                                     <option value="11" th:selected="${request=='11'}">Settlement Initited  Report</option>
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 mb-2" id="bookingcountbasedonDropdown" style="display: none;">
+                                <label class="form-label" for="basedon">Based On: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-control text-center" id="basedon" name="basedon"
+                                        th:value="${basedon}">
+                                    <option value="">Select</option>
+                                    <option value="zone" th:selected="${basedon == 'zone'}">Zone
+                                    </option>
+                                    <option value="division" th:selected="${basedon == 'division'}">Division
+                                    </option>
+                                </select>
+                                <span id="basedonError" class="text-danger"></span>
+                            </div>
+
+                            <!-- UsersDropdown2 -->
+                            <div class="col-sm-3 mb-2" id="userDropdown2" style="display: none;">
+                                <label class="form-label" for="usertype">User Type: </label>
+                                <select class="form-control text-center" id="usertype" name="usertype"
+                                        th:value="${usertype}">
+                                    <option value="">Select User Type</option>
+                                    <option value="PENSIONER" th:selected="${usertype == 'PENSIONER'}">PENSIONER
+                                    </option>
+                                    <option value="GCC_EMPLOYEE" th:selected="${usertype == 'GCC_EMPLOYEE'}">GCC
+                                        EMPLOYEE
+                                    </option>
+                                    <option value="COUNCILLOR" th:selected="${usertype == 'COUNCILLOR'}">COUNCILLOR
+                                    </option>
+                                    <option value="PUBLIC" th:selected="${usertype == 'PUBLIC'}">PUBLIC</option>
+                                    <!-- Add more options as needed -->
+                                </select>
+                            </div>
+                            <!-- UsersDropdown1 -->
+                            <div class="col-sm-3 mb-2" id="userDropdown1" style="display: none;">
+                                <label class="form-label" for="userstatus">User Status: </label>
+                                <select class="form-control text-center" id="userstatus" name="userstatus"
+                                        th:value="${userstatus}">
+                                    <option value="">Select a User Status</option>
+                                    <option value="PENDING" th:selected="${userstatus == 'PENDING'}">PENDING
+                                    </option>
+                                    <option value="APPROVED" th:selected="${userstatus == 'APPROVED'}">APPROVED
+                                    </option>
+                                    <option value="REJECTED" th:selected="${userstatus == 'REJECTED'}">REJECTED
+                                    </option>
+                                    <!-- Add more options as needed -->
+                                </select>
+                            </div>
+
+
+                            <!-- bookingDetailsDropdown1 -->
+                            <div class="col-sm-3 mb-2" id="bookingDetailsDropdown1" style="display: none;">
+                                <label class="form-label" for="bookingId">Booking Id: </label>
+                                <input type="number" class="form-control" id="bookingId" name="bookingId"
+                                       th:value="${bookingId}" placeholder="BookingId">
+                            </div>
+
+                            <div class="col-sm-3 mb-2" id="zoneDropdown" style="display: none;">
+                                <label class="form-label" for="zone1">Select Zone: </label>
+                                <select class="form-select custom-select" name="zone1" id="zone1">
+                                    <option value="ALL">--Select Zone--</option>
+                                    <option th:each="zone : ${zones}" th:value="${zone}" th:text="${zone}"
+                                            th:selected="${zone == selectedZone}"></option>
+
+
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 mb-2 hidden" id="divisionContainer" style="display: none;">
+                                <label class="form-label" for="division1">Select division: </label>
+                                <select class="form-select custom-select" name="division1" id="division1">
+                                    <option value="ALL">--Select division--</option>
+                                    <option th:each="division : ${divisions}" th:value="${division}"
+                                            th:text="${division}" th:selected="${division == selectedDivision}">
+                                    </option>
+
+
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 mb-2 hidden" id="hallContainer" style="display: none;">
+                                <label class="form-label" for="hall1">Select Hall: </label>
+                                <select class="form-select custom-select" name="hall1" id="hall1">
+                                    <option value="1000">--Select Hall--</option>
+                                    <option th:each="hall : ${halls}" th:value="${hall.id}" th:text="${hall.name}"
+                                            th:selected="${hall.id == selectedHall}"></option>
+
+
+                                </select>
+                            </div>
+
+
+                            <!-- bookingDetailsDropdown 3-->
+                            <div class="col-sm-3 mb-2" id="bookingDetailsDropdown3" style="display: none;">
+                                <label class="form-label" for="filterby">Filter by:</label>
+                                <select class="form-control text-center" id="filterby" name="filterby"
+                                        th:value="${filterby}">
+                                    <option value="">Select Filterby</option>
+                                    <option value="1" th:selected="${filterby == '1'}">Booking Date</option>
+                                    <option value="2" th:selected="${filterby == '2'}">Event Date</option>
+                                    <!-- Add more options as needed -->
+                                </select>
+                            </div>
+
+                            <!-- bookingDetailsDropdown2 -->
+                            <div class="col-sm-3 mb-2" id="bookingDetailsDropdown2" style="display: none;">
+                                <label class="form-label" for="bookingStatus">Booking Status: </label>
+                                <select class="form-control text-center" id="bookingStatus" name="bookingStatus"
+                                        th:value="${bookingStatus}">
+                                    <option value="">Select Booking Status</option>
+                                    <option value="PENDING" th:selected="${bookingStatus == 'PENDING'}">PENDING
+                                    </option>
+                                    <option value="APPROVED" th:selected="${bookingStatus == 'APPROVED'}">APPROVED
+                                    </option>
+                                    <option value="REJECTED" th:selected="${bookingStatus == 'REJECTED'}">REJECTED
+                                    </option>
+                                    <option value="CANCELED" th:selected="${bookingStatus == 'CANCELED'}">CANCELLED
+                                    </option>
+                                    <option value="COMPLETED" th:selected="${bookingStatus == 'COMPLETED'}">COMPLETED
+                                    </option>
+                                    <option value="PAYMENT_FAILURE"
+                                            th:selected="${bookingStatus == 'PAYMENT_FAILURE'}">PAYMENT_FAILURE
+                                    </option>
+                                    <option value="GCC_BLOCKED" th:selected="${bookingStatus == 'GCC_BLOCKED'}">
+                                        GCC_BLOCKED
+                                    </option>
+                                    <option value="REFUNDED" th:selected="${bookingStatus == 'REFUNDED'}">REFUNDED
+                                    </option>
+                                    <option value="WAITING_FOR_NOC" th:selected="${bookingStatus == 'WAITING_FOR_NOC'}">
+                                        WAITING FOR NOC
+                                    </option>
+                                    <option value="WAITING_FOR_NOC_APPROVAL"
+                                            th:selected="${bookingStatus == 'WAITING_FOR_NOC_APPROVAL'}">WAITING FOR NOC
+                                        APPROVAL
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!--Payment Dropdown -->
+                            <div class="col-sm-3" id="paymentInfoDropdown1" style="display: none;">
+                                <label class="form-label" for="paymentStatus">Payment Status:</label>
+                                <select class="form-control text-center" id="paymentStatus" name="paymentStatus"
+                                        th:value="${paymentStatus}">
+                                    <option value="">Select Payment Status</option>
+                                    <option value="SUCCESS" th:selected="${paymentStatus == 'SUCCESS'}">SUCCESS</option>
+                                    <option value="NOT COMPLETED" th:selected="${paymentStatus == 'NOT COMPLETED'}">NOT
+                                        COMPLETED
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 mb-2" id="refundDetailsDropdown" style="display: none;">
+                                <label class="form-label" for="refundStatus">Refund Status: </label>
+                                <select class="form-control text-center" id="refundStatus" name="refundStatus"
+                                        th:value="${refundStatus}">
+                                    <option value="">Select Refund Status</option>
+                                    <option value="WAITING" th:selected="${refundStatus == 'WAITING'}">WAITING
+                                    </option>
+                                    <option value="APPROVED" th:selected="${refundStatus == 'APPROVED'}">APPROVED
+                                    </option>
+                                    <option value="INITIATED" th:selected="${refundStatus == 'INITIATED'}">INITIATED
+                                    </option>
+                                    <option value="REJECTED" th:selected="${refundStatus == 'REJECTED'}">REJECTED
+                                    </option>
+                                    <option value="COMPLETED" th:selected="${refundStatus == 'COMPLETED'}">COMPLETED
+                                    </option>
+                                    <option value="NA" th:selected="${refundStatus == 'NA'}">NA
+                                    </option>
+                                    <option value="CLOSED" th:selected="${refundStatus == 'CLOSED'}">CLOSED
+                                    </option>
+                                    <option value="FAILURE" th:selected="${refundStatus == 'FAILURE'}">FAILURE
+                                    </option>
+                                    <!-- Add more options as needed -->
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 mb-2" id="counterreportDropdown" style="display: none;">
+                                <label class="form-label" for="reporttype">Report Type: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-control text-center" id="reporttype" name="reporttype"
+                                        th:value="${reporttype}">
+                                    <option value="">Select</option>
+                                    <option value="abstract" th:selected="${reporttype == 'abstract'}">Abstract
+                                    </option>
+                                    <option value="detailed" th:selected="${reporttype == 'detailed'}">Detailed Report
+                                    </option>
+                                </select>
+                                <span id="reportTypeError" class="text-danger"></span>
+                            </div>
+
+
+                            <div class="col-sm-3">
+                                <br>
+                                <button type="submit" class="btn btn-sm btn-primary mt-2" name="submit"
+                                        id="submit">Submit
+                                </button>
+                                <button class="btn btn-danger mt-2" onclick="resetDate()" name="reset"
+                                        type="reset">Reset
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="table-responsive" id="usertable" th:if="${request}==1">
+                <table id="requestTable1" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th width="130px">User Id</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Address</th>
+                        <th>UserType</th>
+                        <th>UserStatus</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="user, iterStat : ${users}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${user.userId}"></td>
+                        <td th:text="${user.name}"></td>
+                        <td th:text="${user.mobileNo}"></td>
+                        <td
+                                th:text="${user.DoorNo + ', ' + user.Street  + ', ' + user.Area + ', ' + user.Location + ', ' + user.PinCode}">
+                        </td>
+                        <td th:text="${user.usertype}"></td>
+                        <td th:text="${user.userstatus}"></td>
+                    </tr>
+
+                </table>
+            </div>
+
+
+            <div class="table-responsive" id="Bookingtable" th:if="${request}==2">
+                <table id="requestTable2" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Booking Id</th>
+                        <th>Booking Date</th>
+                        <th>Hall Name</th>
+                        <th>User Name</th>
+                        <th>Mobile</th>
+                        <th>Address</th>
+                        <th>User type</th>
+                        <th>Reason</th>
+                        <th>Startdate_Enddate</th>
+                        <th>Deposit Amount</th>
+                        <th>Hall Amount</th>
+                        <th>GST</th>
+                        <th>Amount Paid</th>
+                        <th>Booking Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="booking, iterStat : ${bookings}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${booking[0]}"></td>
+                        <td th:text="${booking[1]}"></td>
+                        <td th:text="${booking[2]}"></td>
+                        <td th:text="${booking[3]}"></td>
+                        <td th:text="${booking[4]}"></td>
+                        <td th:text="${booking[5]}"></td>
+                        <td th:text="${booking[6]}"></td>
+                        <td th:text="${booking[7]}"></td>
+                        <td th:text="${booking[8] + ' to ' + booking[9]}"></td>
+                        <td th:text="${booking[10]}"></td>
+                        <td th:text="${booking[11]}"></td>
+                        <td th:text="${booking[12]}"></td>
+                        <td th:text="${(T(java.lang.Math).round(booking[13] * 100.0) / 100.0)}"></td>
+                        <!--<td th:text="${booking[10]}"></td>-->
+                        <td th:text="${booking[14]}"></td>
+                        <td>
+                            <p>
+										<span class="badge bg-warning" style="cursor: pointer;"
+                                              th:onclick="viewDetails([[${booking[0]}]])">View</span>
+                            </p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="table-responsive" id="Paymenttable" th:if="${request}==3">
+                <table id="requestTable3" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Booking Id</th>
+                        <th>Booking Date</th>
+                        <th>Hall Name</th>
+                        <th>User Name</th>
+                        <th>User type</th>
+                        <th>Transaction ID</th>
+                        <th>Payment Type</th>
+                        <th>Deposit Amount</th>
+                        <th>Hall Amount</th>
+                        <th>GST</th>
+                        <th>Amount received</th>
+                        <th>Reason</th>
+                        <th width="1000px">Start date & end Date</th>
+                        <th>status</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="payment, iterStat : ${paymentLists}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${payment[0]}"></td>
+                        <td th:text="${payment[1]}"></td>
+                        <td th:text="${payment[2]}"></td>
+                        <td th:text="${payment[3]}"></td>
+                        <td th:text="${payment[4]}"></td>
+                        <td th:text="${payment[5]}"></td>
+                        <td th:text="${payment[6]}"></td>
+                        <td th:text="${payment[7]}"></td>
+                        <td th:text="${payment[8]}"></td>
+                        <td th:text="${payment[9]}"></td>
+                        <td th:text="${payment[10]}"></td>
+                        <td th:text="${payment[11]}"></td>
+                        <td th:text="${payment[12] + ' to ' + payment[13]}" width="1000px"></td>
+                        <td th:text="${payment[14]}"></td>
+                    </tr>
+
+                </table>
+            </div>
+
+            <div class="table-responsive" id="extraPaymenttable" th:if="${request}==8">
+                <table id="requestTable8" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Booking Id</th>
+                        <th>Booking Date</th>
+                        <th>Hall Name</th>
+                        <th>User Name</th>
+                        <th>User type</th>
+                        <th>Transaction ID</th>
+                        <th>Payment Type</th>
+                        <th>Deposit Amount</th>
+                        <th>Hall Amount</th>
+                        <th>GST</th>
+                        <th>Amount received</th>
+                        <th>Reason</th>
+                        <th width="1000px">Start date & end Date</th>
+                        <th>status</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="payment, iterStat : ${extrapaymentLists}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${payment[0]}"></td>
+                        <td th:text="${payment[1]}"></td>
+                        <td th:text="${payment[2]}"></td>
+                        <td th:text="${payment[3]}"></td>
+                        <td th:text="${payment[4]}"></td>
+                        <td th:text="${payment[5]}"></td>
+                        <td th:text="${payment[6]}"></td>
+                        <td th:text="${payment[7]}"></td>
+                        <td th:text="${payment[8]}"></td>
+                        <td th:text="${payment[9]}"></td>
+                        <td th:text="${payment[10]}"></td>
+                        <td th:text="${payment[11]}"></td>
+                        <td th:text="${payment[12] + ' to ' + payment[13]}" width="1000px"></td>
+                        <td th:text="${payment[14]}"></td>
+                    </tr>
+
+                </table>
+            </div>
+
+            <div class="table-responsive" id="userBookingtable" th:if="${request}==4">
+                <table id="requestTable4" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th width="110px">User Id</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Address</th>
+                        <th>Total Bookings</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="userbookingList, iterStat : ${userbookingLists}">
+
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${userbookingList[0]}"></td>
+                        <td th:text="${userbookingList[1]}"></td>
+                        <td th:text="${userbookingList[2]}"></td>
+                        <td th:text="${userbookingList[3]}"></td>
+                        <td th:text="${userbookingList[4]}"
+                            th:onclick="viewbookingDetails([[${userbookingList[0]}]])" style="cursor:pointer;"></td>
+                    </tr>
+
+                </table>
+            </div>
+
+            <div class="table-responsive" id="hallBookingtable" th:if="${request}==5">
+                <table id="requestTable5" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Hall Id</th>
+                        <th>Hall Name</th>
+                        <th>Zone/Division</th>
+                        <th>Caretaker Name</th>
+                        <th>Caretaker Mobile</th>
+                        <th>Total Bookings</th>
+                        <th>Deposit Amount</th>
+                        <th>Hall Amount</th>
+                        <th>GST</th>
+                        <th>Amount Received</th>
+                        <th>Amount Refund</th>
+                        <th>Net Revenue</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="hallbookingList, iterStat : ${hallbookingLists}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${hallbookingList[11]}"></td>
+                        <td th:text="${hallbookingList[0]}"></td>
+                        <td th:text="${hallbookingList[3]}"></td> <!-- Combined Zone/Division -->
+                        <td th:text="${hallbookingList[1]}"></td>
+                        <td th:text="${hallbookingList[2]}"></td>
+                        <td th:text="${hallbookingList[4]}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[5] * 100.0) / 100.0)}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[6] * 100.0) / 100.0)}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[7] * 100.0) / 100.0)}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[8] * 100.0) / 100.0)}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[9] * 100.0) / 100.0)}"></td>
+                        <td th:text="${(T(java.lang.Math).round(hallbookingList[10] * 100.0) / 100.0)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-responsive" id="BookingSettlementtable" th:if="${request}==6">
+                <table id="requestTable6" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Booking Id</th>
+                        <th>Booked Hall</th>
+                        <th>Reason</th>
+                        <th>Booking Date</th>
+                        <th>Event Date</th>
+                        <th>No of Days</th>
+                        <th>User type</th>
+                        <th>Refund Status</th>
+                        <th>Booking Status</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="settlementlist, iterStat : ${bookingSettlementList}">
+
+                        <td th:text="${iterStat.count}">0</td>
+                        <td th:text="${settlementlist.users.name}"></td>
+                        <td th:text="${settlementlist.users.mobileNo}"></td>
+                        <td th:text="${settlementlist.bookingId}"></td>
+                        <td th:text="${settlementlist.hallDetails.hallName}"></td>
+                        <td th:text="${settlementlist.reason}"></td>
+                        <td th:text="${settlementlist.bookingDate}"></td>
+                        <td th:text="${settlementlist.startDate +' to '+ settlementlist.endDate}"></td>
+                        <td th:text="${settlementlist.noOfDays}"></td>
+                        <td th:text="${settlementlist.users.usertype}"></td>
+                        <td th:text="${settlementlist.refundStatus}"></td>
+                        <td th:text="${settlementlist.bookingStatus}"></td>
+                    </tr>
+
+                </table>
+            </div>
+            <div class="table-responsive" id="totalCounttable" th:if="${request == '7'}">
+                <table id="requestTable7" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th th:text="${basedon == 'zone' ? 'Zone' : 'Division'}"></th>
+                        <th>Bookings Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="data, stat : ${totalcount}">
+                        <td th:text="${stat.index + 1}"></td> <!-- Serial number -->
+                        <td th:text="${data[0]}"></td> <!-- Zone or Division -->
+                        <td th:text="${data[1]}"></td> <!-- Bookings Count -->
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th></th>
+                        <td><strong>Total Bookings :</strong></td>
+                        <td th:text="${totalBookings}"></td> <!-- Total bookings -->
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <!--<div class="table-responsive" id="countertable" th:if="${request == '9'}">-->
+            <div class="table-responsive" id="countertable" th:if="${request}==9">
+                <div th:if="${reporttype == 'abstract'}">
+                    <table id="requestTable9" class="table table-striped table-bordered table-hover dataTable"
+                           role="grid" width="99.5%">
+                        <thead class="thead-dark">
+                        <tr role="row">
+                            <th>S.No</th>
+                            <th>Counter ID</th>
+                            <th>Total Bookings</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="counterdata, iterstat : ${counterBookingList}">
+                            <td th:text="${iterstat.index + 1}"></td>
+                            <td th:text="${counterdata[0]}"></td>
+                            <td>
+                                <button href="#"
+                                        th:attr="data-counter-id=${counterdata[0]}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#bookingModal"
+                                        style="background-color: #2a807f; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
+
+                                        onclick="showCounterTable(this)">
+                                    <span th:text="${counterdata[1]}"></span>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${reporttype == 'detailed'}">
+                    <table id="detailedrequestTable" class="table table-striped table-bordered table-hover dataTable"
+                           role="grid" width="99.5%">
+                        <thead class="thead-dark">
+                        <tr role="row">
+                            <th>S.No</th>
+                            <th>Booking ID</th>
+                            <th>Hall Name</th>
+                            <th>Booking Date</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Starting Slot</th>
+                            <th>Ending Slot</th>
+                            <th>No.of.Days</th>
+                            <th>Reason for Booking</th>
+                            <th>Hall Amount</th>
+                            <th>Deposit Amount</th>
+                            <th>GSt</th>
+                            <th>Amount Received</th>
+                            <th>Booking Status</th>
+                            <th>Booking Type</th>
+                            <th>Counter Id</th>
+                            <th>View</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="counterdata, iterstat : ${counterBookingList}">
+                            <td th:text="${iterstat.index + 1}"></td>
+                            <td th:text="${counterdata[0]}"></td>
+                            <td th:text="${counterdata[1]}"></td>
+                            <td th:text="${counterdata[2]}"></td>
+                            <td th:text="${counterdata[3]}"></td>
+                            <td th:text="${counterdata[4]}"></td>
+                            <td th:text="${counterdata[5]}"></td>
+                            <td th:text="${counterdata[6]}"></td>
+                            <td th:text="${counterdata[7]}"></td>
+                            <td th:text="${counterdata[8]}"></td>
+                            <td th:text="${counterdata[9]}"></td>
+                            <td th:text="${counterdata[10]}"></td>
+                            <td th:text="${counterdata[11]}"></td>
+                            <td th:text="${counterdata[12]}"></td>
+                            <td th:text="${counterdata[13]}"></td>
+                            <td th:text="${counterdata[14]}"></td>
+                            <td th:text="${counterdata[15]}"></td>
+                            <td>
+                                <p>
+										<span class="badge bg-warning" style="cursor: pointer;"
+                                              th:onclick="viewDetails([[${counterdata[0]}]])">View</span>
+                                </p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-responsive" id="zoneWiseBookingTable" th:if="${request}==10">
+                <table id="requestTable10" class="table table-striped table-bordered table-hover dataTable"
+                       role="grid" width="99.5%">
+                    <thead class="thead-dark">
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Zone</th>
+                        <th>Hall Count</th>
+                        <th>Online Booking Count</th>
+                        <th>Counter Booking Count</th>
+                        <th>Total Count</th>
+                    </tr>
+                    </thead>
+                    <tr th:each="zoneList, iterStat : ${zoneWiseBookingList}">
+                        <td th:text="${iterStat.count}">0</td>
+                        <td>
+                            <button href="#"
+                                    th:attr="data-zone-id=${zoneList[0]}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#hallModal"
+                                    style="background-color: #2a807f; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
+                                    onclick="showHallDetailsTable(this)">
+                                <span th:text="${zoneList[0]}"></span>
+                            </button>
+                        </td>
+                        <td th:text="${zoneList[1]}"></td>
+                        <td th:text="${zoneList[3]}"></td>
+                        <td th:text="${zoneList[4]}"></td>
+                        <td th:text="${zoneList[2]}"></td>
+                    </tr>
+                </table>
+            </div>
+          <div class="table-responsive" id="Bookingtables" th:if="${request}=='11'">
+
+    <table id="requestTable11" class="table table-striped table-bordered table-hover dataTable"
+           role="grid" width="99.5%">
+        <thead class="thead-dark">
+        <tr role="row">
+            <th>S.No</th>
+            <th>Booking ID</th>
+            <th>Booking Date</th>
+            <th>Settlement Initated</th>
+            <th>User Name</th>
+            <th>Mobile</th>
+            <th>Hall Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Amount Received</th>
+            <th>Refunded Amount</th>
+            <th>Refund Transaction ID</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, iterStat : ${settlementInitiatedList}">
+            <td th:text="${iterStat.count}"></td>
+            <td th:text="${row[0]}"></td> <!-- booking_id -->
+            <td th:text="${#dates.format(row[1], 'dd-MM-yyyy')}"></td> <!-- booking_date -->
+            <td th:text="${#dates.format(row[2], 'dd-MM-yyyy')}"></td>
+            <td th:text="${row[3]}"></td> <!-- name -->
+            <td th:text="${row[4]}"></td> <!-- mobile_no -->
+            <td th:text="${row[5]}"></td> <!-- hall_name -->
+            <td th:text="${row[6]}"></td> <!-- start_date -->
+            <td th:text="${(row[7])}"></td> <!-- end_date -->
+            <td th:text="${row[8]}"></td> <!-- amount_received -->
+            <td th:text="${row[9]}"></td> <!-- refunded_amount -->
+            <!--<td th:text="${row[9]}"></td> --><!-- transaction_id -->
+            <td th:text="${row[10] != null ? row[9] : '-'}"></td>
+
+            <td>
+                <span class="badge bg-warning" style="cursor: pointer;"
+                      th:onclick="viewDetails([[${row[0]}]])">View</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+        </div>
+
+        <div class="modal fade backdrop" id="showBookingDetails" data-backdrop="static"
+             tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content" id="printableContent">
+
+                    <form id="regform" onsubmit="return rejectsubmit();">
+                        <div
+                                class="block block-rounded block-themed block-transparent mb-0">
+
+                            <div class="block-header bg-primary-dark">
+                                <h3 class="block-title" id="2mtitle">Booking
+                                    Information</h3>
+                                <div class="block-options">
+                                    <button type="button" class="btn-block-option"
+                                            data-bs-dismiss="modal" aria-label="Close">
+                                        <i class="fa fa-fw fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="block-content row"
+                                 style="margin-right:0px;margin:0;padding:0;">
+                                <div class="col-md-12 col-lg-12 col-sm-12">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="10"
+                                                    style="background-color: lightgrey;">
+                                                    User Details
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    User Name:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_userName"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Mobile Number:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_mobileNumber"></td>
+
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    User Type:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_usertype"></td>
+
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    User Address:
+                                                </th>
+                                                <td colspan="5" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                    id="td_useraddress"></td>
+
+                                            </tr>
+                                            <input type="hidden"
+                                                   class="form-control text-center"
+                                                   name="bookingid" id="bookingid" disabled/>
+                                            <tr>
+                                                <th colspan="10"
+                                                    style="background-color: lightgrey;">
+                                                    Hall Details
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Hall Name:
+                                                </th>
+                                                <td colspan="10" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;text-wrap:pretty;"
+                                                    id="td_hallName"></td>
+
+                                            </tr>
+                                            <th
+                                                    style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                Hall Address:
+                                            </th>
+                                            <td colspan="10" class="fw-semibold"
+                                                style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                id="td_halladdress"></td>
+
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Caretaker Name:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_caretakername"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Caretaker Mobile Number:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_caretakermobileNumber"></td>
+
+                                            </tr>
+                                            <tr>
+                                                <th colspan="10"
+                                                    style="background-color: lightgrey;">
+                                                    Booking
+                                                    Details (Booking Id:-<span
+                                                        id="booking_id"
+                                                        style="color:blue"></span>)
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Booking Date:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_bookingDate"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Deposit Amount (in Rs):
+                                                </th>
+                                                <td colspan="2"
+                                                    class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_depositeAmount"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Start Date:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_startDate"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Hall Amount (in Rs):
+                                                </th>
+                                                <td colspan="2"
+                                                    class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_hallAmount"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    END Date:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_endDate"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    GST @18% (in Rs):
+                                                </th>
+                                                <td colspan="2"
+                                                    class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_gst"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Starting Slot:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_startingSlot"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Total Amount (in Rs):
+                                                </th>
+                                                <td colspan="2"
+                                                    class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_totalAmount"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Ending Slot:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_endingSlot"></td>
+                                                <!--<th style="display:none;padding: 0.45rem 0.45rem;border:none"
+                                                    id="rejectionreasondiv">Rejection
+                                                    Reason:</th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="reasonforrejection"></td>-->
+
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;border:none">
+                                                    Booking Status:
+                                                </th>
+                                                <td colspan="2" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                    id="bookingstatus_td"></td>
+                                            </tr>
+                                            <tr>
+                                                <th style="display:none;padding: 0.45rem 0.45rem;border:none"
+                                                    id="rejectionreasondiv">Rejection
+                                                    Reason:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                    id="reasonforrejection"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row col-md-12 col-lg-12 col-sm-12">
+                                    <div class="documents" id="documents"></div>
+                                </div>
+                                <div class="col-md-12 col-lg-12 col-sm-12 mb-2"
+                                     id="paymentsdetails"
+                                     style="display:none;    margin-top: -16px;">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="10"
+                                                    style="background-color: lightgrey;">
+                                                    Booking Payment Details
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Transaction ID:
+                                                </th>
+                                                <td colspan="10" class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_transactionId"></td>
+
+                                            </tr>
+                                            <th
+                                                    style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                Amount Received (in Rs):
+                                            </th>
+                                            <td colspan="10" class="fw-semibold"
+                                                style="padding: 0.45rem 0.45rem;"
+                                                id="td_payamountReceived"></td>
+
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                    Transaction Status:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_paymentStatus"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!--Newly added for Reschedule Details-->
+
+                                <!--<div class="row col-md-12 col-lg-12 col-sm-12"
+                                     id="rescheduleDetails"
+                                     style="display:none;margin-left: 0px;margin-top: -10px">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="4"
+                                                    style="background-color: lightgrey;">Reschedule
+                                                    Details
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Event Start Date:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_res_start_date"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Event End Date:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_res_end_date"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;text-wrap: pretty;">
+                                                    Rescheduled Date:
+                                                </th>
+                                                <td class="fw-semibold" colspan="5"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_res_date"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>-->
+
+
+                                <div class="row col-md-12 col-lg-12 col-sm-12"
+                                     id="ebdetails"
+                                     style="display:none;margin-left: 0px;margin-top: -10px">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="4"
+                                                    style="background-color: lightgrey;">EB
+                                                    Details
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Consumer Number:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_EBNumber"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    EB Amount Per Unit (in Rs):
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_ebamountperunit"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Start Reading:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_startingReading"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Unit Consumed:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_usedunit"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    END Reading:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_endingReading"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    EB Amount (in Rs):
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_electricityamount"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row col-md-12 col-lg-12 col-sm-12"
+                                     id="damagelist" style="disaply:none">
+                                    <div id="damageDetails"></div>
+                                </div>
+
+                                <div class="col-md-12 col-lg-12 col-sm-12"
+                                     id="refunddetails" style="margin-top:-1px">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="2"
+                                                    style="background-color: lightgrey;">
+                                                    Amount to be Refunded (in Rs)
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Deposit Amount:
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_depositeamountforrefund">0
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    EB Amount:
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_ebAmount"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Damage Amount:
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_damage"></td>
+                                            </tr>
+                                            <tr id="pendingcolumn">
+                                                <th id="th_settel_label"
+                                                    style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+                                                    Collection Pending Amount:
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem; color: green;"
+                                                    id="td_pending_amt">0
+                                                </td>
+                                            </tr>
+                                            <tr id="collectionstatuscolumn">
+                                                <th id="label"
+                                                    style="padding: 0.45rem 0.45rem;font-weight: normal">Collection
+                                                    Pending Status
+                                                    :
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem; color: green;"
+                                                    id="td_collection_status">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+                                                    Actual refundable Amount:
+                                                </th>
+                                                <td class="fw-semibold amount-cell"
+                                                    style="padding: 0.45rem 0.45rem; color: green;"
+                                                    id="td_settel_amt">0
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row col-md-12 col-lg-12 col-sm-12"
+                                     id="refundamountDetails"
+                                     style="display:none;margin-left: 0px;margin-top: -49px">
+                                    <div class="card-body">
+                                        <table>
+                                            <tr>
+                                                <th colspan="4"
+                                                    style="background-color: lightgrey;">
+                                                    Refund Details
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Booking Status:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_bookingStatus"></td>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                    Refund Status:
+                                                </th>
+                                                <td class="fw-semibold"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_refundStatus"></td>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                        style="padding: 0.45rem 0.45rem;font-weight: normal;text-wrap: pretty;">
+                                                    Refund amount:
+                                                </th>
+                                                <td class="fw-semibold" colspan="5"
+                                                    style="padding: 0.45rem 0.45rem;"
+                                                    id="td_refundamount"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="refundMessage" style="display: none;">
+                                    <h1 id="refundText"
+                                        style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                    </h1>
+                                </div>
+                                <div id="rejectrefundMessage" style="display: none;">
+                                    <h1 id="rejectrefundText"
+                                        style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                    </h1>
+                                </div>
+                                <div id="blockedrefundMessage" style="display: none;">
+                                    <h1 id="blockedrefundText"
+                                        style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                    </h1>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="block-content block-content-full text-end bg-body"
+                             id="mbutton">
+                            <button type="button"
+                                    style="background-color: rgb(21,69,93);color: white;"
+                                    class="btn btn-sm btn-alt-secondary"
+                                    data-bs-dismiss="modal">Close
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <embed id="filePreview" src="" width="100%" height="600px">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="viewbookingDetailsdetails">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">List of Bookings</h4>
+                        <button type="button" class="btn" data-bs-dismiss="modal">&times;</button>
+                    </div>
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <div class="content">
+                            <div class="block block-rounded">
+                                <div class="block-content p-0">
+                                    <div class="p-sm-4 p-0">
+                                        <div class="table-responsive">
+                                            <table id="bookinglistdataTable"
+                                                   class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+                                                <thead class="thead-light">
+                                                <tr class="table-bordered">
+                                                    <th class="text-center no-sort">S.No</th>
+                                                    <th class="text-center no-sort">Booking Id</th>
+                                                    <th class="text-center no-sort">Booking Date</th>
+                                                    <th class="text-center no-sort">Start Date</th>
+                                                    <th class="text-center no-sort">End Date</th>
+                                                    <th class="text-center no-sort">Starting Slot</th>
+                                                    <th class="text-center no-sort">Ending Slot</th>
+                                                    <th class="text-center no-sort">Reason For Booking</th>
+                                                    <th class="text-center no-sort">No of days</th>
+                                                    <th class="text-center no-sort">Booking Status</th>
+                                                    <th class="text-center no-sort">Hall Amount</th>
+                                                    <th class="text-center no-sort">Total Amount Paid</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="bookingTableBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="viewbookingDetailsbyzone">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">List of Bookings Based on Zone</h4>
+                        <button type="button" class="btn" data-bs-dismiss="modal">&times;</button>
+                    </div>
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <div class="content">
+                            <div class="block block-rounded">
+                                <div class="block-content p-0">
+                                    <div class="p-sm-4 p-0">
+                                        <div class="table-responsive">
+                                            <table id="bookinglistdataTablebyzone"
+                                                   class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+                                                <thead class="thead-light">
+                                                <tr class="table-bordered">
+                                                    <th class="text-center no-sort">S.No</th>
+                                                    <th class="text-center no-sort">Booking Id</th>
+                                                    <th class="text-center no-sort">Booking Date</th>
+                                                    <th class="text-center no-sort">Start Date</th>
+                                                    <th class="text-center no-sort">End Date</th>
+                                                    <th class="text-center no-sort">Starting Slot</th>
+                                                    <th class="text-center no-sort">Ending Slot</th>
+                                                    <th class="text-center no-sort">Reason For Booking</th>
+                                                    <th class="text-center no-sort">No of Days</th>
+                                                    <th class="text-center no-sort">Booking Status</th>
+                                                    <th class="text-center no-sort">Hall Amount</th>
+                                                    <th class="text-center no-sort">Total Amount Paid</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="bookingTableBodybyzone"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hall-wise Booking Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!--
+                                        <table id="modalBookingTable" class="table table-bordered table-striped dataTable" style="width: 100%;">
+                        -->
+                        <table id="modalBookingTable" class="table table-striped table-bordered table-hover dataTable"
+                               role="grid" width="99.5%">
+                            <input type="hidden" id="hallBookingJsonInput" th:value="${hallBookingJson}">
+
+                            <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Zone</th>
+                                <th>Division</th>
+                                <th>Hall Name</th>
+                                <th>Total Bookings</th>
+                            </tr>
+                            </thead>
+                            <tbody id="modalBookingDetails"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="hallDetailModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen-custom modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Booking Details for Hall</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="hallDetailsTable" class="table table-bordered table-striped">
+                            <input type="hidden" id="hallBookingDetailsJsonInput" th:value="${hallBookingDetailsJson}">
+
+                            <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Booking ID</th>
+                                <th>Hall Name</th>
+                                <th>Booking Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Starting Slot</th>
+                                <th>Ending Slot</th>
+                                <th>No.of.Days</th>
+                                <th>Reason for Booking</th>
+                                <th>Hall Amount</th>
+                                <th>Deposit Amount</th>
+                                <th>GSt</th>
+                                <th>Amount Received</th>
+                                <th>Booking Status</th>
+                                <th>Booking Type</th>
+                                <th>View</th>
+                            </tr>
+                            </thead>
+                            <tbody id="hallDetailsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Modal For Review Report-->
+        <div class="modal fade" id="hallModal" tabindex="-1" aria-labelledby="hallModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hall-wise Booking Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!--
+                                        <table id="modalBookingTable" class="table table-bordered table-striped dataTable" style="width: 100%;">
+                        -->
+                        <table id="hallwiseBookingTable"
+                               class="table table-striped table-bordered table-hover dataTable"
+                               role="grid" width="99.5%">
+                            <input type="hidden" id="hallWiseBookingList" th:value="${hallWiseBookingList}" />
+
+                            <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Hall Name</th>
+                                <th>Online Booking Count</th>
+                                <th>Counter Booking Count</th>
+                                <th>Total Count</th>
+                            </tr>
+                            </thead>
+                            <tbody id="hallwiseBookingDetails"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="counterDetailModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen-custom modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Booking Details for Hall</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="counterDetailsTable" class="table table-bordered table-striped">
+                            <input type="hidden" id="counterWiseBookingList" th:value="${counterWiseBookingList}" />
+
+                            <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Counter ID</th>
+                                <th>No.of Booking</th>
+                            </tr>
+                            </thead>
+                            <tbody id="counterDetailsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="bookingInfoModal" tabindex="-1" aria-labelledby="bookingInfoModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">Booking Information</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="bookingInfoContent">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    <footer th:replace="~{fragments/footer2 :: footer}"></footer>
+</div>
+
+
+<div th:replace="~{fragments/resetpassword :: div}"></div>
+<script th:replace="~{fragments/loginscript :: script}"></script>
+
+
+<script>
+    /*$(document).ready(function () {
+        // Common buttons configuration
+        var buttons = [{
+            extend: 'pageLength',
+            className: 'btn btn-primary'
+        }, {
+            title: 'Data export',
+            extend: 'copyHtml5',
+            text: 'Copy',
+            className: 'btn btn-primary',
+            id: 'copyBtn'
+        }, {
+            extend: 'excelHtml5',
+            text: 'Excel',
+            className: 'btn btn-primary',
+            id: 'excelBtn'
+        }, {
+            extend: 'csvHtml5',
+            text: 'CSV',
+            className: 'btn btn-primary',
+            id: 'csvBtn'
+        }, {
+            extend: 'pdfHtml5',
+            text: 'PDF',
+            className: 'btn btn-primary',
+            id: 'pdfBtn'
+        }];
+
+        // DataTables initialization
+        $('#requestTable1, #requestTable2, #requestTable3, #requestTable8, #requestTable4, #requestTable5, #requestTable6, #requestTable7,#requestTable9,#modalBookingTable,#hallDetailsTable').DataTable({
+            dom: 'Bftip',
+            columnDefs: [{
+                targets: 'no-sort',
+                orderable: false
+            }],
+            lengthMenu: [
+                [50, 100, 200, 500, -1],
+                ['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+            ],
+            // scrollY: '50vh',
+            fixedColumns: {
+                left: 1,
+                right: 1
+            },
+            buttons: buttons,
+            responsive: true,
+            searching: true, // Enable search
+            select: false,
+            processing: false,
+            order: [] // Remove any default sorting
+        });
+
+        // Link the search input to DataTable
+        $('#searchInput').on('keyup', function () {
+            $('#bookinglistdataTable').DataTable().search(this.value).draw();
+        });
+    });*/
+
+    $(document).ready(function () {
+        // Common buttons (default for most tables)
+        var commonButtons = [{
+            extend: 'pageLength',
+            className: 'btn btn-primary'
+        }, {
+            title: 'Data export',
+            extend: 'copyHtml5',
+            text: 'Copy',
+            className: 'btn btn-primary',
+            id: 'copyBtn'
+        }, {
+            extend: 'excelHtml5',
+            text: 'Excel',
+            className: 'btn btn-primary',
+            id: 'excelBtn'
+        }, {
+            extend: 'csvHtml5',
+            text: 'CSV',
+            className: 'btn btn-primary',
+            id: 'csvBtn'
+        }, {
+            extend: 'pdfHtml5',
+            text: 'PDF',
+            className: 'btn btn-primary',
+            id: 'pdfBtn'
+        }];
+
+        // Custom PDF buttons for specific tables
+        function getCustomButtons(tableId) {
+            let orientation = 'portrait';
+            let pageSize = 'A4';
+
+            if (tableId === 'modalBookingTable') {
+                orientation = 'landscape';
+                pageSize = 'A4';
+            } else if (tableId === 'hallDetailsTable') {
+                orientation = 'landscape';
+                pageSize = 'A3';
+            } else if (tableId === 'detailedrequestTable') {
+                orientation = 'landscape';
+                pageSize = 'A3';
+            }
+
+            return [{
+                extend: 'pageLength',
+                className: 'btn btn-primary'
+            }, {
+                title: 'Data export',
+                extend: 'copyHtml5',
+                text: 'Copy',
+                className: 'btn btn-primary'
+            }, {
+                extend: 'excelHtml5',
+                text: 'Excel',
+                className: 'btn btn-primary'
+            }, {
+                extend: 'csvHtml5',
+                text: 'CSV',
+                className: 'btn btn-primary'
+            }, {
+                extend: 'pdfHtml5',
+                text: 'PDF',
+                className: 'btn btn-primary',
+                orientation: orientation,
+                pageSize: pageSize
+            }];
+        }
+
+        // Tables using default buttons
+        $('#requestTable1, #requestTable2, #requestTable3, #requestTable8, #requestTable4, #requestTable5, #requestTable6, #requestTable7, #requestTable10, #requestTable11,#hallwiseBookingTable, #counterDetailsTable').DataTable({
+            dom: 'Bftip',
+            columnDefs: [{
+                targets: 'no-sort',
+                orderable: false
+            }],
+            lengthMenu: [
+                [50, 100, 200, 500, -1],
+                ['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+            ],
+            fixedColumns: {
+                left: 1,
+                right: 1
+            },
+            buttons: commonButtons,
+            responsive: true,
+            searching: true,
+            select: false,
+            processing: false,
+            order: []
+        });
+
+        // Tables with custom PDF buttons
+        ['requestTable9', 'modalBookingTable', 'hallDetailsTable', 'detailedrequestTable'].forEach(function (tableId) {
+            $('#' + tableId).DataTable({
+                dom: 'Bftip',
+                columnDefs: [{
+                    targets: 'no-sort',
+                    orderable: false
+                }],
+                lengthMenu: [
+                    [50, 100, 200, 500, -1],
+                    ['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+                ],
+                fixedColumns: {
+                    left: 1,
+                    right: 1
+                },
+                buttons: getCustomButtons(tableId),
+                responsive: true,
+                searching: true,
+                select: false,
+                processing: false,
+                order: []
+            });
+        });
+
+        // Link the search input to DataTable
+        $('#searchInput').on('keyup', function () {
+            $('#bookinglistdataTable').DataTable().search(this.value).draw();
+        });
+    });
+
+
+    function validateme() {
+        // checkTodateCon();
+        return true;
+    }
+
+    var fromdate = document.getElementById("fromdate"), todate = document
+        .getElementById("todate");
+
+    function validateDate() {
+        if ($("#fromdate").val() == "" || $("#todate").val() == "") {
+            todate.setCustomValidity("FromDate and ToDate Must");
+        } else {
+            todate.setCustomValidity('');
+        }
+    }
+
+    fromdate.onchange = validateDate;
+    todate.onchange = validateDate;
+
+
+    $(document).ready(function () {
+        var today = new Date();
+        $('.datepicker').datepicker({
+            dateFormat: 'yy-mm-dd',
+            maxDate: '1'
+        })
+        $('.datepicker').keyup(function () {
+            if (this.value.match(/[^0-9]/g)) {
+                this.value = this.value.replace(/[^0-9^-]/g, '');
+            }
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        myRequest(); // Initial call to set dropdowns based on initial value
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        checkTodateCon();
+    });
+
+    function checkTodateCon() {
+        var today = new Date();
+        var sixMonthsLater = new Date();
+        sixMonthsLater.setMonth(today.getMonth() + 6);
+
+        var minDate = today.toISOString().split('T')[0];
+        var maxDate = sixMonthsLater.toISOString().split('T')[0];
+        let fromDateInput = document.getElementById('fromdate');
+        let toDateInput = document.getElementById('todate');
+        let selectedFromDate = document.getElementById('fromdate').value;
+        fromDateInput.setAttribute('max', maxDate);
+        toDateInput.setAttribute('min', selectedFromDate);
+        toDateInput.setAttribute('max', maxDate);
+        fromDateInput.addEventListener('change', function () {
+            let selectedFromDate = this.value;
+            let toDateInput = document.getElementById('todate');
+            toDateInput.setAttribute('min', selectedFromDate);
+            toDateInput.value = ''; // Reset the value of toDate
+        });
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('myForm');
+        const basedonSelect = document.getElementById('basedon');
+        const errorSpan = document.getElementById('basedonError');
+        const request = document.getElementById('request');
+        const reportTypeSelect = document.getElementById('reporttype');
+        const reportTypeerror = document.getElementById('reportTypeError');
+
+        form.addEventListener("submit", function (event) {
+            const requestValue = request.value;
+
+            if (requestValue === "7") {
+                console.log("inside 7");
+                console.log("basedonSelect.value=====" + basedonSelect.value);
+
+                if (basedonSelect.value === "") {
+                    event.preventDefault(); // Stop form submission
+                    errorSpan.textContent = "Please select a value.";
+                    basedonSelect.classList.add("is-invalid");
+                } else {
+                    errorSpan.textContent = "";
+                    basedonSelect.classList.remove("is-invalid");
+                }
+            } else if (requestValue === "9") {
+                console.log("inside 9");
+                console.log("reportTypeSelect.value=====" + reportTypeSelect.value);
+
+                if (reportTypeSelect.value === "") {
+                    event.preventDefault(); // Stop form submission
+                    reportTypeerror.textContent = "Please select a value.";
+                    reportTypeSelect.classList.add("is-invalid");
+                } else {
+                    reportTypeerror.textContent = "";
+                    reportTypeSelect.classList.remove("is-invalid");
+                }
+            }
+        });
+
+        document.getElementById("basedon").addEventListener("change", function () {
+            this.classList.remove("is-invalid");
+            document.getElementById("basedonError").textContent = "";
+        });
+        document.getElementById("reporttype").addEventListener("change", function () {
+            this.classList.remove("is-invalid");
+            document.getElementById("reportTypeError").textContent = "";
+        });
+    });
+
+
+    // Function to manage the display of dropdowns based on the request type
+    function myRequest() {
+        var requestValue = document.getElementById("request").value;
+
+        // Hide all dropdowns initially
+        document.getElementById("userDropdown1").style.display = "none";
+        document.getElementById("userDropdown2").style.display = "none";
+        document.getElementById("bookingDetailsDropdown1").style.display = "none";
+        document.getElementById("bookingDetailsDropdown2").style.display = "none";
+        document.getElementById("bookingDetailsDropdown3").style.display = "none";
+        document.getElementById("refundDetailsDropdown").style.display = "none";
+        document.getElementById("zoneDropdown").style.display = "none";
+        document.getElementById("divisionContainer").style.display = "none";
+        document.getElementById("hallContainer").style.display = "none";
+        document.getElementById("bookingcountbasedonDropdown").style.display = "none";
+        document.getElementById("paymentInfoDropdown1").style.display = "none";
+        document.getElementById("counterreportDropdown").style.display = "none";
+
+
+        // Reset dropdown values
+        document.getElementById('zone1').value = 'ALL';
+        document.getElementById('division1').value = '';
+        document.getElementById('hall1').value = '';
+
+
+        // Show relevant dropdowns based on the selected request value
+        if (requestValue === "1") {
+            document.getElementById("userDropdown1").style.display = "block";
+            document.getElementById("userDropdown2").style.display = "block";
+
+            // Add event listener to handle "User Type" selection
+            document.getElementById("usertype").addEventListener("change", function () {
+                var userTypeValue = document.getElementById("usertype").value;
+                if (userTypeValue === "PUBLIC") {
+                    document.getElementById("userDropdown1").style.display = "none"; // Hide "User Status" dropdown
+                } else {
+                    document.getElementById("userDropdown1").style.display = "block"; // Show "User Status" dropdown
+                }
+            });
+
+            // Trigger the change event to apply the logic on initial load if "PUBLIC" is already selected
+            document.getElementById("usertype").dispatchEvent(new Event('change'));
+
+        } else if (requestValue === "2") {
+            document.getElementById("bookingDetailsDropdown1").style.display = "block";
+            document.getElementById("bookingDetailsDropdown2").style.display = "block";
+            document.getElementById("bookingDetailsDropdown3").style.display = "block";
+            document.getElementById("zoneDropdown").style.display = "block";
+            document.getElementById("divisionContainer").style.display = "block";
+            document.getElementById("hallContainer").style.display = "block";
+
+        } else if (requestValue === "6") {
+            document.getElementById("refundDetailsDropdown").style.display = "block";
+            document.getElementById("bookingDetailsDropdown3").style.display = "block";
+
+        } else if (requestValue === "3") {
+            document.getElementById("zoneDropdown").style.display = "block";
+            document.getElementById("divisionContainer").style.display = "block";
+            document.getElementById("hallContainer").style.display = "block";
+            document.getElementById("paymentInfoDropdown1").style.display = "block";
+        } else if (requestValue === "5") {
+            document.getElementById("bookingDetailsDropdown3").style.display = "block";
+            document.getElementById("zoneDropdown").style.display = "block";
+            document.getElementById("divisionContainer").style.display = "block";
+            document.getElementById("hallContainer").style.display = "block";
+        } else if (requestValue === "7") {
+            document.getElementById("bookingcountbasedonDropdown").style.display = "block";
+        } else if (requestValue === "8") {
+            document.getElementById("zoneDropdown").style.display = "block";
+            document.getElementById("divisionContainer").style.display = "block";
+            document.getElementById("hallContainer").style.display = "block";
+            document.getElementById("paymentInfoDropdown1").style.display = "block";
+        } else if (requestValue === "9") {
+            document.getElementById("counterreportDropdown").style.display = "block";
+        }
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("basedon").addEventListener("change", function () {
+            const selectedValue = this.value;
+            document.getElementById("bookingcountbasedonDropdown").style.display = selectedValue ? "block" : "none";
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("reporttype").addEventListener("change", function () {
+            const selectedValue = this.value;
+            document.getElementById("counterreportDropdown").style.display = selectedValue ? "block" : "none";
+        });
+    });
+
+    // Function to reset date fields
+    function resetDate() {
+
+        window.location.href = "/victoriahallbooking_uat/admin/Reports";
+
+        document.getElementById('fromdate').value = '';
+        document.getElementById('todate').value = '';
+    }
+
+    function viewDetails(bookingId) {
+        $.ajax({
+            url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+            method: 'GET',
+            data: {bookingId: bookingId},
+            success: function (response) {
+                document.getElementById("td_userName").innerHTML = response.users.name;
+                document.getElementById("td_mobileNumber").innerHTML = response.users.mobileNo;
+                document.getElementById("td_usertype").innerHTML = response.users.usertype;
+                var userDetails = response.users;
+                var userDetailsString =
+                    userDetails.doorNo + ", " +
+                    userDetails.street + ", " +
+                    userDetails.area + ", " +
+                    userDetails.location + " ,Chennai- " +
+                    userDetails.pinCode;
+                document.getElementById("td_useraddress").innerHTML = userDetailsString;
+                document.getElementById("td_hallName").innerHTML = response.hallDetails.hallName;
+                var hallDetails = response.hallDetails;
+                var hallDetailsString =
+                    hallDetails.doorNo + ", " +
+                    hallDetails.street + ", " +
+                    hallDetails.area + ", " +
+                    hallDetails.city + "- " +
+                    hallDetails.pinCode;
+                document.getElementById("td_halladdress").innerHTML = hallDetailsString;
+                document.getElementById("td_caretakername").innerHTML = response.hallDetails.hallInchargeName;
+                document.getElementById("td_caretakermobileNumber").innerHTML = response.hallDetails.hallInchargeMobno;
+                document.getElementById("td_bookingDate").innerHTML = response.bookingDate;
+                document.getElementById("td_depositeAmount").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+                document.getElementById("td_hallAmount").innerHTML = parseFloat(response.hallAmount).toFixed(2);
+                // Calculate GST and total amount
+                var gstAmount = (parseFloat(response.hallAmount) * (response.hallDetails.gst / 100)).toFixed(2);
+                var totalAmount = parseFloat(response.amountReceived).toFixed(2);
+
+                document.getElementById("td_gst").innerHTML = gstAmount;
+                document.getElementById("td_totalAmount").innerHTML = totalAmount;
+
+                document.getElementById("td_startDate").innerHTML = response.startDate;
+                document.getElementById("td_endDate").innerHTML = response.endDate;
+                document.getElementById("booking_id").innerHTML = response.bookingId;
+
+                function getTimeSlot(slotValue) {
+                    var timeSlot;
+                    var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+                    if (trimmedSlotValue === '1') {
+                        timeSlot = 'Morning';
+                    } else if (trimmedSlotValue === '2') {
+                        timeSlot = 'Evening';
+                    } else {
+                        timeSlot = 'Unknown';
+                    }
+                    return timeSlot;
+                }
+
+                document.getElementById("td_startingSlot").innerHTML = getTimeSlot(response.startingSlot);
+                document.getElementById("td_endingSlot").innerHTML = getTimeSlot(response.endingSlot);
+                document.getElementById("bookingstatus_td").innerHTML = response.bookingStatus;
+
+                console.log("before comments admin...");
+                console.log("Comments..." + response.comments);
+                if (response.bookingStatus === 'REJECTED' && response.comments) {
+                    document.getElementById("rejectionreasondiv").style.display = "block";
+                    const rejectionCell = document.getElementById("reasonforrejection");
+                    rejectionCell.innerHTML = response.comments;
+                } else {
+                    document.getElementById("rejectionreasondiv").style.display = "none";
+                    document.getElementById("reasonforrejection").style.display = "none";
+                }
+                showReasonDocuments(response);
+
+                if (response.payments) {
+                    document.getElementById("paymentsdetails").style.display = "block";
+                    document.getElementById("td_transactionId").innerHTML = response.payments.transactionId;
+                    document.getElementById("td_payamountReceived").innerHTML = response.payments.amountReceived;
+                    document.getElementById("td_paymentStatus").innerHTML = response.payments.paymentStatus;
+                } else {
+                    document.getElementById("paymentsdetails").style.display = "none";
+                }
+                if (response.ebDetails) {
+                    document.getElementById("ebdetails").style.display = "block";
+                    document.getElementById("td_EBNumber").innerHTML = response.hallDetails.ebNumber;
+                    document.getElementById("td_startingReading").innerHTML = response.ebDetails.startingReading;
+                    document.getElementById("td_endingReading").innerHTML = response.ebDetails.endingReading;
+                    document.getElementById("td_usedunit").innerHTML = response.ebDetails.usedUnit;
+                    document.getElementById("td_ebamountperunit").innerHTML = parseFloat(response.hallDetails.ebCostPerUnit).toFixed(2);
+                    document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+
+                } else {
+                    document.getElementById("ebdetails").style.display = "none";
+                }
+                if (response.damageList && response.damageList.length > 0) {
+                    document.getElementById("damagelist").style.display = "block";
+
+                } else {
+                    document.getElementById("damagelist").style.display = "none";
+                }
+                if (response.settlement) {
+                    document.getElementById("refunddetails").style.display = "block";
+                    document.getElementById("td_depositeamountforrefund").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+                    document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                    document.getElementById("td_ebAmount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                    document.getElementById("td_damage").innerHTML = parseFloat(response.settlement.damageAmount).toFixed(2);
+
+                    var eb_amt = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                    var deposit_amt = parseFloat(response.depositAmount).toFixed(2);
+                    var tem_total = (deposit_amt - eb_amt).toFixed(2);
+                    $("#td_settel_amt").html(tem_total);
+                } else {
+                    document.getElementById("refunddetails").style.display = "none";
+                }
+
+                /*if (response.scheduleCount === 1) {
+                    document.getElementById("rescheduleDetails").style.display = "block";
+                    document.getElementById("td_res_start_date").innerHTML = response.startDate;
+                    document.getElementById("td_res_end_date").innerHTML = response.endDate;
+                    document.getElementById("td_res_date").innerHTML = response.updatedDate;
+                } else {
+					document.getElementById("rescheduleDetails").style.display = "none";
+				}*/
+
+                showDamageDetails(response);
+                if (response.bookingStatus === 'CANCELED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                    document.getElementById("td_refundamount").innerHTML = `Your booking has been cancelled. Deposit amount of ₹ ${parseFloat(response.depositAmount).toFixed(2)} will be refund 3 to 15 Days`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'CANCELED' && response.refundStatus === 'COMPLETED') {
+                    document.getElementById("td_refundamount").innerHTML = `Deposit amount of ₹ ${parseFloat(response.depositAmount).toFixed(2)} refunded successfully`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'REJECTED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus) && response.amountReceived == 0) {
+                    document.getElementById("refundamountDetails").style.display = "none";
+                } else if (response.bookingStatus === 'REJECTED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                    document.getElementById("td_refundamount").innerHTML = `Your booking has been Rejected by GCC. Full amount of ₹ ${parseFloat(response.amountReceived).toFixed(2)} will be refunded shortly`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'REJECTED' && response.refundStatus === 'COMPLETED') {
+                    document.getElementById("td_refundamount").innerHTML = `Full amount of ₹${parseFloat(response.amountReceived).toFixed(2)} refunded successfully`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'REJECTED' && response.refundStatus === 'NA') {
+                    document.getElementById("td_refundamount").innerHTML = `Your Booking has been rejected by GCC`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'GCC_BLOCKED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                    document.getElementById("td_refundamount").innerHTML = `Your booking has been Blocked by GCC. Full amount of ₹ ${parseFloat(response.amountReceived).toFixed(2)} will be refunded shortly`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else if (response.bookingStatus === 'GCC_BLOCKED' && response.refundStatus === 'COMPLETED') {
+                    document.getElementById("td_refundamount").innerHTML = `Full amount of ₹${parseFloat(response.amountReceived).toFixed(2)} refunded successfully`;
+                    document.getElementById("refundamountDetails").style.display = "block";
+                    document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                    document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                } else {
+                    document.getElementById("refundamountDetails").style.display = "none";
+                }
+                // Show the modal
+                $('#showBookingDetails').modal('show');
+            },
+            error: function () {
+                console.error("An error occurred while fetching booking details.");
+            }
+        });
+    }
+
+    function showDamageDetails(data) {
+        var damageFieldContainer = $('#damageDetails');
+        damageFieldContainer.empty();
+
+        // Create a div for table responsiveness
+        var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({'width': '770px'});
+
+        // Create table with similar classes and styles to the modal table
+        var table = $('<table>').addClass('table table-bordered table-striped').css({
+            'width': '97%',
+            'border-color': 'black',
+            'border-top-color': 'white'
+        });
+        var thead = $('<thead>').addClass('thead-light');
+        var tbody = $('<tbody>');
+
+        // Create Damage Details header row
+        var headerRow = $('<tr>').appendTo(thead);
+        $('<th>').attr('colspan', '6').text('Damage Details (if any)').css({
+            'padding': '0.45rem 0.45rem',
+            'background-color': 'lightgrey',
+            'font-weight': 'bold',
+            'color': 'black',
+        }).appendTo(headerRow);
+
+        // Create table header row
+        var columnHeadersRow = $('<tr>').css('background-color', 'white').appendTo(thead);
+        $('<th>').text('S.No').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+        $('<th>').text('Asset Name').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+        $('<th>').text('Damage Img').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+        $('<th>').text('Cost').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+        $('<th>').text('Qty').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+        $('<th>').text('Amount').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+
+        var totalAmount = 0;
+        $.each(data.damageList, function (index, detail) {
+            var row = $('<tr>').appendTo(tbody);
+            $('<td>').text(index + 1).css('padding', '0.45rem 0.45rem').appendTo(row);
+            $('<td>').text(detail.assetName).css('padding', '0.45rem 0.45rem').appendTo(row);
+            var viewLink = $('<a>').attr('href', 'javascript:void(0)').text('View').on('click', function () {
+                showDamageImage(detail.damageImageUrl);
+            });
+            var assetamt = (detail.assetAmount / detail.quantity).toFixed(2);
+            $('<td>').css('padding', '0.45rem 0.45rem').append(viewLink).appendTo(row);
+            $('<td>').text(assetamt).css('padding', '0.45rem 0.45rem').appendTo(row);
+            $('<td>').text(detail.quantity).css('padding', '0.45rem 0.45rem').appendTo(row);
+            var amount = detail.assetAmount;
+            totalAmount += amount;
+            $('<td>').text(amount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(row);
+            $("#td_dam_amt").html(totalAmount.toFixed(2));
+        });
+        // Add row for total amount
+        var totalRow = $('<tr>').appendTo(tbody);
+        $('<td>').attr('colspan', '5').text('Total Amount').css('padding', '0.45rem 0.45rem; font-weight: bold; background-color: #f2f2f2').appendTo(totalRow);
+        $('<td>').text(totalAmount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(totalRow);
+
+        // Append the table elements to the container div
+        table.append(thead, tbody);
+        tableResponsiveDiv.append(table);
+        damageFieldContainer.append(tableResponsiveDiv);
+
+        var temp_total = parseFloat($("#td_settel_amt").html());
+        var settleAmount = temp_total - totalAmount;
+        if (settleAmount < 0) {
+            var pendingstatus = data.settlement.collectionStatus
+            $("#td_settel_amt").html(0.00);
+            $("#pendingcolumn").show();
+            $("#collectionstatuscolumn").show();
+            $('#td_collection_status').html(pendingstatus);
+            $("#td_pending_amt").html(Math.abs(settleAmount).toFixed(2));
+            $("#td_pending_amt").css("color", "red");
+        } else {
+            $("#td_settel_amt").html(settleAmount.toFixed(2));
+            $("#pendingcolumn").hide();
+            $("#collectionstatuscolumn").hide();
+            $("#td_settel_amt").css("color", "green"); // Set color to green for positive amounts
+        }
+    }
+
+    function showReasonDocuments(list) {
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/api/officer/getReasonByName',
+            data: {
+                'reasonName': list.reason
+            },
+            success: function (x) {
+                // console.log(x);
+                showReasonWithDocument(x, list);
+            }
+        });
+    }
+
+    // Display booking documents
+    function showReasonWithDocument(reasonData, list) {
+        var reasonDocumentData = reasonData.reasonDocumentMasterList;
+        var bookingDocumentsList = list.bookingDocumentsList;
+
+        const reasonFieldsContainer = $('#documents');
+        reasonFieldsContainer.empty();
+
+        // Create a responsive table container
+        var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({'width': '770px', 'border': 'black'});
+
+        // Create the table with Bootstrap classes and custom styles
+        var table = $('<table>').addClass('table table-bordered table-striped table-vcenter js-dataTable-responsive').css({
+            'width': '100%',
+            'height': 'auto',
+            'border': '1px solid black'
+        });
+
+        // Create the table header (thead)
+        var thead = $('<thead>').appendTo(table);
+        var headerRow = $('<tr>').appendTo(thead);
+        $('<th>').attr('colspan', '3').text('Document Details').css({
+            'color': 'black',
+            'background-color': '#f2f2f2',
+            'padding': '0.45rem 0.45rem'
+        }).appendTo(headerRow);
+
+        // Create header row for columns
+        var columnHeadersRow = $('<tr>').appendTo(thead);
+        $('<th>').text('S.No').appendTo(columnHeadersRow);
+        $('<th>').text('Required Info').appendTo(columnHeadersRow);
+        $('<th>').text('Required Documents').appendTo(columnHeadersRow);
+
+        // Create the table body (tbody)
+        var tbody = $('<tbody>').appendTo(table);
+
+        // Iterate through the documents list and populate rows
+        for (var i = 0; i < bookingDocumentsList.length; i++) {
+            (function (index) {
+                var row = $('<tr>').appendTo(tbody);
+                $('<td>').text(index + 1).appendTo(row);
+                $('<td>').text(reasonDocumentData[index].fieldName + ': ' + bookingDocumentsList[index].name).appendTo(row);
+
+                // Create a link to view document image
+                var viewLink = $('<a>').attr('href', 'javascript:void(0)').text(reasonDocumentData[index].docFieldName).on('click', function () {
+                    showDocumentImage(bookingDocumentsList[index].bookingDocUrl);
+                });
+                $('<td>').append(viewLink).appendTo(row);
+            })(i);
+        }
+
+        // Append table to the responsive container
+        tableResponsiveDiv.append(table);
+
+        // Append table to the container in the DOM
+        reasonFieldsContainer.append(tableResponsiveDiv);
+    }
+
+
+    function showDocumentImage(fileURL) {
+        //console.log(fileURL);
+        openFileModal(fileURL);
+    }
+
+    // Event delegation for dynamically added elements
+    $(document).on('click', '.view-document', function () {
+        const fileURL = $(this).data('url');
+        openFileModal(fileURL);
+    });
+
+    function openFileModal(fileURL) {
+        $('#filePreview').attr('src', fileURL);
+        $('#fileModal').modal('show');
+    }
+
+    $('#fileModal').on('shown.bs.modal', function () {
+        // boost the last backdrop above everything else
+        $('.modal-backdrop').last().css({
+            'z-index': 1095,
+            'pointer-events': 'none'
+        });
+        // boost this modal
+        $(this).css('z-index', 1100);
+    });
+
+    function viewbookingDetails(userId) {
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/admin/api/bookingdetailsByuserId',
+            data: {'userId': userId},
+            success: function (response) {
+                // console.log(response);
+                $("#bookingTableBody").empty(); // Ensure bookingTableBody is the correct ID of the table body
+                $.each(response, function (index, booking) {
+                    // Create table row with the data from response
+                    var row = '<tr>' + // Added <tr> tag
+                        '<td class="text-center">' + (index + 1) + '</td>' +
+                        '<td class="text-center">' + booking.bookingId + '</td>' +
+                        '<td class="text-center">' + booking.bookingDate + '</td>' +
+                        '<td class="text-center">' + booking.startDate + '</td>' +
+                        '<td class="text-center">' + booking.endDate + '</td>' +
+                        '<td class="text-center">' + booking.startingSlot + '</td>' +
+                        '<td class="text-center">' + booking.endingSlot + '</td>' +
+                        '<td class="text-center">' + booking.reason + '</td>' +
+                        '<td class="text-center">' + booking.noOfDays + '</td>' +
+                        '<td class="text-center">' + booking.bookingStatus + '</td>' +
+                        '<td class="text-center">' + booking.hallAmount + '</td>' +
+                        '<td class="text-center">' + booking.amountReceived + '</td>' +
+                        '</tr>'; // Close <tr> tag
+
+                    // Append the row to the table body
+                    $("#bookingTableBody").append(row);
+                });
+                $('#viewbookingDetailsdetails').modal('show');
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+                // Handle error here
+            }
+        });
+    }
+
+    function viewbookingDetailsbasedonzone(zone) {
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/admin/api/bookingdetailsByzone',
+            data: {'zone': zone},
+            success: function (response) {
+                // console.log(response);
+
+                // Clear existing table data and destroy DataTable instance if it exists
+                var table = $('#bookinglistdataTablebyzone').DataTable();
+                if (table) {
+                    table.clear().destroy();
+                }
+
+                // Populate table with new data
+                var tableBody = $("#bookingTableBodybyzone");
+                tableBody.empty(); // Clear the table body
+
+                $.each(response, function (index, booking) {
+                    var row = '<tr>' +
+                        '<td class="text-center">' + (index + 1) + '</td>' +
+                        '<td class="text-center">' + booking.bookingId + '</td>' +
+                        '<td class="text-center">' + booking.bookingDate + '</td>' +
+                        '<td class="text-center">' + booking.startDate + '</td>' +
+                        '<td class="text-center">' + booking.endDate + '</td>' +
+                        '<td class="text-center">' + booking.startingSlot + '</td>' +
+                        '<td class="text-center">' + booking.endingSlot + '</td>' +
+                        '<td class="text-center">' + booking.reason + '</td>' +
+                        '<td class="text-center">' + booking.noOfDays + '</td>' +
+                        '<td class="text-center">' + booking.bookingStatus + '</td>' +
+                        '<td class="text-center">' + booking.hallAmount + '</td>' +
+                        '<td class="text-center">' + booking.amountReceived + '</td>' +
+                        '</tr>';
+
+                    tableBody.append(row);
+                });
+
+                // Initialize DataTable
+                $('#bookinglistdataTablebyzone').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true
+                });
+
+                // Show the modal
+                $('#viewbookingDetailsbyzone').modal('show');
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+                // Handle error here
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchData();
+
+        restoreSelectedValues();
+        document.getElementById('request').addEventListener('change', function () {
+            myRequest(); // Handle request change
+        });
+
+        document.getElementById('zone1').addEventListener('change', function () {
+            updateDivisions();
+        });
+        document.getElementById('division1').addEventListener('change', function () {
+            updateHalls();
+        });
+    });
+
+    function fetchData() {
+        fetch('/victoriahallbooking_uat/user/api/getZonehalls')  // Replace with your actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                populateDropdowns(data);
+                restoreSelectedValues();
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function populateDropdowns(data) {
+        const zoneDropdown = document.getElementById('zone1');
+        const divisionDropdown = document.getElementById('division1');
+        const hallDropdown = document.getElementById('hall1');
+
+        const zones = new Set();
+        const divisionsByZone = {};
+        const hallsByDivision = {};
+
+        data.forEach(item => {
+            zones.add(item.zone);
+            if (!divisionsByZone[item.zone]) {
+                divisionsByZone[item.zone] = [];
+            }
+            if (!divisionsByZone[item.zone].includes(item.division)) {
+                divisionsByZone[item.zone].push(item.division);
+            }
+            if (!hallsByDivision[item.division]) {
+                hallsByDivision[item.division] = [];
+            }
+            hallsByDivision[item.division].push({hallName: item.hall_name, hallId: item.hall_id});
+        });
+
+        // Populate zones
+        zones.forEach(zone => {
+            const option = document.createElement('option');
+            option.value = zone;
+            option.textContent = zone;
+            zoneDropdown.appendChild(option);
+        });
+
+        zoneDropdown.dataset.divisionsByZone = JSON.stringify(divisionsByZone);
+        divisionDropdown.dataset.hallsByDivision = JSON.stringify(hallsByDivision);
+
+        // Initialize divisions and halls
+        updateDivisions();
+    }
+
+    function updateDivisions() {
+        const zoneDropdown = document.getElementById('zone1');
+        const selectedZone = zoneDropdown.value;
+        const divisionsByZone = JSON.parse(zoneDropdown.dataset.divisionsByZone || '{}');
+
+        const divisionDropdown = document.getElementById('division1');
+        divisionDropdown.innerHTML = '';
+
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = '--Select Division--';
+        divisionDropdown.appendChild(allOption);
+
+        if (selectedZone === '') {
+            document.getElementById('divisionContainer').classList.add('hidden');
+        } else {
+            document.getElementById('divisionContainer').classList.remove('hidden');
+            (divisionsByZone[selectedZone] || []).forEach(division => {
+                const option = document.createElement('option');
+                option.value = division;
+                option.textContent = division;
+                divisionDropdown.appendChild(option);
+            });
+            updateHalls();
+        }
+    }
+
+    function updateHalls() {
+        const divisionDropdown = document.getElementById('division1');
+        const selectedDivision = divisionDropdown.value;
+        const hallsByDivision = JSON.parse(divisionDropdown.dataset.hallsByDivision || '{}');
+
+        const hallDropdown = document.getElementById('hall1');
+        hallDropdown.innerHTML = '';
+
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = '--Select Hall--';
+        hallDropdown.appendChild(allOption);
+
+        if (selectedDivision === '') {
+            document.getElementById('hallContainer').classList.add('hidden');
+        } else {
+            document.getElementById('hallContainer').classList.remove('hidden');
+            (hallsByDivision[selectedDivision] || []).forEach(hall => {
+                const option = document.createElement('option');
+                option.value = hall.hallId;
+                option.textContent = hall.hallName;
+                hallDropdown.appendChild(option);
+            });
+        }
+    }
+
+    function restoreSelectedValues() {
+        const selectedZone = localStorage.getItem('selectedZone') || '';
+        const selectedDivision = localStorage.getItem('selectedDivision') || '';
+        const selectedHall = localStorage.getItem('selectedHall') || '';
+
+        const zoneDropdown = document.getElementById('zone1');
+        const divisionDropdown = document.getElementById('division1');
+        const hallDropdown = document.getElementById('hall1');
+
+        zoneDropdown.value = selectedZone;
+        updateDivisions(); // Populate divisions based on selected zone
+
+        // Make sure to set the division and hall values after the dropdowns are populated
+        divisionDropdown.value = selectedDivision;
+        updateHalls(); // Populate halls based on selected division
+
+        hallDropdown.value = selectedHall;
+    }
+
+    // Store selected values before form submission
+    function storeSelectedValues() {
+        const zoneDropdown = document.getElementById('zone1');
+        const divisionDropdown = document.getElementById('division1');
+        const hallDropdown = document.getElementById('hall1');
+
+        localStorage.setItem('selectedZone', zoneDropdown.value);
+        localStorage.setItem('selectedDivision', divisionDropdown.value);
+        localStorage.setItem('selectedHall', hallDropdown.value);
+    }
+
+    document.getElementById('myForm').addEventListener('submit', function () {
+        storeSelectedValues();
+    });
+
+    let hallBookingData = [];
+    let hallDetailsData = [];
+
+    window.addEventListener("DOMContentLoaded", () => {
+        try {
+            const jsonString1 = document.getElementById("hallBookingJsonInput")?.value;
+            if (jsonString1) {
+                hallBookingData = JSON.parse(jsonString1);
+                console.log("Parsed hallBookingData:", hallBookingData);
+            }
+
+            const jsonString2 = document.getElementById("hallBookingDetailsJsonInput")?.value;
+            if (jsonString2) {
+                hallDetailsData = JSON.parse(jsonString2);
+                console.log("Parsed hallDetailsData:", hallDetailsData);
+            }
+        } catch (e) {
+            console.error("Failed to parse JSON inputs", e);
+        }
+        // Delegate click event for dynamically added booking links
+        $(document).on('click', '.hall-detail-link', function (e) {
+            e.preventDefault();
+            const hallName = $(this).data('hall-name');
+            showHallBookingDetails(hallName);
+        });
+    });
+
+    function showCounterTable(elem) {
+        const counterId = elem.getAttribute("data-counter-id");
+        const filtered = hallBookingData.filter(row => row[0] == counterId);
+
+        const table = $('#modalBookingTable').DataTable();
+        table.clear();
+
+        filtered.forEach((row, index) => {
+            table.row.add([
+                index + 1,
+                row[1],  // Zone
+                row[2],  // Division
+                row[3],  // Hall Name
+                `<button href="#" class="hall-detail-link"
+                     style="background-color: #2a807f; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
+                        data-hall-name="${row[3]}">${row[4]}</button>`
+            ]);
+        });
+
+        table.draw();
+        table.columns.adjust().responsive.recalc();
+
+        // Show modal after data is loaded
+        $('#bookingModal').modal('show');
+    }
+
+    function formatDateFromTimestamp(timestamp) {
+        const date = new Date(parseInt(timestamp));
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getSlotLabel(slot) {
+        return slot === 1 ? 'Morning' : (slot === 2 ? 'Evening' : '');
+    }
+
+    function showHallBookingDetails(hallName) {
+        const filtered = hallDetailsData.filter(row => row[1] === hallName);
+
+        const table = $('#hallDetailsTable').DataTable();
+        table.clear();
+
+        filtered.forEach((row, index) => {
+            table.row.add([
+                index + 1,
+                row[0],
+                row[1],
+                formatDateFromTimestamp(row[2]),
+                row[3],
+                row[4],
+                getSlotLabel(row[5]),
+                getSlotLabel(row[6]),
+                row[7],
+                row[8],
+                row[9],
+                row[10],
+                row[11],
+                row[12],
+                row[13],
+                row[14],
+                ` <button class="btn btn-sm btn-primary" onclick="viewDetails('${row[0]}')">View</button>`
+            ]);
+        });
+        table.draw();
+        table.columns.adjust().responsive.recalc();
+        $('#hallDetailModal').modal('show');
+    }
+
+    function viewCounterBookingDetails(bookingId) {
+        viewDetails(bookingId);
+    }
+
+    // for review report
+
+    let halldetailcount = [];
+    let counterdetailcount = [];
+
+    window.addEventListener("DOMContentLoaded", () => {
+        try {
+            const jsonString1 = document.getElementById("hallWiseBookingList")?.value;
+            if (jsonString1) {
+                halldetailcount = JSON.parse(jsonString1);
+                console.log("Parsed hall wise count data:", halldetailcount);
+            }
+
+            const jsonString2 = document.getElementById("counterWiseBookingList")?.value;
+            if (jsonString2) {
+                counterdetailcount = JSON.parse(jsonString2);
+                console.log("Parsed counter wise count data:", counterdetailcount);
+            }
+        } catch (e) {
+            console.error("Failed to parse JSON inputs", e);
+        }
+
+        $(document).on('click', '.counter-booking-link', function (e) {
+            e.preventDefault();
+            const hallId = $(this).data('hall-id');
+            showCounterCountDetails(hallId);
+        });
+
+    });
+
+    function showHallDetailsTable(elem) {
+        const zoneId = elem.getAttribute("data-zone-id");
+        console.log("Selected Zone:", zoneId);
+        console.log("Full Data:", halldetailcount);
+
+        // FIX: Compare correct column (zoneId might be at index 5)
+        const filtered = halldetailcount.filter(row => String(row[5]) === String(zoneId));
+        console.log("Filtered Data:", filtered);
+
+        const table = $('#hallwiseBookingTable').DataTable();
+        table.clear();
+
+        filtered.forEach((row, index) => {
+            table.row.add([
+                index + 1,
+                row[1], // hall name
+                row[3], // online booking
+                `<button type="button" class="btn btn-sm btn-info counter-booking-link"
+                data-hall-id="${row[0]}">${row[4]}</button>`, // clickable counter count
+                row[2] // total count
+            ]);
+        });
+
+        table.draw();
+        $('#hallModal').modal('show');
+    }
+
+
+    function showCounterCountDetails(hallId) {
+        console.log("Looking for hallId:", hallId);
+        console.log("All Counter Data:", counterdetailcount);
+
+        const filtered = counterdetailcount.filter(row => String(row[1]) === String(hallId));
+        console.log("Filtered Counter Data:", filtered);
+
+        const table = $('#counterDetailsTable').DataTable();
+        table.clear();
+
+        filtered.forEach((row, index) => {
+            table.row.add([
+                index + 1,
+                row[0], // Counter ID
+                row[2]  // Booking count
+            ]);
+        });
+
+        table.draw();
+        $('#counterDetailModal').modal('show');
+    }
+
+
+
+</script>
+</body>
+
+</html>

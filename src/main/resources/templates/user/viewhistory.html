@@ -1,0 +1,3234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}">
+</head>
+<!--datatables-->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<style>
+    .card-body table {
+        width: 100%;
+        padding: 100px;
+    }
+
+    .card-body th,
+    td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .amount-cell {
+        text-align: right;
+        padding-right: 1rem;
+        /* Adjust padding as needed */
+    }
+
+    .ui-datepicker-container {
+        width: 100%;
+    }
+
+    .fixedcontainer {
+        width: 250%;
+        margin: 40px 0;
+        display: none
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 1;
+    }
+
+    .ui-widget {
+        width: 40%
+    }
+
+    .ui-datepicker {
+        padding: 3px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        left: 29.1418px;
+    }
+
+    .ui-datepicker-header {
+        background-color: #f0f0f0;
+        border: none;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .ui-datepicker-title {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        margin: 0;
+        padding: 0;
+        font-weight: bold;
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+        padding: 5px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar .ui-state-default {
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .ui-datepicker-week-end {
+        color: black;
+        font-weight: bold;
+    }
+
+    .ui-datepicker-calendar th span {
+        color: black;
+        font-weight: bold;
+    }
+
+    .highlight-greens .ui-state-default {
+        background: green !important;
+        color: #FFF !important;
+    }
+
+    .highlight-yellow .ui-state-default {
+        background: yellow !important;
+        color: #000 !important;
+    }
+
+    .highlight-violet .ui-state-default {
+        background: #a93da9 !important;
+        color: #000 !important;
+    }
+
+    .highlight-pink .ui-state-default {
+        background: red !important;
+        color: #000 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: white;
+    }
+
+    .modal {
+        overflow-y: auto;
+    }
+
+    .stepper-wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .stepper-item {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .stepper-item::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        height: 4px;
+        background-color: #dcdcdc;
+        /* Default grey line */
+        z-index: -1;
+    }
+
+    .stepper-item:first-child::before {
+        left: 50%;
+        width: 0;
+    }
+
+    .stepper-item:last-child::before {
+        content: none;
+    }
+
+    .stepper-item.completed:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: calc(100% - 30px);
+        height: 4px;
+        background-color: #28a745;
+        z-index: -1;
+        transform: translateX(-50%);
+    }
+
+    .step-counter {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #dcdcdc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        color: white;
+    }
+
+    .step-name {
+        margin-top: 10px;
+        font-size: 11px;
+    }
+
+    .stepper-item.completed .step-counter {
+        background-color: #28a745;
+    }
+
+    .stepper-item.completed .step-name {
+        font-weight: bold;
+    }
+
+    .tracking-container {
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        overflow: hidden;
+        max-height: 500px;
+    }
+
+    .tracking-steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        position: relative;
+    }
+
+    .tracking-steps::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 8px;
+        width: 4px;
+        height: 100%;
+        background: yellowgreen;
+        z-index: 0;
+    }
+
+    .tracking-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        position: relative;
+        padding-left: 40px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        transition: background-color 0.3s ease-in-out;
+        background-color: #fff;
+        /* White background for steps */
+        border-radius: 5px;
+        /* Optional rounded corners */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Line adjustments between steps */
+    .tracking-step::before {
+        width: 100%;
+        height: 5px;
+        background: yellowgreen;
+        /* Line color */
+        position: absolute;
+        top: 10px;
+        /* Adjust position to connect icons */
+        left: 8px;
+        /* Aligns with step icons */
+        margin: 0;
+    }
+
+    .tracking-step:first-child::before {
+        background: none;
+        /* No line before the first step */
+    }
+
+    /* Step icon styling */
+    .step-icon {
+        flex-shrink: 0;
+        font-size: 1.5em;
+        margin-right: 15px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #ccc;
+        /* Default icon background */
+        border: 4px solid #ccc;
+        /* Default border */
+        color: #eee;
+        font-size: 14px;
+        line-height: 20px;
+        z-index: 1;
+        font-family: "Ionicons";
+        /* Icon font */
+    }
+
+    /* Completed step icon and line color */
+    .tracking-step.completed .step-icon {
+        background: #56B500;
+        /* Green for completed */
+        border-color: #56B500;
+        color: #fff;
+    }
+
+    .tracking-step.completed::before {
+        background: #56B500;
+        /* Green line for completed steps */
+    }
+
+    .tracking-step.completed {
+        background-color: #e6ffe6;
+    }
+
+    /* Waiting step icon and line color */
+    .tracking-step.waiting .step-icon {
+        background: #ffeb3b;
+        /* Yellow for waiting */
+        border-color: #ffeb3b;
+    }
+
+    .tracking-step.waiting {
+        background-color: #fff3cd;
+    }
+
+    /* Initiated step icon and line color */
+    .tracking-step.initiated .step-icon {
+        background: #03a9f4;
+        /* Blue for initiated */
+        border-color: #03a9f4;
+    }
+
+    .tracking-step.initiated {
+        background-color: #cce5ff;
+    }
+
+    /* Pending step icon and line color */
+    .tracking-step.pending .step-icon {
+        background: #9e9e9e;
+        /* Grey for pending */
+        border-color: #9e9e9e;
+    }
+
+    /* Cancelled step icon and line color */
+    .tracking-step.cancelled .step-icon {
+        background: #dc3545 !important;
+        /* Red for cancelled */
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .tracking-step.cancelled::before {
+        background: #dc3545 !important;
+        /* Red line for cancelled steps */
+    }
+
+    .tracking-step.cancelled {
+        background-color: #fdecea;
+        /* Light red background for cancelled steps */
+    }
+
+    /* Rejected step icon and line color */
+    .tracking-step.rejected .step-icon {
+        background: #ff0000;
+        /* Dark red for rejected */
+        border-color: #ff0000;
+        color: #fff;
+    }
+
+    .tracking-step.rejected {
+        background-color: #ffe6e6;
+    }
+
+    .tracking-step.rejected::before {
+        background: #ff0000;
+        /* Dark red line for rejected steps */
+    }
+
+    /* GCC Blocked step icon and line color */
+    .tracking-step.gcc-blocked .step-icon {
+        background: #ff6600;
+        /* Orange for GCC blocked */
+        border-color: #ff6600;
+        color: #fff;
+    }
+
+    .tracking-step.gcc-blocked {
+        background-color: #ffe0cc;
+    }
+
+    .tracking-step.gcc-blocked::before {
+        background: #ff6600;
+        /* Orange line for GCC blocked steps */
+    }
+
+    /* Step content styling */
+    .step-content {
+        padding: 2px 15px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 100%;
+        flex-grow: 1;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .step-content h5 {
+        margin: 0 0 5px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .step-date {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* Icon color customization */
+    .fas,
+    .fa-solid {
+        font-weight: 900;
+        color: white;
+    }
+
+    #transactionmodel {
+        max-width: 90%;
+        /* Make modal wider */
+    }
+
+    .table-responsive {
+        max-height: 400px;
+        /* Adjust the table's maximum height */
+        overflow-y: auto;
+        /* Enable vertical scrolling if needed */
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: #007bff;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chat-icon img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .chat-notification {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    .chat-box {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 300px;
+        height: 400px;
+        background-color: white;
+        border: 1px solid #ccc;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-header {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-body {
+        flex-grow: 1;
+        padding: 10px;
+        overflow-y: scroll;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .chat-footer {
+        display: flex;
+        padding: 10px;
+    }
+
+    .chat-footer input {
+        flex-grow: 1;
+        padding: 5px;
+        margin-right: 10px;
+    }
+
+    .chat-footer button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .otp-input-box {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .otp-input-box .otp-input {
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+</style>
+
+<body>
+    <!-- Pre-loader start -->
+    <div class="theme-loader">
+        <div class="ball-scale">
+            <div class='contain'>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pre-loader end -->
+
+    <div id="pcoded" class="pcoded">
+        <div class="pcoded-container">
+            <!-- Menu header start -->
+            <nav th:replace="~{fragments/nav-user :: nav}"></nav>
+
+            <!-- Menu header end -->
+            <div class="pcoded-main-container">
+                <nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>
+                <div class="pcoded-wrapper">
+                    <div class="pcoded-content">
+                        <div class="pcoded-inner-content">
+
+                            <!-- Main-body start -->
+                            <div class="main-body" style="background-color: white">
+                                <div class="page-wrapper" style="padding: 0;">
+                                    <!-- Page-header start -->
+                                    <div class="page-header m-t-50">
+
+                                    </div>
+                                    <div id="futureEventsContainer" class="page-body" style="display: none;"></div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Hall Booking Details</h5>
+                                            <button type="button" class="btn btn-primary btn-square-md"
+                                                th:if="${userBookingspast.size() > 0}"
+                                                th:onclick="'transactionHistory(' + ${userBookingspast[0].users_user_id} + ')'">
+                                                Transaction History
+                                            </button>
+                                        </div>
+
+                                        <div class="card-block">
+                                            <div class="table-responsive">
+                                                <table
+                                                    class="table table-bordered table-striped table-vcenter js-dataTable-responsive"
+                                                    id="detailstable" style="width: 100%">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th class="text-center no-sort" width="10%">S.No</th>
+                                                            <th>Booking Id</th>
+                                                            <th>Booking date</th>
+                                                            <th>Hall Name</th>
+                                                            <th>Starting Date</th>
+                                                            <th>Ending Date</th>
+                                                            <th>Starting Period</th>
+                                                            <th>Ending Period</th>
+                                                            <th>Reason for booking</th>
+                                                            <th>Booking Status</th>
+                                                            <th>Payment Status</th>
+                                                            <th>Event Status</th>
+                                                            <th class="text-center no-sort" width="10%">Action</th>
+                                                            <th>View</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="booking, i : ${userBookingspast}"
+                                                            class="${userBookingspast}">
+                                                            <td th:text="${i.count}"></td>
+                                                            <td th:text="${booking.booking_id}"></td>
+                                                            <td th:text="${booking.booking_date}"></td>
+                                                            <td th:text="${booking.hall_name}"></td>
+                                                            <td th:text="${booking.start_date}"></td>
+                                                            <td th:text="${booking.end_date}"></td>
+                                                            <td
+                                                                th:text="${booking.starting_slot == 1 ? 'morning' : (booking.starting_slot == 2 ? 'evening' : '')}">
+                                                            </td>
+                                                            <td
+                                                                th:text="${booking.ending_slot == 1 ? 'morning' : (booking.ending_slot == 2 ? 'evening' : '')}">
+                                                            </td>
+                                                            <td th:text="${booking.reason}"></td>
+                                                            <td
+                                                                th:text="${#strings.replace(booking.booking_status, '_', ' ')}">
+                                                            </td>
+                                                            <td
+                                                                th:text="${booking.payment_status != null ? booking.payment_status : 'NA'}">
+                                                            </td>
+                                                            <td>
+                                                                <span th:if="${booking.booking_status == 'APPROVED'}">
+                                                                    <span th:switch="${booking.event_category}">
+                                                                        <span th:case="'Current'">Current Event</span>
+                                                                        <span th:case="'Past'">Completed Event</span>
+                                                                        <span th:case="'Future'">Upcoming Event</span>
+                                                                        <span th:case="'Reschedule'">Upcoming
+                                                                            Event</span>
+                                                                        <span th:case="'noaction'">Govt Event</span>
+                                                                    </span>
+                                                                </span>
+                                                                <span th:if="${booking.booking_status == 'COMPLETED'}">
+                                                                    <span>Refund Completed Event</span>
+                                                                </span>
+                                                                <span th:if="${booking.booking_status == 'CANCELED'}">
+                                                                    <span>User Canceled Event</span>
+                                                                </span>
+                                                                <span th:if="${booking.booking_status == 'REJECTED'}">
+                                                                    <span>GCC Rejected Event</span>
+                                                                </span>
+                                                                <span
+                                                                    th:if="${booking.booking_status == 'GCC_BLOCKED'}">
+                                                                    <span>GCC Blocked Event</span>
+                                                                </span>
+                                                                <span
+                                                                    th:if="${booking.booking_status == 'WAITING_FOR_NOC'}">
+                                                                    <span>Waiting For NOC Document</span>
+                                                                </span>
+                                                                <span
+                                                                    th:if="${booking.booking_status == 'WAITING_FOR_NOC_APPROVAL'}">
+                                                                    <span>Waiting For Admin Approval</span>
+                                                                </span>
+                                                            </td>
+                                                            <td th:switch="${booking.event_category}">
+
+                                                                <p th:case="'Future'">
+                                                                    <a class="view-button"
+                                                                        th:if="${booking.booking_status == 'APPROVED'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="cancelBooking([[${booking.booking_id}]], [[${booking.mobile_no}]], [[${booking.booking_type}]])">Cancel
+                                                                            Booking</span>
+                                                                    </a>
+                                                                </p>
+                                                                <p th:case="'waitingfornoc'">
+                                                                    <a class="view-button"
+                                                                        th:if="${booking.booking_status == 'WAITING_FOR_NOC'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#uploadNocModal"
+                                                                            th:attr="data-booking-id=${booking.booking_id}">Upload
+                                                                            NOC</span>
+                                                                    </a>
+
+                                                                    <a class="view-button"
+                                                                        th:if="${booking.booking_status == 'WAITING_FOR_NOC'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="cancelBooking([[${booking.booking_id}]], [[${booking.mobile_no}]], [[${booking.booking_type}]])">Cancel
+                                                                            Booking</span>
+                                                                    </a>
+
+                                                                    <!--<a class="reschedule-button"
+                                                                th:if="${booking.booking_status == 'WAITING_FOR_NOC' and booking.schedule_count < 1}">
+                                                                &lt;!&ndash;th:if="${booking.booking_status == 'WAITING_FOR_NOC'}">&ndash;&gt;
+                                                                <span class="badge bg-danger"
+                                                                      style="cursor: pointer;"
+                                                                      th:onclick="openRescheduleModal([[${booking.booking_id}]], [[${booking.start_date}]], [[${booking.end_date}]],[[${booking.no_of_days}]],
+                                                                    [[${booking.hall_details_hall_id}]],[[${booking.starting_slot}]],[[${booking.ending_slot}]],[[${booking.reason}]])">Reschedule
+                                                                    Booking</span>
+                                                            </a>-->
+                                                                </p>
+
+                                                                <p th:case="'waitingfornocapproval'">
+                                                                    <a class="view-button"
+                                                                        th:if="${booking.booking_status == 'WAITING_FOR_NOC_APPROVAL'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="cancelBooking([[${booking.booking_id}]], [[${booking.mobile_no}]], [[${booking.booking_type}]])">Cancel
+                                                                            Booking</span>
+                                                                    </a>
+                                                                </p>
+                                                                <!--<p th:case="'noaction'">
+                                                            <a class="view-button">
+                                                                <span>&#45;&#45;No Action&#45;&#45;</span>
+                                                            </a>
+                                                        </p>-->
+
+                                                                <p th:case="'noaction'">
+                                                                    <a class="view-button">
+                                                                        <a class="view-button"
+                                                                            th:if="${booking.booking_status == 'APPROVED'}">
+                                                                            <span class="badge bg-danger"
+                                                                                style="cursor: pointer;"
+                                                                                th:onclick="cancelBooking([[${booking.booking_id}]], [[${booking.mobile_no}]], [[${booking.booking_type}]])">Cancel
+                                                                                Booking</span>
+                                                                        </a>
+                                                                    </a>
+                                                                </p>
+                                                                <p th:case="'noaction'">
+                                                                    <a class="view-button">
+                                                                        <span>--No Action--</span>
+                                                                    </a>
+                                                                </p>
+                                                                <p th:case="'Reschedule'">
+                                                                    <a class="view-button"
+                                                                        th:if="${booking.booking_status == 'APPROVED'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="cancelBooking([[${booking.booking_id}]], [[${booking.mobile_no}]], [[${booking.booking_type}]])">Cancel
+                                                                            Booking</span>
+                                                                    </a>
+                                                                    <!-- <a class="reschedule-button"
+                                                                        th:if="${booking.booking_status == 'APPROVED'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="openRescheduleModal([[${booking.booking_id}]], [[${booking.start_date}]], [[${booking.end_date}]],[[${booking.no_of_days}]],
+																			[[${booking.hall_details_hall_id}]],[[${booking.starting_slot}]],[[${booking.ending_slot}]],[[${booking.reason}]])">Reschedule
+                                                                            Booking</span>
+                                                                    </a>
+                                                                    <a class="reschedule-button"
+                                                                        th:if="${booking.booking_status == 'WAITING_FOR_NOC'}">
+                                                                        <span class="badge bg-danger"
+                                                                            style="cursor: pointer;"
+                                                                            th:onclick="openRescheduleModal([[${booking.booking_id}]], [[${booking.start_date}]], [[${booking.end_date}]],[[${booking.no_of_days}]],
+																			[[${booking.hall_details_hall_id}]],[[${booking.starting_slot}]],[[${booking.ending_slot}]],[[${booking.reason}]])">Reschedule
+                                                                            Booking</span>
+                                                                    </a> -->
+
+                                                                </p>
+
+                                                            </td>
+             
+
+                                                            <td>
+                                                                <a class="view-button">
+                                                                 <!--  <span class="badge bg-primary"
+                                                                        style="cursor: pointer;"
+                                                                        th:onclick="showBookingDetails([[${booking.booking_id}]])">View</span>-->
+                                                                        <span class="badge bg-primary"
+      style="cursor: pointer;"
+      th:onclick="showBookingDetails([[${booking.booking_id}]], [[${bookingRefIds[booking.booking_id]}]])">
+      View
+</span>
+
+                                                                </a>
+                                                                <!--<a class="view-button">
+                                                            <span class="badge bg-primary"
+                                                                style="cursor: pointer;"
+                                                                th:onclick="trackBooking([[${booking.booking_id}]])">Track</span>
+                                                        </a>-->
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <input type="hidden" id="serverDate" th:value=${serverDate}>
+                                  
+
+                                 
+
+
+
+                                    <div class="modal fade backdrop" id="showBookingDetails" data-backdrop="static"
+                                        tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                      
+
+
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content" id="printableContent">
+
+                                                <form id="regform" onsubmit="return rejectsubmit();">
+                                                    <!--ak-->
+                                                        <!-- Add these -->
+    <input type="hidden" id="modalBookingId">
+    <input type="hidden" id="modalRefId">
+                                                    <div
+                                                        class="block block-rounded block-themed block-transparent mb-0">
+
+                                                        <div class="block-header bg-primary-dark">
+                                                            <h3 class="block-title" id="2mtitle">Booking
+                                                                Information</h3>
+                                                            <div class="block-options">
+                                                                <button type="button" class="btn-block-option"
+                                                                    data-bs-dismiss="modal" aria-label="Close">
+                                                                    <i class="fa fa-fw fa-times"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="block-content row"
+                                                            style="margin-right:0px;margin:0;padding:0;">
+                                                            <div class="col-md-12 col-lg-12 col-sm-12">
+                                                                <div class="card-body">
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th colspan="10"
+                                                                                style="background-color: lightgrey;">
+                                                                                User Details
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                User Name:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_userName"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Mobile Number:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_mobileNumber"></td>
+
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                User Type:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_usertype"></td>
+
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                User Address:
+                                                                            </th>
+                                                                            <td colspan="5" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                                                id="td_useraddress"></td>
+
+                                                                        </tr>
+                                                                        <input type="hidden"
+                                                                            class="form-control text-center"
+                                                                            name="bookingid" id="bookingid" disabled />
+                                                                        <tr>
+                                                                            <th colspan="10"
+                                                                                style="background-color: lightgrey;">
+                                                                                Hall Details
+                                                                            </th>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Hall Name:
+                                                                            </th>
+                                                                            <td colspan="10" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;text-wrap:pretty;"
+                                                                                id="td_hallName"></td>
+
+                                                                        </tr>
+                                                                        <th
+                                                                            style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                            Hall Address:
+                                                                        </th>
+                                                                        <td colspan="10" class="fw-semibold"
+                                                                            style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                                            id="td_halladdress"></td>
+
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Caretaker Name:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_caretakername"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Caretaker Mobile Number:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_caretakermobileNumber"></td>
+
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th colspan="10"
+                                                                                style="background-color: lightgrey;">
+                                                                                Booking
+                                                                                Details (Booking Id:-<span
+                                                                                    id="booking_id"
+                                                                                    style="color:blue"></span>)
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Booking Date:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_bookingDate"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Deposit Amount (in Rs):
+                                                                            </th>
+                                                                            <td colspan="2"
+                                                                                class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_depositeAmount"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Start Date:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_startDate"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Hall Amount (in Rs):
+                                                                            </th>
+                                                                            <td colspan="2"
+                                                                                class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_hallAmount"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                END Date:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_endDate"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                GST @18% (in Rs):
+                                                                            </th>
+                                                                            <td colspan="2"
+                                                                                class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_gst"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Starting Slot:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_startingSlot"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Total Amount (in Rs):
+                                                                            </th>
+                                                                            <td colspan="2"
+                                                                                class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_totalAmount"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Ending Slot:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_endingSlot"></td>
+                                                                            <!--<th style="display:none;padding: 0.45rem 0.45rem;border:none"
+                                                                            id="rejectionreasondiv">Rejection
+                                                                            Reason:</th>
+                                                                        <td class="fw-semibold"
+                                                                            style="padding: 0.45rem 0.45rem;"
+                                                                            id="reasonforrejection"></td>-->
+
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;border:none">
+                                                                                Booking Status:
+                                                                            </th>
+                                                                            <td colspan="2" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                                                id="bookingstatus_td"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th style="display:none;padding: 0.45rem 0.45rem;border:none"
+                                                                                id="rejectionreasondiv">Rejection
+                                                                                Reason:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;text-wrap: pretty;"
+                                                                                id="reasonforrejection"></td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row col-md-12 col-lg-12 col-sm-12"
+                                                                style="margin-left:6px;margin-top:-21px">
+                                                                <div class="documents" id="documents"></div>
+                                                            </div>
+                                                            <div class="col-md-12 col-lg-12 col-sm-12 mb-2"
+                                                                id="paymentsdetails"
+                                                                style="display:none;    margin-top: -26px;">
+                                                                <div class="card-body">
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th colspan="10"
+                                                                                style="background-color: lightgrey;">
+                                                                                Booking Payment Details
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Transaction ID:
+                                                                            </th>
+                                                                            <td colspan="10" class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_transactionId"></td>
+
+                                                                        </tr>
+                                                                        <th
+                                                                            style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                            Amount Received (in Rs):
+                                                                        </th>
+                                                                        <td colspan="10" class="fw-semibold"
+                                                                            style="padding: 0.45rem 0.45rem;"
+                                                                            id="td_payamountReceived"></td>
+
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;">
+                                                                                Transaction Status:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_paymentStatus"></td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row col-md-12 col-lg-12 col-sm-12"
+                                                                id="ebdetails"
+                                                                style="display:none;margin-left: 0px;margin-top: -49px">
+                                                                <div class="card-body">
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th colspan="4"
+                                                                                style="background-color: lightgrey;">EB
+                                                                                Details
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Consumer Number:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_EBNumber"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                EB Amount Per Unit (in Rs):
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_ebamountperunit"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Start Reading:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_startingReading"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Unit Consumed:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_usedunit"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                END Reading:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_endingReading"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                EB Amount (in Rs):
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_electricityamount"></td>
+                                                                        </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row col-md-12 col-lg-12 col-sm-12"
+                                                                id="damagelist" style="disaply:none">
+                                                                <div id="damageDetails"></div>
+                                                            </div>
+
+                                                            <div class="col-md-12 col-lg-12 col-sm-12"
+                                                                id="refunddetails" style="margin-top:-41px">
+                                                                <div class="card-body">
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th colspan="2"
+                                                                                style="background-color: lightgrey;">
+                                                                                Amount to be Refunded (in Rs)
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Deposit Amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_depositeamountforrefund">0
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                EB Amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_ebAmount"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Damage Amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_damage"></td>
+                                                                        </tr>
+                                                                        <tr id="pendingcolumn">
+                                                                            <th id="th_settel_label"
+                                                                                style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+                                                                                Collection Pending Amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem; color: green;"
+                                                                                id="td_pending_amt">0
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr id="collectionstatuscolumn">
+                                                                            <th id="label"
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Collection Pending Status
+                                                                                :
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem; color: green;"
+                                                                                id="td_collection_status">
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+                                                                                Actual refundable Amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold amount-cell"
+                                                                                style="padding: 0.45rem 0.45rem; color: green;"
+                                                                                id="td_settel_amt">0
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row col-md-12 col-lg-12 col-sm-12"
+                                                                id="refundamountDetails"
+                                                                style="display:none;margin-left: 0px;margin-top: -49px">
+                                                                <div class="card-body">
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th colspan="4"
+                                                                                style="background-color: lightgrey;">
+                                                                                Refund Details
+                                                                            </th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Booking Status:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_bookingStatus"></td>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                                Refund Status:
+                                                                            </th>
+                                                                            <td class="fw-semibold"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_refundStatus"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;text-wrap: pretty;">
+                                                                                Refund amount:
+                                                                            </th>
+                                                                            <td class="fw-semibold" colspan="5"
+                                                                                style="padding: 0.45rem 0.45rem;"
+                                                                                id="td_refundamount"></td>
+                                                                        </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div id="refundMessage" style="display: none;">
+                                                                <h1 id="refundText"
+                                                                    style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                                                </h1>
+                                                            </div>
+                                                            <div id="rejectrefundMessage" style="display: none;">
+                                                                <h1 id="rejectrefundText"
+                                                                    style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                                                </h1>
+                                                            </div>
+                                                            <div id="blockedrefundMessage" style="display: none;">
+                                                                <h1 id="blockedrefundText"
+                                                                    style="font-size: 17px;margin-left: 20px;color: darkgreen;">
+                                                                </h1>
+                                                            </div>
+                                                            <!--Newly added for Reschedule Details-->
+                                                            <!--<div class="row col-md-12 col-lg-12 col-sm-12"
+                                                             id="rescheduleDetails"
+                                                             style="display:none;margin-left: 0px;margin-top: -49px">
+                                                            <div class="card-body">
+                                                                <table>
+                                                                    <tr>
+                                                                        <th colspan="4"
+                                                                            style="background-color: lightgrey;">
+                                                                            Reschedule Details
+                                                                        </th>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                            Event Start Date:
+                                                                        </th>
+                                                                        <td class="fw-semibold"
+                                                                            style="padding: 0.45rem 0.45rem;"
+                                                                            id="td_res_start_date"></td>
+                                                                        <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal">
+                                                                            Event End Date:
+                                                                        </th>
+                                                                        <td class="fw-semibold"
+                                                                            style="padding: 0.45rem 0.45rem;"
+                                                                            id="td_res_end_date"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th
+                                                                                style="padding: 0.45rem 0.45rem;font-weight: normal;text-wrap: pretty;">
+                                                                            Rescheduled Date:</th>
+                                                                        <td class="fw-semibold" colspan="5"
+                                                                            style="padding: 0.45rem 0.45rem;"
+                                                                            id="td_res_date"></td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>-->
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="block-content block-content-full text-end bg-body"
+                                                        id="mbutton">
+                                                        <button class="btn btn-success"
+                                                            onclick="downloadAcknowledgment(event)"
+                                                            style="background: #FB6340;">View
+                                                            Acknowledgement
+                                                        </button>
+                                                        <button type="button"
+                                                            style="background-color: rgb(21,69,93);color: white;"
+                                                            class="btn btn-sm btn-alt-secondary"
+                                                            data-bs-dismiss="modal">Close
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="fileModal" tabindex="-1" role="dialog"
+                            aria-labelledby="fileModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"
+                                            style="border: 1px solid black; padding: 5px;
+												 display: inline-flex; align-items: center; justify-content: center;
+												  background-color: transparent; color: black; font-size: 20px;">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <embed id="filePreview" src="" width="100%" height="600px">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="bookingRescheduleModal" tabindex="-1"
+                        aria-labelledby="bookingModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <!-- Modal Header -->
+                                <div class="modal-header" style="color:black">
+                                    <h5 class="modal-title" id="bookingModalLabel" style="color:black">Booking
+                                        Reschedule</h5>
+                                    <br>
+                                    <br>
+                                    <div style="margin-bottom: -59px; margin-left: -185px;">
+                                        <!-- Adding margin-top for separation -->
+                                        <p style="font-size: 14px; color: #6c757d;"> the Start Date can be
+                                            changed.</p>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+
+                                <!-- Modal Body -->
+                                <div class="modal-body">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <!-- Datepicker and Availability Buttons Column -->
+                                            <div id="datepicker-container" class="fixedcontainer"></div>
+
+                                            <!-- Start Date, End Date, Number of Days Inputs Column -->
+                                            <div class="col">
+                                                <input type="hidden" class="form-control" id="bookingId"
+                                                    name="bookingId" required>
+                                                <label for="startDateInput" class="form-label">Start Date:</label>
+                                                <input type="text" class="form-control" id="startDateInput"
+                                                    name="startDateInput" required readonly>
+                                                <input type="hidden" class="form-control" id="startDatetext"
+                                                    name="startDatetext" required>
+                                            </div>
+                                            <div class="col">
+                                                <label for="endDateInput" class="form-label">End Date:</label>
+                                                <input type="date" class="form-control" id="endDateInput"
+                                                    name="endDateInput" readonly>
+                                            </div>
+                                            <div class="col">
+                                                <label for="noOfDaysInput" class="form-label">Number of Days:</label>
+                                                <input type="number" class="form-control" id="noOfDaysInput"
+                                                    name="noOfDaysInput" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <input type="hidden" id="daysDiff">
+                                                <label for="startingSlot" class="form-label">Starting Slot:</label>
+                                                <input type="text" class="form-control" id="startingSlotText"
+                                                    name="startingSlot" readonly>
+                                                <input type="hidden" class="form-control" id="startingSlot"
+                                                    name="startingSlot" required>
+                                            </div>
+                                            <div class="col">
+                                                <label for="endingSlot" class="form-label">Ending Slot:</label>
+                                                <input type="text" class="form-control" id="endingSlotText"
+                                                    name="endDateInput" readonly>
+                                                <input type="hidden" class="form-control" id="endingSlot"
+                                                    name="endDateInput" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-top: 39px;">
+                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color:#008000;"></button>
+                                                <p style="margin-left: 14px;">Day<br>(Available)</p>
+                                            </div>
+                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color: #ac2bac;"></button>
+                                                <p style="margin-left: 14px;">Morning<br>(Available)</p>
+                                            </div>
+                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color:#FFEA00;"></button>
+                                                <p style="margin-left: 14px;">Evening<br>(Available)</p>
+                                            </div>
+                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color: red;"></button>
+                                                <p style="margin-left: 14px;">Not Available</p>
+                                            </div>
+                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color: blue;"></button>
+                                                <p style="margin-left: 14px;">GCC Blocked</p>
+                                            </div>
+                                            <!--<div class="col col-lg-2 col-sm-2 col-md-2">
+                                            <button type="button" class="btn btn-primary btn-square-md"
+                                                    style="background-color: lightpink;"></button>
+                                            <p style="margin-left: 14px;">Temporary Blocked</p>
+                                        </div>-->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modal Footer -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="Reschedule()">Save
+                                        Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reschedule OTP Verification Modal -->
+                    <div class="modal fade" id="rescheduleOtpModal" tabindex="-1" role="dialog"
+                        aria-labelledby="rescheduleOtpModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h6 class="modal-title m-0" id="rescheduleOtpModalLabel">Reschedule Verification
+                                    </h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="mb-3 text-center">
+                                            <img src="media/images/mobileotp.png" width="50%" alt="Mobileotp">
+                                        </div>
+                                        <div class="mb-0 text-center">
+                                            <h4>OTP Verification</h4>
+                                            <p class="text-mute">Enter the OTP sent to <b class="text-info"
+                                                    id="rescheduleMobileTxt"></b></p>
+                                            <p class="text-danger" id="rescheduleOtpError"></p>
+                                        </div>
+                                        <div class="mb-3 text-center">
+                                            <div class="otp-input-box">
+                                                <input type="text" maxlength="1" class="otp-input" id="rescheduleOtp1"
+                                                    required />
+                                                <input type="text" maxlength="1" class="otp-input" id="rescheduleOtp2"
+                                                    required />
+                                                <input type="text" maxlength="1" class="otp-input" id="rescheduleOtp3"
+                                                    required />
+                                                <input type="text" maxlength="1" class="otp-input" id="rescheduleOtp4"
+                                                    required />
+                                                <input type="text" maxlength="1" class="otp-input" id="rescheduleOtp5"
+                                                    required />
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 text-center">
+                                            <div id="rescheduleResendContainer">
+                                                <p class="mb-0">Didn't receive OTP?</p>
+                                                <p class="mb-0 text-info" id="rescheduleResendLink">Please wait..<span
+                                                        id="rescheduleCountdown">60</span>s</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        onclick="verifyRescheduleOtp()">Verify OTP</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tracking Log Modal -->
+                    <!-- Tracking Modal -->
+                    <div class="modal fade" id="trackingModal" tabindex="-1" aria-labelledby="trackingModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Booking Tracking</h4>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="tracking-container">
+                                        <ul id="trackingList" class="tracking-steps list-unstyled">
+                                            <!-- Steps will be dynamically appended here -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="uploadNocModal" tabindex="-1" aria-labelledby="uploadNocModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="uploadNocModalLabel">Upload NOC</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="nocFile" class="form-label">Select NOC File</label>
+                                        <input type="file" class="form-control nocfile" id="nocFile" name="nocFile"
+                                            required>
+                                        <input type="hidden" id="bookingssId" name="bookingssId">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="submitNocButton">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="transactionHistoryModal" tabindex="-1"
+                        aria-labelledby="transactionHistoryModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" id="transactionmodel"> <!-- modal-lg makes it larger -->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="transactionHistoryModalLabel">Transaction History</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Scrollable Table -->
+                                    <div class="table-responsive"> <!-- Make the table scrollable if too large -->
+                                        <table class="table table-bordered" id="transactionTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.NO</th>
+                                                    <th>Booking ID</th>
+                                                    <th>Amount</th>
+                                                    <th>Date</th>
+                                                    <th>Transaction ID</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Data will be populated dynamically here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive" id="refunddetails" style="display: none;">
+                                        <h2>Refund Details</h2>
+                                        <table class="table table-bordered" id="refunddetailsTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>S.NO</th>
+                                                    <th>Booking ID</th>
+                                                    <th>Amount</th>
+                                                    <th>Date</th>
+                                                    <th>Transaction ID</th>
+                                                    <th>Refund Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Data will be populated dynamically here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer th:replace="~{fragments/footer :: footer}"></footer>
+                </div>
+            </div>
+        </div>
+
+        <!--otp form-->
+        <div th:replace="~{fragments/loginreg :: div}"></div>
+        <!--otp form-->
+        <script src="js/html2pdf.bundle.min.js"></script>
+        <script th:replace="~{fragments/script :: script}"></script>
+        <script th:replace="~{fragments/logRegiOtpScript :: script}"></script>
+        <script type="text/javascript" src="https://www.paynimo.com/paynimocheckout/server/lib/checkout.js"></script>
+        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+        <script type="text/javascript">
+            // Reschedule variables
+            var rescheduleBookingId = null;
+            var rescheduleStartDate = null;
+            var rescheduleEndDate = null;
+            var rescheduleMobileNumber = null;
+            var rescheduleHallId = null;
+            var rescheduleStartingSlot = null;
+            var rescheduleEndingSlot = null;
+            var rescheduleReason = null;
+
+            $(document).ready(function () {
+                $('#detailstable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    ordering: true,
+                    columnDefs: [{
+                        targets: 'no-sort',
+                        orderable: false
+                    }],
+                    dom: 'Bfrtip',
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            text: 'Export to Excel',
+                            className: 'btn btn-primary'
+                        }
+                    ]
+                });
+            });
+            $(document).ready(function () {
+                $('#submitNocButton').on('click', function (e) {
+                    e.preventDefault();
+
+                    // Get the form data
+                    var formData = new FormData();
+                    var fileInput = $('#nocFile')[0].files[0];  // Get the selected file
+                    var bookingssId = $('#bookingssId').val();  // Get the bookingId
+
+                    // Check if a file is selected
+                    if (!fileInput) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No File Selected',
+                            text: 'Please select a file to upload.',
+                        });
+                        return;
+                    }
+
+                    // Append file and bookingId to formData
+                    formData.append('nocFile', fileInput);
+                    formData.append('bookingssId', bookingssId);
+
+                    // Perform Ajax request
+                    $.ajax({
+                        url: '/victoriahallbooking_uat/user/api/uploaddocs',  // API endpoint
+                        type: 'POST',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            // Show success message and refresh the page
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'NOC uploaded successfully!',
+                            }).then(() => {
+                                $('#uploadNocModal').modal('hide');  // Close the modal
+                                location.reload();  // Refresh the page
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Upload Failed',
+                                text: 'Failed to upload NOC: ' + error,
+                            });
+                        }
+                    });
+                });
+
+                // Populate bookingId when opening the modal
+                $('#uploadNocModal').on('show.bs.modal', function (event) {
+                    var button = $(event.relatedTarget);  // Button that triggered the modal
+                    var bookingId = button.data('booking-id');  // Extract bookingId from the button
+                    $('#bookingssId').val(bookingId);  // Set the bookingId in the hidden input field
+                });
+            });
+
+
+            // Function to track booking
+            function trackBooking(bookingId) {
+                $.ajax({
+                    url: '/victoriahallbooking_uat/user/api/trackBooking',
+                    method: 'GET',
+                    data: { bookingId: bookingId }, // Send booking ID to the server
+                    success: function (data) {
+                        // console.log("Received tracking data:", data);
+
+                        // Clear the list initially before appending steps
+                        $('#trackingList').empty();
+
+                        if (Array.isArray(data) && data.length > 0) {
+                            // Show the modal first
+                            $('#trackingModal').modal('show');
+
+                            // Create a Set to track seen statuses
+                            const seenStatuses = new Set();
+
+                            // Append steps one by one
+                            data.forEach((event) => {
+                                // Append each step if it hasn't been seen before
+                                if (!seenStatuses.has(event.status)) {
+                                    seenStatuses.add(event.status); // Add status to Set
+                                    appendStep(event); // Call to append the event step
+                                }
+                            });
+                        } else {
+                            // Show a message when no tracking events are available
+                            $('#trackingList').append('<li class="no-events">No tracking events available.</li>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to fetch booking details:", status, error);
+                        alert('Failed to fetch booking details. Please try again later.');
+                    }
+                });
+            }
+
+
+            function appendStep(event) {
+                const formattedDate = moment(event.dateTime).isValid()
+                    ? moment(event.dateTime).format('MMM DD, YYYY, h:mm A') // Format date using Moment.js
+                    : 'Invalid date';
+
+                const statusClass = getStatusClass(event.status); // Get CSS class for the status
+                const statusIcon = getStatusIcon(event.status);   // Get icon for the status
+
+                // Create and append a step element for each event
+                const stepElement = `
+        <li class="tracking-step ${statusClass}">
+            <div class="step-icon">
+                <i class="fas ${statusIcon}"></i> <!-- Add the icon -->
+            </div>
+            <div class="step-content">
+                <h5>${event.description || 'No Description Available'}</h5> <!-- Event description -->
+                <p class="step-date">${formattedDate}</p> <!-- Formatted date -->
+            </div>
+        </li>
+    `;
+
+                // Append the element to the list
+                $('#trackingList').append(stepElement);
+            }
+
+            function getStatusClass(status) {
+                switch (status) {
+                    case 'PAYMENT_SUCCESS':
+                    case 'APPROVED':
+                    case 'EVENT_COMPLETED':
+                    case 'COMPLETED':
+                        return 'completed'; // Returns 'completed' class for these statuses
+                    case 'SETTLEMENT_RAISING':
+                        return 'waiting';
+                    case 'CANCELED':
+                        return 'cancelled';
+                    case 'REJECTED':
+                        return 'rejected';
+                    case 'GCC_BLOCKED':
+                        return 'gcc-blocked';
+                    default:
+                        return 'pending'; // Default class if status is unknown
+                }
+            }
+
+            function getStatusIcon(status) {
+                switch (status) {
+                    case 'PAYMENT_SUCCESS':
+                        return 'fa-check-circle'; // Icon for payment success
+                    case 'APPROVED':
+                        return 'fa-thumbs-up';
+                    case 'EVENT_COMPLETED':
+                        return 'fa-calendar-check';
+                    case 'CANCELED':
+                        return 'fa-ban';
+                    case 'REJECTED':
+                        return 'fa-times-circle';
+                    case 'GCC_BLOCKED':
+                        return 'fa-lock';
+                    default:
+                        return 'fa-clock'; // Default icon for pending steps
+                }
+            }
+
+
+            function showFutureEvents() {
+                document.getElementById('futureEventsContainer').style.display = 'block';
+            }
+
+            function downloadAcknowledgment(event) {
+                event.preventDefault();
+                var bookingId = document.getElementById("booking_id").innerHTML;
+                var refId = document.getElementById("modalRefId").value;
+
+                // Redirect to the acknowledgment URL in the same tab
+            window.location.href = '/victoriahallbooking_uat/user/acknowledgement?bookingId=' + encodeURIComponent(bookingId);
+              // var refId = document.getElementById("ref_" + bookingId).value;
+              console.log("Ref ID: " + refId);
+
+    window.location.href = '/victoriahallbooking_uat/user/acknowledgement?ref_id=' + encodeURIComponent(refId);
+            }
+
+            function getTimeSlot(slotValue) {
+                var timeSlot;
+                var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+                if (trimmedSlotValue === '1') {
+                    timeSlot = 'Morning';
+                } else if (trimmedSlotValue === '2') {
+                    timeSlot = 'Evening';
+                } else {
+                    timeSlot = 'Unknown';
+                }
+                return timeSlot;
+            }
+
+           // function showBookingDetails(bookingId) {
+           function showBookingDetails(bookingId, refId) {
+                $.ajax({
+                    url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+                    method: 'GET',
+                    data: { bookingId: bookingId },
+                    success: function (response) {
+                        document.getElementById("td_userName").innerHTML = response.users.name;
+                        document.getElementById("td_mobileNumber").innerHTML = response.users.mobileNo;
+                        document.getElementById("td_usertype").innerHTML = response.users.usertype;
+                        var userDetails = response.users;
+                        var userDetailsString =
+                            userDetails.doorNo + ", " +
+                            userDetails.street + ", " +
+                            userDetails.area + ", " +
+                            userDetails.location + " ,Chennai- " +
+                            userDetails.pinCode;
+                        document.getElementById("td_useraddress").innerHTML = userDetailsString;
+                        document.getElementById("td_hallName").innerHTML = response.hallDetails.hallName;
+                        var hallDetails = response.hallDetails;
+                        var hallDetailsString =
+                            hallDetails.doorNo + ", " +
+                            hallDetails.street + ", " +
+                            hallDetails.area + ", " +
+                            hallDetails.city + "- " +
+                            hallDetails.pinCode;
+                        document.getElementById("td_halladdress").innerHTML = hallDetailsString;
+                        document.getElementById("td_caretakername").innerHTML = response.hallDetails.hallInchargeName;
+                        document.getElementById("td_caretakermobileNumber").innerHTML = response.hallDetails.hallInchargeMobno;
+                        document.getElementById("td_bookingDate").innerHTML = response.bookingDate;
+                        document.getElementById("td_depositeAmount").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+                        document.getElementById("td_hallAmount").innerHTML = parseFloat(response.hallAmount).toFixed(2);
+                        // Calculate GST and total amount
+                        var gstAmount = (parseFloat(response.hallAmount) * (response.hallDetails.gst / 100)).toFixed(2);
+                        var totalAmount = parseFloat(response.amountReceived).toFixed(2);
+
+                        document.getElementById("td_gst").innerHTML = gstAmount;
+                        document.getElementById("td_totalAmount").innerHTML = totalAmount;
+
+                        document.getElementById("td_startDate").innerHTML = response.startDate;
+                        document.getElementById("td_endDate").innerHTML = response.endDate;
+                        document.getElementById("booking_id").innerHTML = response.bookingId;
+
+
+                        function getTimeSlot(slotValue) {
+                            var timeSlot;
+                            var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+                            if (trimmedSlotValue === '1') {
+                                timeSlot = 'Morning';
+                            } else if (trimmedSlotValue === '2') {
+                                timeSlot = 'Evening';
+                            } else {
+                                timeSlot = 'Unknown';
+                            }
+                            return timeSlot;
+                        }
+
+                        document.getElementById("td_startingSlot").innerHTML = getTimeSlot(response.startingSlot);
+                        document.getElementById("td_endingSlot").innerHTML = getTimeSlot(response.endingSlot);
+                        document.getElementById("bookingstatus_td").innerHTML = response.bookingStatus;
+
+                        console.log("before comments user view history...");
+                        console.log("Comments..." + response.comments);
+
+                        if (response.bookingStatus === 'REJECTED' && response.comments) {
+                            document.getElementById("rejectionreasondiv").style.display = "block";
+                            const rejectionCell = document.getElementById("reasonforrejection");
+                            rejectionCell.innerHTML = response.comments;
+                        } else {
+                            document.getElementById("rejectionreasondiv").style.display = "none";
+                            document.getElementById("reasonforrejection").style.display = "none";
+                        }
+                        showReasonDocuments(response);
+
+                        if (response.payments) {
+                            document.getElementById("paymentsdetails").style.display = "block";
+                            document.getElementById("td_transactionId").innerHTML = response.payments.transactionId;
+                            document.getElementById("td_payamountReceived").innerHTML = response.payments.amountReceived;
+                            document.getElementById("td_paymentStatus").innerHTML = response.payments.paymentStatus;
+                        } else {
+                            document.getElementById("paymentsdetails").style.display = "none";
+                        }
+                        if (response.ebDetails) {
+                            document.getElementById("ebdetails").style.display = "block";
+                            document.getElementById("td_EBNumber").innerHTML = response.hallDetails.ebNumber;
+                            document.getElementById("td_startingReading").innerHTML = response.ebDetails.startingReading;
+                            document.getElementById("td_endingReading").innerHTML = response.ebDetails.endingReading;
+                            document.getElementById("td_usedunit").innerHTML = response.ebDetails.usedUnit;
+                            document.getElementById("td_ebamountperunit").innerHTML = parseFloat(response.hallDetails.ebCostPerUnit).toFixed(2);
+                            document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+
+                        } else {
+                            document.getElementById("ebdetails").style.display = "none";
+                        }
+                        if (response.damageList && response.damageList.length > 0) {
+                            document.getElementById("damagelist").style.display = "block";
+
+                        } else {
+                            document.getElementById("damagelist").style.display = "none";
+                        }
+                        if (response.settlement) {
+                            document.getElementById("refunddetails").style.display = "block";
+                            document.getElementById("td_depositeamountforrefund").innerHTML = parseFloat(response.depositAmount).toFixed(2);
+                            document.getElementById("td_electricityamount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                            document.getElementById("td_ebAmount").innerHTML = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                            document.getElementById("td_damage").innerHTML = parseFloat(response.settlement.damageAmount).toFixed(2);
+
+                            var eb_amt = parseFloat(response.ebDetails.ebAmount).toFixed(2);
+                            var deposit_amt = parseFloat(response.depositAmount).toFixed(2);
+                            var tem_total = (deposit_amt - eb_amt).toFixed(2);
+                            $("#td_settel_amt").html(tem_total);
+                        } else {
+                            document.getElementById("refunddetails").style.display = "none";
+                        }
+
+                        showDamageDetails(response);
+                        if (response.bookingStatus === 'CANCELED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                            document.getElementById("td_refundamount").innerHTML = `Your booking has been cancelled. Deposit amount of ₹ ${parseFloat(response.depositAmount).toFixed(2)} will be refund 3 to 15 Days`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'CANCELED' && response.refundStatus === 'COMPLETED') {
+                            document.getElementById("td_refundamount").innerHTML = `Deposit amount of ₹ ${parseFloat(response.depositAmount).toFixed(2)} refunded successfully`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'REJECTED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus) && response.amountReceived == 0) {
+                            document.getElementById("refundamountDetails").style.display = "none";
+                        } else if (response.bookingStatus === 'REJECTED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                            document.getElementById("td_refundamount").innerHTML = `Your booking has been Rejected by GCC. Full amount of ₹ ${parseFloat(response.amountReceived).toFixed(2)} will be refunded shortly`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'REJECTED' && response.refundStatus === 'COMPLETED') {
+                            document.getElementById("td_refundamount").innerHTML = `Full amount of ₹${parseFloat(response.amountReceived).toFixed(2)} refunded successfully`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'REJECTED' && response.refundStatus === 'NA') {
+                            document.getElementById("td_refundamount").innerHTML = `Your Booking has been rejected by GCC`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'GCC_BLOCKED' && ['WAITING', 'APPROVED', 'INITIATED'].includes(response.refundStatus)) {
+                            document.getElementById("td_refundamount").innerHTML = `Your booking has been Blocked by GCC. Full amount of ₹ ${parseFloat(response.amountReceived).toFixed(2)} will be refunded shortly`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } else if (response.bookingStatus === 'GCC_BLOCKED' && response.refundStatus === 'COMPLETED') {
+                            document.getElementById("td_refundamount").innerHTML = `Full amount of ₹${parseFloat(response.amountReceived).toFixed(2)} refunded successfully`;
+                            document.getElementById("refundamountDetails").style.display = "block";
+                            document.getElementById("td_bookingStatus").innerHTML = response.bookingStatus;
+                            document.getElementById("td_refundStatus").innerHTML = response.refundStatus;
+                        } /*else if(response.scheduleCount === 1){
+                        document.getElementById("rescheduleDetails").style.display = "block";
+                        document.getElementById("td_res_start_date").innerHTML = response.startDate;
+                        document.getElementById("td_res_end_date").innerHTML = response.endDate;
+                        document.getElementById("td_res_date").innerHTML = response.updatedDate;
+                    }*/ else {
+                            document.getElementById("refundamountDetails").style.display = "none";
+                        }
+                        // Show the modal
+                           document.getElementById("modalBookingId").value = bookingId;
+    document.getElementById("modalRefId").value = refId;
+                        $('#showBookingDetails').modal('show');
+                    },
+                    error: function () {
+                        console.error("An error occurred while fetching booking details.");
+                    }
+                });
+            }
+
+            function showDamageDetails(data) {
+                var damageFieldContainer = $('#damageDetails');
+                damageFieldContainer.empty();
+
+                // Create a div for table responsiveness
+                var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({
+                    'margin-top': '-19px',
+                    'margin-left': '19px'
+                });
+                ;
+
+                // Create table with similar classes and styles to the modal table
+                var table = $('<table>').addClass('table table-bordered table-striped').css({
+                    'width': '97%',
+                    'border-color': 'black',
+                    'border-top-color': 'white',
+                    'width': ' 730px'
+                });
+                var thead = $('<thead>').addClass('thead-light');
+                var tbody = $('<tbody>');
+
+                // Create Damage Details header row
+                var headerRow = $('<tr>').appendTo(thead);
+                $('<th>').attr('colspan', '6').text('Damage Details (if any)').css({
+                    'padding': '0.45rem 0.45rem',
+                    'background-color': 'lightgrey',
+                    'font-weight': 'bold',
+                    'color': 'black',
+                }).appendTo(headerRow);
+
+                // Create table header row
+                var columnHeadersRow = $('<tr>').css('background-color', 'white').appendTo(thead);
+                $('<th>').text('S.No').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+                $('<th>').text('Asset Name').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+                $('<th>').text('Damage Img').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+                $('<th>').text('Cost').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+                $('<th>').text('Qty').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+                $('<th>').text('Amount').css('padding', '0.45rem 0.45rem').appendTo(columnHeadersRow);
+
+                var totalAmount = 0;
+                $.each(data.damageList, function (index, detail) {
+                    var row = $('<tr>').appendTo(tbody);
+                    $('<td>').text(index + 1).css('padding', '0.45rem 0.45rem').appendTo(row);
+                    $('<td>').text(detail.assetName).css('padding', '0.45rem 0.45rem').appendTo(row);
+                    var viewLink = $('<a>').attr('href', 'javascript:void(0)').text('View').on('click', function () {
+                        showDamageImage(detail.damageImageUrl);
+                    });
+                    var assetamt = (detail.assetAmount / detail.quantity).toFixed(2);
+                    $('<td>').css('padding', '0.45rem 0.45rem').append(viewLink).appendTo(row);
+                    $('<td>').text(assetamt).css('padding', '0.45rem 0.45rem').appendTo(row);
+                    $('<td>').text(detail.quantity).css('padding', '0.45rem 0.45rem').appendTo(row);
+                    var amount = detail.assetAmount;
+                    totalAmount += amount;
+                    $('<td>').text(amount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(row);
+                    $("#td_dam_amt").html(totalAmount.toFixed(2));
+                });
+                // Add row for total amount
+                var totalRow = $('<tr>').appendTo(tbody);
+                $('<td>').attr('colspan', '5').text('Total Amount').css('padding', '0.45rem 0.45rem; font-weight: bold; background-color: #f2f2f2').appendTo(totalRow);
+                $('<td>').text(totalAmount.toFixed(2)).css('padding', '0.45rem 0.45rem').appendTo(totalRow);
+
+                // Append the table elements to the container div
+                table.append(thead, tbody);
+                tableResponsiveDiv.append(table);
+                damageFieldContainer.append(tableResponsiveDiv);
+
+                var temp_total = parseFloat($("#td_settel_amt").html());
+                var settleAmount = temp_total - totalAmount;
+                if (settleAmount < 0) {
+                    var pendingstatus = data.settlement.collectionStatus
+                    $("#td_settel_amt").html(0.00);
+                    $("#pendingcolumn").show();
+                    $("#collectionstatuscolumn").show();
+                    $('#td_collection_status').html(pendingstatus);
+                    $("#td_pending_amt").html(Math.abs(settleAmount).toFixed(2));
+                    $("#td_pending_amt").css("color", "red");
+                } else {
+                    $("#td_settel_amt").html(settleAmount.toFixed(2));
+                    $("#pendingcolumn").hide();
+                    $("#collectionstatuscolumn").hide();
+                    $("#td_settel_amt").css("color", "green"); // Set color to green for positive amounts
+                }
+            }
+
+
+            function showDamageImage(damageImageUrl) {
+                document.getElementById('filePreview').src = damageImageUrl;
+                $('#fileModal').modal('show');
+            }
+
+            function showchallonimage(challanImgLink) {
+                document.getElementById('filePreview').src = challanImgLink;
+                $('#fileModal').modal('show');
+            }
+
+            function showReasonDocuments(list) {
+                $.ajax({
+                    type: "GET",
+                    url: '/victoriahallbooking_uat/api/officer/getReasonByName',
+                    data: {
+                        'reasonName': list.reason
+                    },
+                    success: function (x) {
+                        showReasonWithDocument(x, list);
+                    }
+                });
+            }
+
+            // Display booking documents
+            function showReasonWithDocument(reasonData, list) {
+                var reasonDocumentData = reasonData.reasonDocumentMasterList;
+                var bookingDocumentsList = list.bookingDocumentsList;
+
+                const reasonFieldsContainer = $('#documents');
+                reasonFieldsContainer.empty();
+
+                // Create a responsive table container
+                var tableResponsiveDiv = $('<div>').addClass('table-responsive').css({
+                    'width': '729px',
+                    'border': '1px solid black'
+                });
+
+                // Create the table with Bootstrap classes and custom styles
+                var table = $('<table>').addClass('table table-bordered table-striped table-vcenter js-dataTable-responsive').css({
+                    'width': '100%',
+                    'height': 'auto',
+                    'border': '1px solid black'
+                });
+
+                // Create the table header (thead)
+                var thead = $('<thead>').appendTo(table);
+                var headerRow = $('<tr>').appendTo(thead);
+                $('<th>').attr('colspan', '3').text('Document Details').css({
+                    'color': 'black',
+                    'background-color': 'lightgrey',
+                    'padding': '0.45rem 0.45rem'
+                }).appendTo(headerRow);
+
+                // Create header row for columns
+                var columnHeadersRow = $('<tr>').appendTo(thead);
+                $('<th>').text('S.No').appendTo(columnHeadersRow);
+                $('<th>').text('Required Info').appendTo(columnHeadersRow);
+                $('<th>').text('Required Documents').appendTo(columnHeadersRow);
+
+                // Create the table body (tbody)
+                var tbody = $('<tbody>').appendTo(table);
+
+                // Iterate through the documents list and populate rows
+                for (var i = 0; i < bookingDocumentsList.length; i++) {
+                    (function (index) {
+                        var row = $('<tr>').appendTo(tbody);
+                        $('<td>').text(index + 1).appendTo(row);
+
+                        // Determine the text content for the second cell
+                        var name = bookingDocumentsList[index].name ? bookingDocumentsList[index].name : ''; // Empty string if name is null or undefined
+                        var fieldText = reasonDocumentData[index].fieldName;
+                        var fullText = name ? fieldText + ': ' + name : fieldText; // Include colon only if name is not empty
+
+                        $('<td>').text(fullText).appendTo(row);
+
+                        // Create a link to view document image
+                        var viewLink = $('<a>').attr('href', 'javascript:void(0)').text(reasonDocumentData[index].docFieldName).on('click', function () {
+                            showDocumentImage(bookingDocumentsList[index].bookingDocUrl);
+                        });
+                        $('<td>').append(viewLink).appendTo(row);
+                    })(i);
+                }
+                // Append table to the responsive container
+                tableResponsiveDiv.append(table);
+
+                // Append table to the container in the DOM
+                reasonFieldsContainer.append(tableResponsiveDiv);
+            }
+
+
+            function showDocumentImage(fileURL) {
+                openFileModal(fileURL);
+            }
+
+            // Event delegation for dynamically added elements
+            $(document).on('click', '.view-document', function () {
+                const fileURL = $(this).data('url');
+                openFileModal(fileURL);
+            });
+
+            function openFileModal(fileURL) {
+                $('#filePreview').attr('src', fileURL);
+                $('#fileModal').modal('show');
+            }
+
+            // For OTP input box
+            $('.otp-input').on('keyup', function (e) {
+                var $this = $(this);
+                if ($this.val().length === 1) {
+                    $this.next('.otp-input').focus();
+                }
+                if ($this.val().length === 0) {
+                    $this.prev('.otp-input').focus();
+                }
+            });
+
+            function cancelBooking(bookingId, mobileNo, bookingType) {
+                var mobileNum = mobileNo;
+                var bookingId = bookingId;
+
+                // Check if the booking type is OFFLINE
+                if (bookingType === "OFFLINE") {
+                    Swal.fire({
+                        title: 'Cancellation Not Available',
+                        text: 'Cancellation is not available for offline bookings.',
+                        icon: 'error'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'Once canceled, this action can\'t be undo. Only the deposit Amount will be refunded within 3 to 15 days.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, cancel it!',
+                        cancelButtonText: 'Close',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If user confirms, show OTP form
+                            mobileNumberForCancel = mobileNum;
+                            cancelBookingId = bookingId;
+                            cancelBookingLogin = true;
+                            sendOTP(mobileNum);
+                        }
+                    });
+                }
+            }
+
+            function resetRescheduleOTPSection() {
+                // Hide OTP section
+                var otpSection = document.getElementById("otpSection");
+                if (otpSection) {
+                    otpSection.style.display = "none";
+                }
+
+                // Show reschedule button and hide verify button
+                var rescheduleBtn = document.getElementById("rescheduleBtn");
+                var verifyOtpBtn = document.getElementById("verifyOtpBtn");
+
+                if (rescheduleBtn) {
+                    rescheduleBtn.style.display = "inline-block";
+                }
+                if (verifyOtpBtn) {
+                    verifyOtpBtn.style.display = "none";
+                }
+
+                // Clear OTP input fields
+                for (let i = 1; i <= 6; i++) {
+                    var otpField = document.getElementById("otp" + i);
+                    if (otpField) {
+                        otpField.value = "";
+                    }
+                }
+
+                // Reset variables
+                rescheduleBookingId = null;
+                rescheduleStartDate = null;
+                rescheduleEndDate = null;
+                rescheduleMobileNumber = null;
+                rescheduleHallId = null;
+                rescheduleStartingSlot = null;
+                rescheduleEndingSlot = null;
+                rescheduleReason = null;
+            }
+
+            function openRescheduleModal(bookingId, startDate, endDate, noOfDays, hallId, startingSlot, endingSlot, reason) {
+                // Function to map slot values to their text representation
+                function getSlotText(slot) {
+                    return slot === 1 ? 'Morning' : 'Evening';
+                }
+
+                // Populate modal inputs
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const timeDiff = end - start;
+
+                // Convert time difference from milliseconds to days
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+                // Set values for inputs
+                document.getElementById("bookingId").value = bookingId;
+                document.getElementById("startDateInput").value = startDate;
+                document.getElementById("endDateInput").value = endDate;
+                document.getElementById("noOfDaysInput").value = noOfDays;
+                document.getElementById("startingSlot").value = startingSlot;
+                document.getElementById("endingSlot").value = endingSlot;
+                document.getElementById("daysDiff").value = daysDiff;
+
+                // Display slot text in the modal
+                document.getElementById("startDatetext").value = startDate;
+                document.getElementById("startingSlotText").value = getSlotText(startingSlot);
+                document.getElementById("endingSlotText").value = getSlotText(endingSlot);
+
+                // Store booking details for OTP verification
+                rescheduleBookingId = bookingId;
+                rescheduleStartDate = startDate;
+                rescheduleEndDate = endDate;
+                rescheduleHallId = hallId;
+                rescheduleStartingSlot = startingSlot;
+                rescheduleEndingSlot = endingSlot;
+                rescheduleReason = reason;
+
+                // Optionally, fetch and update calendar or availability based on hallId
+                getBookingCalendar(hallId, reason);
+
+                // Show the date change modal
+                $('#bookingRescheduleModal').modal('show');
+            }
+
+
+            function getBookingCalendar(hall_id, reason) {
+                // Make an AJAX call to fetch booking data
+                $.ajax({
+                    type: 'GET',
+                    url: '/victoriahallbooking_uat/user/api/getPastData',
+                    data: {
+                        hall_id: hall_id
+                    },
+
+                    success: function (response) {
+                        window.bookingResponse = {};
+                        if (response && Array.isArray(response)) {
+                            $("#startDateInput").datepicker("destroy");
+                            for (var i = 0; i < response.length; i++) {
+                                var dateString = datepickerFormat(response[i].bdate);
+                                window.bookingResponse[dateString] = [response[i].morningSlot, response[i].eveningSlot];
+                            }
+
+                            initializeDatepickerWithColors(hall_id, reason);
+                            if (response.length == 0) {
+                                initializeDatepickerWithColors(hall_id, reason);
+                            }
+                        } else {
+                            console.error('Invalid or empty response data.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching hall details:', error);
+                    }
+                });
+            }
+
+            function initializeDatepickerWithColors(hallId, reason) { // Confirm hallId is passed here
+                $("#datepicker-container").datepicker("destroy");
+            const serverDate = new Date($("#serverDate").val() + "T00:00:00");
+
+            const minDate = new Date(serverDate);
+            minDate.setDate(minDate.getDate() + 30);
+
+            const maxDate = new Date(minDate);
+            maxDate.setDate(maxDate.getDate() + 30);
+                // console.log("View History: "+maxDate);
+
+                $("#startDateInput,#datepicker-container").datepicker({
+                    dateFormat: "yy-mm-dd",
+                    minDate: serverDate,
+                    maxDate: maxDate,
+                    beforeShowDay: function (eDate) {
+
+                        const day = eDate.getDay(); // 0=Sun, 5=Fri, 6=Sat
+
+                        if (![0, 5, 6].includes(day)) {
+                        return [false, "highlight-disabled", "Bookings allowed only on Fri, Sat & Sun"];
+                    }
+
+                        const dateString = $.datepicker.formatDate("yy-mm-dd", eDate);
+                        const bookingStatus = window.bookingResponse[dateString] || {};
+
+                        // const currentDate = new Date();
+                        serverDate.setHours(0, 0, 0, 0); // Normalize current date to midnight
+                        eDate.setHours(0, 0, 0, 0); // Normalize selected date to midnight
+
+                        // Logic for other dates
+                        if (eDate < serverDate) {
+                            return [false, "highlight-disabled", "Slot not Available"];
+                        }
+
+                        const isToday = eDate.getTime() === serverDate.getTime();
+                        const currentHour = new Date().getHours();
+                        const isBefore6AM = currentHour < 6;
+                        const isAfter2PM = currentHour >= 14;
+
+                        // Block 3-day logic for specific event types
+                        // const today = new Date();
+                        const blockedDate = new Date(serverDate);
+                        blockedDate.setDate(serverDate.getDate() + 2);
+
+                        const isThreeDayBlock = ["Commercial", "State Govt Event", "Central Govt Event"].includes(reason);
+                        if (eDate <= blockedDate && isThreeDayBlock) {
+                            return [false, "highlight-disabled", "Blocked due to event type"];
+                        }
+
+                        // Logic for currentdate
+                        if (isToday) {
+                            if (isBefore6AM) {
+                                // Before 6 AM: Allow full-day booking or adjust based on booking status
+                                return handleBookingStatus(bookingStatus, "Full Day Available");
+                            } else if (isAfter2PM) {
+                                // After 2 PM: Block all bookings
+                                return handleAfter2PM(bookingStatus);
+                            } else {
+                                // Between 6 AM and 2 PM: Check status and disable morning slots
+                                return handleMorningSlots(bookingStatus);
+                            }
+                        }
+
+                        return handleBookingStatus(bookingStatus, "Slot Available");
+                    },
+                });
+
+                $("#startDateInput").on("change", function () {
+                    var selectedDate = $(this).val();
+                    var noOfDays = document.getElementById('noOfDaysInput').value;
+                    var startingSlot = document.getElementById("startingSlot").value;
+                    var endingSlot = document.getElementById("endingSlot").value;
+                    var noofdays = document.getElementById("noOfDaysInput").value;
+                    updateEndDate(selectedDate, noofdays, startingSlot, endingSlot);
+                });
+
+            }
+
+            function handleBookingStatus(bookingStatus, defaultMessage) {
+                if (bookingStatus[2]) {
+                    return [true, "highlight-blue disabled", "GCC Blocked"];
+                } /*else if (bookingStatus[3]) {
+					return [true, "highlight-lightpink disabled", "Temporary Blocked"];
+				}*/ else if (bookingStatus[0] && bookingStatus[1]) {
+                    return [true, "highlight-pink disabled", "Slot Occupied"];
+                } else if (bookingStatus[0] && !bookingStatus[1]) {
+                    return [true, "highlight-pink disabled", "Slot Occupied"];
+                } else if (!bookingStatus[0] && bookingStatus[1]) {
+                    return [true, "highlight-violet", "Only Morning Slot Available"];
+                }
+                return [true, "highlight-greens", defaultMessage];
+            }
+
+            // Helper function: Handles logic after 2 PM
+            function handleAfter2PM(bookingStatus) {
+                if (bookingStatus[2]) {
+                    return [true, "highlight-blue disabled", "GCC Blocked"];
+                } else if (bookingStatus[0] || bookingStatus[1]) {
+                    return [true, "highlight-pink disabled", "Slot Occupied"];
+                }
+                return [false, "highlight-disabled", "Not Allowed to Book"];
+            }
+
+            // Helper function: Handles morning slots between 6 AM and 2 PM
+            function handleMorningSlots(bookingStatus) {
+                if (bookingStatus[2]) {
+                    return [true, "highlight-blue disabled", "GCC Blocked"];
+                } else if (bookingStatus[0] && bookingStatus[1]) {
+                    return [true, "highlight-pink disabled", "Slot Occupied"];
+                } else if (bookingStatus[0] && !bookingStatus[1]) {
+                    return [true, "highlight-pink disabled", "Slot Occupied"];
+                } else if (!bookingStatus[0] && bookingStatus[1]) {
+                    return [false, "highlight-disabled", "Slot Occupied"];
+                }
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            }
+
+            function updateEndDate(startDate, noofdays, startingSlot, endingSlot) {
+                if (startDate && noofdays !== undefined) {
+                    var start = new Date(startDate);
+                    var startFormatted = start.toISOString().split('T')[0];
+                    var bookingStatus = window.bookingResponse[startFormatted] || [false, false];
+                    var morningAvailable = !bookingStatus[0]; // false means available
+                    var eveningAvailable = !bookingStatus[1]; // false means available
+                    var endDate;
+                    var isValid = true; // Flag to determine if all slots are available
+
+                    // Convert noofdays to a number for accurate calculations
+                    noofdays = parseFloat(noofdays);
+
+                    // Handle slot availability and combinations
+                    if (startingSlot === "2" && endingSlot === "2") { // Evening to Evening
+                        //console.log("Handling Evening to Evening slot.");
+                        if (noofdays === 0.5) {
+                            if (eveningAvailable) {
+                                endDate = new Date(start);
+                                endDate.setDate(start.getDate() + Math.ceil(noofdays) - 1);
+                                endDate = endDate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (Evening to Evening):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: 'Evening Slot Not Available',
+                                    text: 'The evening slot is not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Evening slot not available for", noofdays, "days.");
+                            }
+                        } else if (noofdays === 1.5) {
+                            // Special handling for 2 days
+                            let endDateCandidate = new Date(start);
+                            endDateCandidate.setDate(start.getDate() + 1);
+                            let endDateFormattedCandidate = endDateCandidate.toISOString().split('T')[0];
+                            let endDateStatusCandidate = window.bookingResponse[endDateFormattedCandidate] || [false, false];
+                            let morningAvailableOnEndDate = !endDateStatusCandidate[0]; // false means available
+                            let eveningAvailableOnEndDate = !endDateStatusCandidate[1]; // false means available
+
+                            if (eveningAvailable && morningAvailableOnEndDate && eveningAvailableOnEndDate) {
+                                endDate = endDateCandidate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (Morning to Evening with 2 days):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: 'Slot Not Available',
+                                    text: 'The Morning slots are not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Morning or Evening slot not available for 2 days.");
+                            }
+                        } else {
+                            //console.log("Unsupported duration for Evening to Evening slot.");
+                            Swal.fire({
+                                title: 'Invalid Selection',
+                                text: 'The selected duration for the evening slot is not supported.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            document.getElementById('endDateInput').value = "";
+                        }
+                    } else if (startingSlot === "1" && endingSlot === "1") { // Morning to Morning
+                        //console.log("Handling Morning to Morning slot.");
+                        if (noofdays === 0.5) {
+                            if (morningAvailable) {
+                                endDate = new Date(start);
+                                endDate.setDate(start.getDate() + Math.ceil(noofdays) - 1);
+                                endDate = endDate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (morning to morning):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: 'Morning Slot Not Available',
+                                    text: 'The Morning slot is not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Evening slot not available for", noofdays, "days.");
+                            }
+                        } else if (noofdays === 1.5) {
+                            // Special handling for 2 days
+                            let endDateCandidate = new Date(start);
+                            endDateCandidate.setDate(start.getDate() + 1);
+                            let endDateFormattedCandidate = endDateCandidate.toISOString().split('T')[0];
+                            let endDateStatusCandidate = window.bookingResponse[endDateFormattedCandidate] || [false, false];
+                            let morningAvailableOnEndDate = !endDateStatusCandidate[0]; // false means available
+                            let eveningAvailableOnEndDate = !endDateStatusCandidate[1]; // false means available
+
+                            if (morningAvailable && eveningAvailable && morningAvailableOnEndDate) {
+                                endDate = endDateCandidate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (Morning to Evening with 2 days):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: 'Slot Not Available',
+                                    text: 'The evening slots are not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Morning or Evening slot not available for 2 days.");
+                            }
+                        } else {
+                            //console.log("Unsupported duration for Morning to Morning slot.");
+                            Swal.fire({
+                                title: 'Invalid Selection',
+                                text: 'The selected duration for the morning slot is not supported.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            document.getElementById('endDateInput').value = "";
+                        }
+                    } else if (startingSlot === "1" && endingSlot === "2") { // Morning to Evening
+                        //console.log("Handling Morning to Evening slot.");
+                        if (noofdays === 1) {
+                            if (morningAvailable && eveningAvailable) {
+                                endDate = new Date(start);
+                                endDate.setDate(start.getDate() + Math.ceil(noofdays) - 1);
+                                endDate = endDate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (Morning to Evening):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: ' Slot Not Available',
+                                    text: 'The Selected slot is not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Evening slot not available for", noofdays, "days.");
+                            }
+                        } else if (noofdays === 2) {
+                            // Special handling for 2 days
+                            let endDateCandidate = new Date(start);
+                            endDateCandidate.setDate(start.getDate() + 1);
+                            let endDateFormattedCandidate = endDateCandidate.toISOString().split('T')[0];
+                            let endDateStatusCandidate = window.bookingResponse[endDateFormattedCandidate] || [false, false];
+                            let morningAvailableOnEndDate = !endDateStatusCandidate[0]; // false means available
+                            let eveningAvailableOnEndDate = !endDateStatusCandidate[1]; // false means available
+
+                            if (morningAvailable && eveningAvailable && morningAvailableOnEndDate && eveningAvailableOnEndDate) {
+                                endDate = endDateCandidate.toISOString().split('T')[0];
+                                document.getElementById('endDateInput').value = endDate;
+                                //console.log("End Date (Morning to Evening with 2 days):", endDate);
+                            } else {
+                                Swal.fire({
+                                    title: 'Slot Not Available',
+                                    text: 'The morning and/or evening slots are not available for the selected date range.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Morning or Evening slot not available for 2 days.");
+                            }
+                        } else {
+                            //console.log("Unsupported duration for Morning to Evening slot.");
+                            Swal.fire({
+                                title: 'Invalid Selection',
+                                text: 'The selected duration for the morning to evening slot is not supported.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            document.getElementById('endDateInput').value = "";
+                        }
+                    } else if (startingSlot === "2" && endingSlot === "1") { // Evening to Morning
+                        //console.log("Handling Evening to Morning slot.");
+                        if (noofdays === 1) {
+                            if (eveningAvailable) { // Check if evening slot is available
+                                let nextDay = new Date(start);
+                                nextDay.setDate(start.getDate() + 1);
+                                let nextDayFormatted = nextDay.toISOString().split('T')[0];
+                                let nextDayStatus = window.bookingResponse[nextDayFormatted] || [false, false];
+                                let nextDayMorningAvailable = !nextDayStatus[0]; // false means available
+
+                                if (nextDayMorningAvailable) {
+                                    endDate = nextDay.toISOString().split('T')[0];
+                                    document.getElementById('endDateInput').value = endDate;
+                                    //console.log("End Date (Evening to Morning):", endDate);
+                                } else {
+                                    Swal.fire({
+                                        title: 'Morning Slot Not Available',
+                                        text: 'The morning slot is not available for the next day.',
+                                        icon: 'warning',
+                                        confirmButtonText: 'OK'
+                                    });
+                                    document.getElementById('endDateInput').value = "";
+                                    //console.log("Morning slot not available for the next day.");
+                                }
+                            } else {
+                                Swal.fire({
+                                    title: 'Evening Slot Not Available',
+                                    text: 'The evening slot is not available for the selected date.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                                document.getElementById('endDateInput').value = "";
+                                //console.log("Evening slot not available for", startDate);
+                            }
+                        } else {
+                            //console.log("Unsupported duration for Evening to Morning slot.");
+                            Swal.fire({
+                                title: 'Invalid Selection',
+                                text: 'The selected duration for the evening to morning slot is not supported.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            document.getElementById('endDateInput').value = "";
+                        }
+                    } else {
+                        //console.log("Unsupported slot combination or duration.");
+                        Swal.fire({
+                            title: 'Invalid Slot Combination',
+                            text: 'The selected slot combination or duration is not supported.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        document.getElementById('endDateInput').value = "";
+                    }
+                } else {
+                    //console.log("Start Date or Number of Days not provided.");
+                    Swal.fire({
+                        title: 'Invalid Input',
+                        text: 'Please provide a valid start date and number of days.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    document.getElementById('endDateInput').value = "";
+                }
+            }
+
+            function datepickerFormat(dateString) {
+                var dateObject = new Date(dateString);
+                var year = dateObject.getFullYear();
+                var month = (dateObject.getMonth() + 1).toString().padStart(2, "0");
+                var day = dateObject.getDate().toString().padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            }
+
+            function printTables() {
+                // Get the printable content
+                var printableContent = document.getElementById('printableContent').innerHTML;
+                // Open a print window
+                var printWindow = window.open('', '', 'height=400,width=600');
+                // Write the printable content to the print window
+                printWindow.document.write('<html><head><title>Print</title></head><body>' + printableContent + '</body></html>');
+
+                // Close the print window after printing
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.close();
+            }
+
+            function Reschedule() {
+                // Get mobile number and show OTP modal for verification
+                $.ajax({
+                    type: "GET",
+                    url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+                    data: { bookingId: rescheduleBookingId },
+                    success: function (response) {
+                        rescheduleMobileNumber = response.users.mobileNo;
+
+                        // Show mobile number in OTP modal
+                        document.getElementById("rescheduleMobileTxt").textContent = rescheduleMobileNumber;
+
+                        // Clear any previous OTP errors
+                        document.getElementById("rescheduleOtpError").textContent = "";
+
+                        // Clear OTP inputs
+                        for (let i = 1; i <= 5; i++) {
+                            document.getElementById("rescheduleOtp" + i).value = "";
+                        }
+
+                        // Close date change modal and show OTP modal
+                        $('#bookingRescheduleModal').modal('hide');
+                        $('#rescheduleOtpModal').modal('show');
+
+                        // Send OTP immediately
+                        sendRescheduleOTP(rescheduleMobileNumber);
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to get booking details. Please try again.',
+                            showConfirmButton: true
+                        });
+                    }
+                });
+            }
+
+            function sendRescheduleOTP(mobileNumber) {
+                $.ajax({
+                    type: "GET",
+                    url: "/victoriahallbooking_uat/user/api/sendOTP",
+                    data: {
+                        mobileNo: mobileNumber,
+                        purpose: "reschedule"
+                    },
+                    success: function (response) {
+                        // Start countdown timer
+                        startRescheduleCountdown();
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to send OTP. Please try again.',
+                            showConfirmButton: true
+                        });
+                    }
+                });
+            }
+
+            function startRescheduleCountdown() {
+                var resendTimeout;
+                var resendLink = $("#rescheduleResendLink");
+                $("#rescheduleResendLink").html('<a href="#" id="rescheduleResendLink" class="text-info" onclick="return resendRescheduleOTP();">Resend OTP</a>');
+                var countdown = $("#rescheduleCountdown");
+
+                function startCountdown() {
+                    var timeleft = 60;
+                    countdown.text(timeleft);
+
+                    resendTimeout = setInterval(function () {
+                        timeleft--;
+                        countdown.text(timeleft);
+
+                        if (timeleft <= 0) {
+                            clearInterval(resendTimeout);
+                            $("#rescheduleResendLink").html('<a href="#" id="rescheduleResendLink" class="text-info" onclick="return sendRescheduleOTP(' + rescheduleMobileNumber + ');">Resend OTP</a>');
+                        }
+                    }, 1000);
+                }
+
+                startCountdown();
+            }
+
+            function resendRescheduleOTP() {
+                if (rescheduleMobileNumber) {
+                    sendRescheduleOTP(rescheduleMobileNumber);
+                    // Restart countdown timer after resending OTP
+                    startRescheduleCountdown();
+                }
+            }
+
+            function verifyRescheduleOtp() {
+                // Get all the input fields with class `otp-input`
+                var otpInputs = $('.otp-input');
+
+                // Get the OTP value as a string
+                var otpValue = '';
+                otpInputs.each(function () {
+                    otpValue += $(this).val();
+                });
+
+                if (otpValue.length !== 5) {
+                    document.getElementById("rescheduleOtpError").textContent = "Please enter complete OTP";
+                    return false;
+                }
+
+                // Verify OTP
+                $.ajax({
+                    type: "GET",
+                    url: "/victoriahallbooking_uat/user/api/verifyofficialOTP",
+                    data: {
+                        otp: otpValue
+                    },
+                    dataType: 'text',
+                    success: function (response) {
+                        if (response.trim() === "Success") {
+                            // OTP verified successfully, close OTP modal and proceed with reschedule
+                            $('#rescheduleOtpModal').modal('hide');
+                            validateDatesAndReschedule();
+                        } else {
+                            document.getElementById("rescheduleOtpError").textContent = "OTP is Incorrect!!!";
+                            // Clear OTP inputs
+                            for (let i = 1; i <= 5; i++) {
+                                document.getElementById("rescheduleOtp" + i).value = "";
+                            }
+                        }
+                    },
+                    error: function () {
+                        document.getElementById("rescheduleOtpError").textContent = "Error verifying OTP. Please try again.";
+                    }
+                });
+
+                return false;
+            }
+
+
+
+
+
+            function proceedWithReschedule() {
+                // Debug: Log the data being sent
+                console.log('Reschedule data:', {
+                    bookingId: rescheduleBookingId,
+                    startDate: rescheduleStartDate,
+                    endDate: rescheduleEndDate
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "/victoriahallbooking_uat/user/api/reschedule-dates",
+                    data: {
+                        bookingId: rescheduleBookingId,
+                        startDate: rescheduleStartDate,
+                        endDate: rescheduleEndDate
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Booking rescheduled successfully!',
+                            showConfirmButton: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Close modal and reload page
+                                $('#bookingRescheduleModal').modal('hide');
+                                location.reload();
+                            }
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Reschedule API Error:', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            responseText: xhr.responseText,
+                            error: error
+                        });
+
+                        let errorMessage = 'Failed to reschedule booking. Please try again.';
+
+                        if (xhr.responseText) {
+                            try {
+                                const errorData = JSON.parse(xhr.responseText);
+                                errorMessage = errorData.message || errorData.error || errorMessage;
+                            } catch (e) {
+                                errorMessage = xhr.responseText || errorMessage;
+                            }
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMessage,
+                            showConfirmButton: true
+                        });
+                    }
+                });
+            }
+
+            function validateDatesAndReschedule() {
+                // Retrieve values from modal inputs
+
+                var startDate = document.getElementById("startDateInput").value;
+                var endDate = document.getElementById("endDateInput").value;
+                var originalStartDate = document.getElementById("startDatetext").value;
+
+                // Debug: Log the retrieved dates
+                console.log('Retrieved dates:', {
+                    startDate: startDate,
+                    endDate: endDate,
+                    originalStartDate: originalStartDate
+                });
+
+                // Check if the rescheduled start date is the same as the original booked start date
+                if (startDate === originalStartDate) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning',
+                        text: 'Your Rescheduled Start Date is the same as Your booking Start Date. Please change the date.',
+                        showConfirmButton: true
+                    });
+                    return;
+                }
+                if (!endDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'End Date is Empty! Please check your Start Date',
+                        showConfirmButton: true
+                    });
+                    return;
+                }
+
+                // Store the validated dates
+                rescheduleStartDate = startDate;
+                rescheduleEndDate = endDate;
+
+                // Debug: Log the final dates being sent
+                console.log('Final reschedule dates:', {
+                    startDate: rescheduleStartDate,
+                    endDate: rescheduleEndDate,
+                    bookingId: rescheduleBookingId
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                });
+
+                // Proceed with reschedule
+                proceedWithReschedule();
+            }
+
+            $(document).ready(function () {
+                // DataTables buttons configuration
+                var buttons = [
+                    {
+                        extend: 'pageLength',
+                        className: 'btn btn-primary'
+                    }
+                ];
+                $('#simpletable').DataTable({
+                    dom: 'Bftip',
+                    columnDefs: [
+                        { targets: 'no-sort', orderable: false }
+                    ],
+                    lengthMenu: [
+                        [5, 10, 20, 50, -1],
+                        ['5 rows', '10 rows', '20 rows', '50 rows', 'Show all']
+                    ],
+                    scrollY: '50vh',
+                    fixedColumns: {
+                        left: 1,
+                        right: 1
+                    },
+                    buttons: [buttons],
+                    responsive: true,
+                    searching: true, // Enable search
+                    select: false,
+                    processing: false,
+                });
+
+
+                $('#searchInput').on('keyup', function () {
+                    dataTable.search(this.value).draw();
+                });
+            });
+            $(document).on('change', '.nocfile', function () {
+                validateFile(this);
+            });
+
+            function transactionHistory(userId) {
+                $.ajax({
+                    type: "GET",
+                    url: '/victoriahallbooking_uat/user/api/getTransactionDetails',
+                    data: { 'userId': userId },
+                    success: function (data) {
+                        // console.log("Full response:", data);
+                        // console.log("Refund Details:", data.refundDetails);
+
+
+                        const transactions = data.transactions || [];
+                        const refundDetails = data.refundDetails || [];
+
+                        populateTransactionTable(transactions);
+                        populateRefundDetailsTable(refundDetails);
+
+                        $('#transactionHistoryModal').modal('show'); // Show the modal
+                    },
+                    error: function (error) {
+                        console.error("Error fetching transaction details", error);
+                    }
+                });
+            }
+
+            function populateTransactionTable(transactions) {
+                const tableBody = $('#transactionTable tbody');
+                tableBody.empty(); // Clear any existing rows
+
+                transactions.forEach((transaction, index) => {
+                    const paymentStatus = (transaction.statusCode === "0300" && transaction.response?.includes("success"))
+                        ? "Success"
+                        : "Payment Failed";
+
+                    const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${transaction.bookingId}</td>
+                <td>${transaction.amount || '-'}</td>
+                <td>${transaction.date || '-'}</td>
+                <td>${transaction.txansactionId || '-'}</td>
+                <td>${paymentStatus}</td>
+            </tr>
+        `;
+                    tableBody.append(row); // Append the row to the table body
+                });
+            }
+
+            function populateRefundDetailsTable(refundDetails) {
+                const refundTable = $('#refunddetails');
+                const tableBody = $('#refunddetailsTable tbody');
+                tableBody.empty(); // Clear any existing rows
+
+                if (refundDetails.length > 0) {
+                    refundTable.show(); // Show the refund details table
+
+                    refundDetails.forEach((refund, index) => {
+                        const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${refund.bookingId}</td>
+                    <td>${refund.amount}</td>
+                    <td>${refund.date}</td>
+                    <td>${refund.txansactionId}</td>
+                    <td>${refund.refundAmount}</td>
+                </tr>
+            `;
+                        tableBody.append(row);
+                    });
+                } else {
+                    refundTable.hide(); // Hide the refund details table
+                }
+            }
+
+
+            // Toggle Chat Box
+            function toggleChat() {
+                const chatBox = document.getElementById('chat-box');
+                chatBox.style.display = (chatBox.style.display === 'block') ? 'none' : 'block';
+            }
+
+            // Send Message
+            function sendMessage() {
+                const userInput = document.getElementById('userInput');
+                const message = userInput.value.trim();
+
+                if (message) {
+                    // Create message element
+                    const chatBody = document.getElementById('chat-body');
+                    const userMessage = document.createElement('div');
+                    userMessage.className = 'user-message';
+                    userMessage.textContent = message;
+
+                    chatBody.appendChild(userMessage);
+                    chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll to bottom
+
+                    // Send message to the server (Spring Boot API)
+                    fetch('/victoriahallbooking_uat/admin/api/send', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Add response message to chat
+                            const responseMessage = document.createElement('div');
+                            responseMessage.className = 'bot-message';
+                            responseMessage.textContent = data.response;
+
+                            chatBody.appendChild(responseMessage);
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        });
+
+                    userInput.value = ''; // Clear input field
+                }
+            }
+
+            // OTP input navigation for reschedule modal
+            $('.otp-input').on('keyup', function (e) {
+                var $this = $(this);
+                if ($this.val().length === 1) {
+                    $this.next('.otp-input').focus();
+                }
+                if ($this.val().length === 0) {
+                    $this.prev('.otp-input').focus();
+                }
+            });
+
+            // Clear OTP inputs when OTP modal is shown
+            $('#rescheduleOtpModal').on('shown.bs.modal', function () {
+                $('.otp-input').val('');
+                $('#rescheduleOtpError').text('');
+            });
+
+        </script>
+
+    </div>
+    </div>
+    </div>
+</body>
+
+</html>

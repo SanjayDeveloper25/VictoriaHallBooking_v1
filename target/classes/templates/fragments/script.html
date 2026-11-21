@@ -1,0 +1,149 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!--<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>-->
+<link rel="stylesheet" type="text/css" href="css\swiper-bundle.min.css">
+
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/plugins/datatables/jquery.dataTables.min.js"></script>
+<!--<script src="/assets/js/plugins/datatables-bs5/js/dataTables.bootstrap5.min.js"></script>
+<script src="/assets/js/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/assets/js/plugins/datatables-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons/dataTables.buttons.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons-bs5/js/buttons.bootstrap5.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons-jszip/jszip.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons-pdfmake/pdfmake.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons-pdfmake/vfs_fonts.js"></script>
+<script src="/assets/js/plugins/datatables-buttons/buttons.print.min.js"></script>
+<script src="/assets/js/plugins/datatables-buttons/buttons.html5.min.js"></script>-->
+
+<!-- Place these in the <head> section of your HTML, or before the closing </body> tag -->
+<!--<script src="https://unpkg.com/viewerjs/dist/viewer.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/viewerjs/dist/viewer.min.css">-->
+<!--<script src="https://cdn.jsdelivr.net/npm/viewerjs/dist/viewer.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/viewerjs/dist/viewer.min.css">-->
+<link rel="stylesheet" type="text/css" href="css\viewer.min.css">
+<script type="text/javascript" src="js\viewer.min.js"></script>
+
+
+
+<script src="js/plugins/sweetalert2/sweetalert2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script type="text/javascript" src="files\bower_components\jquery-ui\js\jquery-ui.min.js"></script>
+<script type="text/javascript" src="files\bower_components\popper.js\js\popper.min.js"></script>
+<script type="text/javascript" src="files\bower_components\bootstrap\js\bootstrap.min.js"></script>
+<script src="files\assets\js\pcoded.min.js"></script>
+<script type="text/javascript" src="files\bower_components\jquery-slimscroll\js\jquery.slimscroll.js"></script>
+<script type="text/javascript" src="files\bower_components\modernizr\js\modernizr.js"></script>
+<script type="text/javascript" src="files\bower_components\modernizr\js\css-scrollbars.js"></script>
+<script type="text/javascript" src="files\bower_components\i18next\js\i18next.min.js"></script>
+<script type="text/javascript" src="files\bower_components\i18next-xhr-backend\js\i18nextXHRBackend.min.js"></script>
+<script type="text/javascript"
+	src="files\bower_components\i18next-browser-languagedetector\js\i18nextBrowserLanguageDetector.min.js"></script>
+<script type="text/javascript" src="files\bower_components\jquery-i18next\js\jquery-i18next.min.js"></script>
+<script src="files\assets\js\menu\menu-hori-fixed.js"></script>
+<script src="files\assets\js\jquery.mCustomScrollbar.concat.min.js"></script>
+<script type="text/javascript" src="files\assets\js\script.js"></script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
+<script type="text/javascript" src="https://www.paynimo.com/paynimocheckout/server/lib/checkout.js"></script>
+
+<script src="js/dashmix.app.min.js"></script>
+<!-- HTML TO PDF-->
+<script src="js/html2pdf.bundle.min.js"></script>
+<script>
+	$(document).ready(function () {
+		// Get the current URL
+		var currentUrl = window.location.href;
+
+		// Loop through each navigation item
+		$('.nav-main-item').each(function () {
+			// Get the link for this item
+			var link = $(this).find('.nav-main-link').attr('href');
+			// Check if the link matches the current URL
+			if (currentUrl.indexOf(link) !== -1) {
+				// Add the active class to this item
+				$(this).find('.nav-main-link').addClass('active');
+
+				// Add the open class to the parent item
+				$(this).parents('.nav-main-item').addClass('open');
+			}
+		});
+
+	});
+
+	function resetPassword() {
+		$('#resetpinForm').modal('show');
+		}
+		function resetpinsave() {
+    let resetpinmobilenumber = $("#resetpinmobilenumber").val();
+    let oldpin = $("#oldpin").val();
+    let newpin = $("#newpin").val();
+    
+    // Validate that all fields are filled
+    if (!resetpinmobilenumber || !oldpin || !newpin) {
+        Swal.fire('Error', 'Please fill all the fields.', 'error');
+        return false; // Prevent form submission
+    }
+
+    $.ajax({
+        type: "GET",
+        url: '/victoriahallbooking_uat/careTaker/api/resetPIN',
+        data: {
+            'oldpin': oldpin,
+            'newpin': newpin,
+            'resetpinmobilenumber': resetpinmobilenumber
+        },
+        dataType: 'text',
+        success: function(bodyMessage) {
+            if (bodyMessage.trim() === "Success") {
+                Swal.fire(
+                    'PIN Registration!',
+                    'Your New PIN Successfully Saved!<br>Now login with your new PIN.',
+                    'success'
+                ).then(() => {
+                     window.location.href = '/victoriahallbooking_uat/admin/logout';
+                });
+            } else if (bodyMessage.trim() === "error") {
+                Swal.fire(
+                    'Error',
+                    'Old PIN is not matched with your password',
+                    'error'
+                )
+            }
+        },
+        error: function() {
+            Swal.fire(
+                'Error',
+                'An error occurred while processing your request. Please try again later.',
+                'error'
+            );
+        }
+    });
+
+    return false; // Prevent form submission as the form is handled by AJAX
+}
+document.addEventListener('DOMContentLoaded', function () {
+				    function clearModalFields(modalId) {
+				        const modal = document.getElementById(modalId);
+				        if (modal) {
+				            // Clear text inputs and select elements
+				            modal.querySelectorAll('input[type="password"], select').forEach(input => {
+				                if (input.tagName === 'SELECT') {
+				                    input.selectedIndex = 0; // Reset to default option
+				                } else {
+				                    input.value = ''; // Clear text inputs
+				                }
+				            });
+				        }
+				    }
+				
+				    // Clear fields when the saveModal is hidden
+				    document.getElementById('resetpinForm').addEventListener('hidden.bs.modal', function () {
+				        clearModalFields('resetpinForm');
+				    });
+				});
+</script>

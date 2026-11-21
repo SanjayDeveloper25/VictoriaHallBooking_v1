@@ -1,0 +1,1221 @@
+<script>
+
+    var mobileNumberForCancel = 0;
+    var cancelBookingId = 0;
+    var cancelBookingLogin = false;
+    var isLogin = false;
+    var disableBooking = false;
+    var isvalidUser = false;
+    var checkvalidation = true
+
+    var username = [[${userName != null}]];
+    if (username) {
+        isLogin = true;
+        document.getElementById("pds1").style.display = 'block';
+        document.getElementById("pds").style.display = 'none';
+    } else {
+        document.getElementById("pds1").style.display = 'none';
+        document.getElementById("pds").style.display = 'block';
+    }
+
+    function checkLoginedIn(url, hallId) { // Should print the actual hall ID value
+        if (isLogin == false) {
+            showloginpopup();
+        } else {
+            if (url == 'hallbookingform' || url == 'book') {
+                CheckBookingLimitation(function (success) {
+                    if (success) {
+                        if (hallId != undefined && hallId != '' && hallId != 0) {
+                            // console.log('Navigating to hallbookingform with hallId:', hallId);
+                            window.location.href = '/victoriahallbooking_uat/hallbookingform?hallId=' + hallId;
+                        } else {
+                            window.location.href = '/victoriahallbooking_uat/user/' + url;
+                        }
+                    }
+                });
+            } else {
+                if (url == 'viewhistory') {
+                    window.location.href = '/victoriahallbooking_uat/user/' + url;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Function to show login popup and reset mobile number field
+    function showloginpopup() {
+        $('#loginModal').modal('show'); // Show the login modal
+
+        // Reset mobile number input field on login modal shown
+        $('#loginModal').on('shown.bs.modal', function () {
+            $('#mobileNumber').val(''); // Clear the mobile number input field
+        });
+
+        // Unbind the modal shown event after it has been triggered once
+        $('#loginModal').one('hide.bs.modal', function () {
+            $('#loginModal').off('shown.bs.modal'); // Unbind the shown.bs.modal event
+        });
+    }
+
+    // Function to redirect to sign up tab and reset register form fields
+    function redirectToSignUp() {
+        // Activate the Register tab
+        $('#loginTabs a[href="#register"]').tab('show');
+
+        // Reset the register form fields
+        $('#newform')[0].reset();
+        // Unbind modal shown event to prevent unnecessary resets when switching tabs
+        $('#loginModal').one('hide.bs.modal', function () {
+            $('#newform')[0].reset(); // Reset again if modal is closed while on Register tab
+        });
+    }
+
+    // Function to clear form fields if modal is closed without switching tabs
+    $('#loginModal').on('hide.bs.modal', function () {
+        $('#mobileNumber').val(''); // Clear mobile number input field
+        $('#newform')[0].reset(); // Reset the form fields
+    });
+
+    // Add an event listener to handle login popup
+    document.getElementById("loginpopup").addEventListener("click", function () {
+        showloginpopup(); // Call the showLoginPopup() function when login popup icon is clicked
+    });
+
+    // Add event listeners to handle switching tabs and resetting forms accordingly
+    $('#loginTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var targetTab = $(e.target).attr("href"); // Get the target tab href
+
+        // Reset form fields based on the tab shown
+        if (targetTab === "#login") {
+            $('#mobileNumber').val(''); // Reset mobile number field for login tab
+        } else if (targetTab === "#register") {
+            $('#newform')[0].reset(); // Reset register form fields
+        }
+    });
+    var verifyLogin = "";
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'UA-23581568-13');
+    $(document).ready(function () {
+        // Function to show/hide fields based on the selected User Type
+        $("#userType").change(function () {
+            var selectedUserType = $(this).val();
+            document.getElementById('name').value = '';
+            document.getElementById('name').readOnly = false;
+            // Hide all fields initially
+            $("#employeeFields, #pensionerFields,  #counsellorFields , #govtmentfields").hide();
+            if (selectedUserType === "GCC_EMPLOYEE") {
+                $("#employeeFields").show();
+            } else if (selectedUserType === "PENSIONER") {
+                $("#pensionerFields").show();
+            } else if (selectedUserType === "COUNCILLOR") {
+                $("#counsellorFields").show();
+            }
+
+        });
+    });
+
+    $('.otp-input').on('keyup', function (e) {
+        var $this = $(this);
+        if ($this.val().length === 1) {
+            $this.next('.otp-input').focus();
+        }
+        if ($this.val().length === 0) {
+            $this.prev('.otp-input').focus();
+        }
+    });
+
+
+    // Function to send OTP
+    function sendOTP(mobileNum) {
+        // Show a Swal loading dialog while processing the OTP
+        Swal.fire({
+            title: 'Processing OTP...',
+            text: 'Please wait while we send the OTP.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading(); // Show the loading spinner
+            }
+        });
+
+        // Set a minimum display time for the loading dialog (e.g., 5 seconds)
+        let minDisplayTime = 5000; // 5 seconds
+        let startTime = new Date().getTime(); // Track the time when the request started
+
+        if (mobileNum != "" || mobileNum != undefined || mobileNum != null) {
+            mobileNo = mobileNum;
+            $("#mobilenotxt").html(mobileNo);
+
+            $.ajax({
+                type: "GET",
+                url: '/victoriahallbooking_uat/user/api/sendOTP',
+                data: {'mobileNo': mobileNo, 'purpose': 'New User'},
+                success: function (bodyMessage) {
+                    // Calculate the elapsed time since the request started
+                    let elapsedTime = new Date().getTime() - startTime;
+                    // Ensure the loading dialog stays on screen for at least the minimum display time
+                    let delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(function () {
+                        Swal.close(); // Close the Swal loading dialog
+
+                        if (bodyMessage != "Error") {
+                            // Show the OTP form if the OTP was sent successfully
+                            $('#otpForm').modal({
+                                backdrop: 'static',
+                                keyboard: false
+                            });
+                            $('#otpForm').modal('show');
+
+                            // Resend OTP Link function
+                            var resendTimeout;
+                            $("#resendlink").html('Please wait..<span id="countdown">60</span>s');
+                            var countdown = $("#countdown");
+
+                            function startCountdown() {
+                                var timeleft = 60;
+                                countdown.text(timeleft);
+
+                                resendTimeout = setInterval(function () {
+                                    timeleft--;
+                                    countdown.text(timeleft);
+
+                                    if (timeleft <= 0) {
+                                        clearInterval(resendTimeout);
+                                        $("#resendlink").html('<a href="#" id="resend-link" class="text-info" onclick="return sendOTP(mobileNo);">Resend OTP</a>');
+                                    }
+                                }, 1000);
+                            }
+
+                            startCountdown(); // Start Resend OTP count
+                        } else {
+                            // Show error message if OTP sending failed
+                            showErrorWithDelay('OTP Not Sent! No Internet Connection.');
+                        }
+                    }, delay); // Delay closing the loading dialog
+                },
+                error: function () {
+                    // Handle error case if the AJAX request fails
+                    let elapsedTime = new Date().getTime() - startTime;
+                    let delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(function () {
+                        Swal.close(); // Close the Swal loading dialog
+                        // Show network error Swal
+                        Swal.fire(
+                            'Network Error!',
+                            'Please try again later.',
+                            'error'
+                        );
+                    }, delay); // Delay closing the loading dialog before showing the error
+                }
+            });
+        } else {
+            mobileNo = $("#mobileNumber").val();
+            $("#mobile").val(mobileNo);
+            $.ajax({
+                type: "GET",
+                url: '/victoriahallbooking_uat/user/api/sendOTP',
+                data: {'mobileNo': mobileNo, 'purpose': 'New User'},
+                dataType: 'json',
+                success: function (bodyMessage) {
+                    let elapsedTime = new Date().getTime() - startTime;
+                    let delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(function () {
+                        Swal.close(); // Close the Swal loading dialog
+
+                        if (bodyMessage != "Error") {
+                            // Show the OTP form if the OTP was sent successfully
+                            $('#otpForm').modal({
+                                backdrop: 'static',
+                                keyboard: false
+                            });
+                            $('#otpForm').modal('show');
+                        } else {
+                            // Show error message if OTP sending failed
+                            showErrorWithDelay('OTP Not Sent! No Internet Connection.');
+                        }
+                    }, delay); // Delay closing the loading dialog
+                },
+                error: function () {
+                    let elapsedTime = new Date().getTime() - startTime;
+                    let delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(function () {
+                        Swal.close(); // Close the Swal loading dialog
+                        // Show network error Swal
+                        Swal.fire(
+                            'Network Error!',
+                            'Please try again later.',
+                            'error'
+                        );
+                    }, delay); // Delay closing the loading dialog before showing the error
+                }
+            });
+        }
+        return false;
+    }
+
+    // Function to show error with a delay
+    function showErrorWithDelay(errorMessage) {
+        Swal.fire(
+            'Error!',
+            errorMessage,
+            'error'
+        );
+    }
+
+    function verifyOtp() {
+        // Show Swal loading dialog while processing OTP
+        Swal.fire({
+            title: 'Verifying OTP...',
+            text: 'Please wait while we verify the OTP.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading(); // Show the loading spinner
+            }
+        });
+
+        // Set a minimum display time for the loading dialog (e.g., 2 seconds)
+        const minDisplayTime = 2000; // 2 seconds
+        const startTime = new Date().getTime(); // Track the time when the request started
+
+        var otpInputs = $('.otp-input');
+        var otpValue = '';
+        otpInputs.each(function () {
+            otpValue += $(this).val();
+        });
+
+        var mobileNoValue = 0;
+        if (verifyLogin === "new") {
+            mobileNoValue = $("#mobileno").val();
+        } else if (cancelBookingLogin) {
+            mobileNoValue = mobileNumberForCancel;
+            bookingId = cancelBookingId;
+        } else {
+            mobileNoValue = $("#mobileNumber").val(); // Add your logic to get the mobile number value here
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/verifyOTP',
+            data: {
+                'otp': otpValue,
+                'mobileNo': mobileNoValue
+            },
+            dataType: 'text',
+            success: function (bodyMessage) {
+                // Calculate the elapsed time since the request started
+                const elapsedTime = new Date().getTime() - startTime;
+                // Ensure the loading dialog stays on screen for at least the minimum display time
+                const delay = Math.max(0, minDisplayTime - elapsedTime);
+                setTimeout(function () {
+                    Swal.close(); // Close the Swal loading dialog
+
+                    if (bodyMessage.trim() === "Success") {
+                        $('#otpForm').modal('hide'); // Hide OTP form modal
+                        if (verifyLogin === "new") {
+                            document.getElementById("newform").submit();
+                        } else if (cancelBookingLogin) {
+                            $.ajax({
+                                type: "GET", // Changed to POST method to match Spring endpoint
+                                url: '/victoriahallbooking_uat/user/api/cancelBookingbyId', // Corrected endpoint URL
+                                data: {
+                                    bookingId: bookingId,
+                                    status: 'CANCELED',
+                                    comments: 'user cancelled'
+                                },
+                                success: function (response) {
+                                    if (response) {
+                                        Swal.fire(
+                                            'Cancelled!',
+                                            'Your booking has been cancelled.',
+                                            'success'
+                                        ).then(() => {
+                                            location.reload();  // Reload the page after the alert is closed
+                                        });
+                                    } else {
+                                        Swal.fire(
+                                            'Error!',
+                                            'Failed to cancel the booking. Please contact Admin.',
+                                            'error'
+                                        );
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Failed to cancel the booking. Please contact Admin.',
+                                        'error'
+                                    );
+                                    console.error(xhr.responseText);
+                                }
+                            });
+
+                        } else {
+                            if (isLogin === false) {
+                                $.ajax({
+                                    type: "GET",
+                                    url: '/victoriahallbooking_uat/user/api/getUsername',
+                                    success: function (response) {
+                                        // alert("user type: "+response.userType);
+                                        document.getElementById("pds").style.display = "none";
+                                        $("#userNameLogin").html(response.displayName);
+                                        document.getElementById("pds1").style.display = 'block';
+                                        document.getElementById("pds").style.display = 'none';
+                                        $('#loginModal').modal('hide');
+                                        console.log("user type: "+response.userType);
+                                        isLogin = true;
+                                    },
+                                    error: function (errortxt) {
+                                        console.error(errortxt);
+                                    }
+                                });
+                            } else {
+                                window.location.reload();
+                            }
+                        }
+                        // Enable the "Select Hall" button upon successful OTP verification
+                        $('#selectHallButton').prop('disabled', false); // Change to false to enable
+                    } else {
+                        $("#otperror").html("OTP is Incorrect!!!");
+                        Swal.fire(
+                            'Error!',
+                            'OTP is Incorrect!',
+                            'error'
+                        );
+                    }
+                }, delay); // Delay closing the loading dialog
+            },
+            error: function (xhr, status, error) {
+                // Calculate the elapsed time since the request started
+                const elapsedTime = new Date().getTime() - startTime;
+                // Ensure the loading dialog stays on screen for at least the minimum display time
+                const delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                setTimeout(function () {
+                    Swal.close(); // Close the Swal loading dialog
+                    Swal.fire({
+                        title: 'No Internet Connection',
+                        text: 'Please check your internet connection and try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Reload the page when the user acknowledges the error
+                            location.reload();
+                        }
+                    });
+                }, delay); // Delay closing the loading dialog before showing the error
+            }
+        });
+
+        return false;
+    }
+
+
+    // Verify OTP when the OTP form is submitted
+    /* $('#otpForm').submit(function (event) {
+        event.preventDefault();
+        verifyOtp();
+     });*/
+
+
+    function newPinCall() {
+
+        $('#otpForm').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#otpForm').modal('hide');
+        return false;
+    }
+
+    $('#otpForm').on('shown.bs.modal', function () {
+        $('.otp-input').val('');
+        $('#otperror').text('');
+        // $('#mobilenotxt').text('');
+    });
+
+    function resetOtpForm() {
+        $('#otpForm').find('.otp-input').val('');
+        $('#otperror').text('');
+        //$('#mobilenotxt').text('');
+    }
+
+    $("#sendOTPButton").click(function (event) {
+        event.preventDefault();
+        checkMobileNo(); // Call the checkMobileNo() function first
+    });
+
+    function validateUserType() {
+        var usertype = $("#userType").val();
+        if (usertype == "PUBLIC") {
+            validateNumber();
+            return false;
+        }
+        if (usertype === "GCC_EMPLOYEE") {
+            var employeeId = $("#employeeId").val();
+
+            if (!employeeId) {
+                Swal.fire(
+                    'Error!',
+                    'Employee ID is required.',
+                    'error'
+                );
+                return false;
+            }
+
+            $.ajax({
+                type: "GET",
+                url: '/victoriahallbooking_uat/user/api/checkEmployee', // Ensure this URL matches your Spring controller's endpoint
+                data: {id: employeeId},
+                success: function (response) {
+                    if (response.isRegistered) {
+                        Swal.fire(
+                            'Already Registered!',
+                            'The Employee ID ' + employeeId + ' is already registered.',
+                            'warning'
+                        );
+                    } else {
+                        $.ajax({
+                            type: "GET",
+                            url: '/victoriahallbooking_uat/user/api/gccemployee',
+                            data: {id: employeeId},
+                            success: function (response) {
+                                if (!response.EmployeeDetailsResult || response.EmployeeDetailsResult.length === 0) {
+                                    Swal.fire({
+                                        title: "Oops",
+                                        html: "The Employee ID " + employeeId + " was not found!",
+                                        icon: "info",
+                                        showCancelButton: false,
+                                        confirmButtonText: "Ok"
+                                    });
+                                    return false;
+                                } else {
+                                    var employeeDetails = response.EmployeeDetailsResult[0];
+                                    if (employeeDetails) {
+                                        $("#employeename").val(employeeDetails.name);
+                                        validateNumber();
+                                    }
+                                }
+                            },
+                            error: function () {
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred while fetching employee details.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire(
+                        'Error!',
+                        'An error occurred while checking employee registration.',
+                        'error'
+                    );
+                }
+            });
+
+            return false;
+        } else if (usertype == "PENSIONER") {
+            var pensionerId = $("#pensionerId").val();
+            if (!pensionerId) {
+                Swal.fire(
+                    'Error!',
+                    'Pensioner ID is required.',
+                    'error'
+                );
+                return false;
+            }
+
+            $.ajax({
+                type: "GET",
+                url: '/victoriahallbooking_uat/user/api/checkEmployee', // Ensure this URL matches your Spring controller's endpoint
+                data: {id: pensionerId},
+                success: function (response) {
+                    if (response.isRegistered) {
+                        Swal.fire(
+                            'Already Registered!',
+                            'The Pensioner ID ' + pensionerId + ' is already registered.',
+                            'warning'
+                        );
+                    } else {
+                        $.ajax({
+                            type: "GET",
+                            url: '/victoriahallbooking_uat/user/api/PensionerDetails',
+                            data: {'id': pensionerId},
+                            success: function (response) {
+                                if (response.mobileNo) {
+                                    $("#mobileno").val(response.mobileNo);
+                                    validateNumber(); // Call validateNumber() when mobile number is available
+                                } else {
+                                    var alertMessage = "The Pensioner Id Not Found!";
+
+                                    const swalInstance = Swal.fire({
+                                        title: "Oops",
+                                        html: alertMessage,
+                                        icon: "info",
+                                        showCancelButton: false,
+                                        confirmButtonText: "Ok"
+                                    });
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error(xhr.responseText);
+                                // Handle error here
+                            }
+                        });
+
+                    }
+                },
+                error: function () {
+                    Swal.fire(
+                        'Error!',
+                        'An error occurred while checking employee registration.',
+                        'error'
+                    );
+                }
+            });
+
+            return false;
+        } else if (usertype === "COUNCILLOR") {
+            var mobileno = $("#mobileno").val();
+            $.ajax({
+                type: "GET",
+                url: '/victoriahallbooking_uat/user/api/checkCounsellorMobileExits',
+                data: {'mobileno': mobileno},
+                success: function (response) {
+                    // On success, populate the counselor's name
+                    document.getElementById('name').value = response;
+                    validateNumber();
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 404) {
+                        Swal.fire({
+                            title: "COUNCILLOR Mobile Number Not Found",
+                            html: "The entered mobile number does not exist!",
+                            icon: "warning",
+                            showCancelButton: false,
+                            confirmButtonText: "Ok"
+                        });
+                    } else if (xhr.status === 409) {
+                        Swal.fire({
+                            title: "Mobile Number Existed",
+                            html: "Your account is already linked to another mobile number. Multiple registrations are not allowed for one councillor.",
+                            icon: "error",
+                            showCancelButton: false,
+                            confirmButtonText: "Ok"
+                        });
+                    } else {
+                        console.error(xhr.responseText);
+                    }
+                }
+            });
+
+            return false;
+        }
+
+    }
+
+    function validateNumber() {
+
+        var mobileNo = $("#mobileno").val();
+        //alert("validate number.."+mobileNo);
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/checkMobileExits',
+            data: {'mobileno': mobileNo},
+            success: function (bodyMessage) {
+                if (bodyMessage == "success") {
+                    var alertMessage = "This Mobile Number Is Already Registered!</a>";
+                    $('#otpForm').modal('hide'); // Hide OTP form modal
+                    //$('#loginModal').modal('hide');
+                    // Initialize SweetAlert instance with options
+                    const swalInstance = Swal.fire({
+                        title: "Mobile Number exist",
+                        html: alertMessage,
+                        icon: "info",
+                        showCancelButton: false,
+                        confirmButtonText: "Ok"
+                    });
+                    return false;
+
+                } else {
+                    verifyLogin = "new";
+                    ;
+                    sendOTP(mobileNo);
+                    return false;
+
+                }
+            },
+            error: function (errortxt) {
+                console.error(errortxt);
+            }
+        });
+        return false;
+
+    }
+
+    function checkMobileNo() {
+        var mobileNo = $("#mobileNumber");
+
+        // Check if the mobile number is provided
+        if (mobileNo.val().length !== 10) {
+            // Set custom validity message for incorrect mobile number length
+            mobileNo[0].setCustomValidity("Please enter a 10-digit mobile number.");
+            // Report validity to trigger the validation UI
+            mobileNo[0].reportValidity();
+            return; // Exit the function to prevent the AJAX call
+        } else {
+            // Clear the custom validity message
+            mobileNo[0].setCustomValidity("");
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/checkuserstatus',
+            data: {mobileNo: mobileNo.val()},
+            success: function (statusResponse) {
+                if (statusResponse === "pending") {
+                    // User status is pending, show SweetAlert
+                    const swalInstance = Swal.fire({
+                        title: "Account Approval Required",
+                        text: "Please wait for the officer to approve your account.",
+                        icon: "info",
+                        showCancelButton: false,
+                        confirmButtonText: "OK",
+                    });
+                } else if (statusResponse === "deactive") {
+                    // User status is pending, show SweetAlert
+                    const swalInstance = Swal.fire({
+                        title: "Account Deactivated",
+                        text: "Please contact Admin to active.",
+                        icon: "info",
+                        showCancelButton: false,
+                        confirmButtonText: "OK",
+                    });
+                } else if (statusResponse === "checkmobileexist") {
+                    // User status is not pending, proceed to check mobile number existence
+                    $.ajax({
+                        type: "GET",
+                        url: '/victoriahallbooking_uat/user/api/checkMobileExits',
+                        data: {'mobileno': mobileNo.val()},
+                        success: function (mobileResponse) {
+                            if (mobileResponse === "success") {
+                                sendOTP(mobileNo.val());
+                            } else {
+                                var alertMessage = "This Mobile Number Is Not Registered! Please register.";
+                                $('#otpForm').modal('hide'); // Hide OTP form modal
+                                //$('#loginModal').modal('hide');
+                                const swalInstance = Swal.fire({
+                                    title: "Registration Required",
+                                    html: alertMessage,
+                                    icon: "info",
+                                    confirmButtonText: "Register",
+                                    showCancelButton: true,
+                                    customClass: {
+                                        container: 'custom-swal-container', // Add a custom class to the container
+                                    },
+                                    backdrop: true, // Enable backdrop to prevent clicks on the main popup
+                                    onOpen: function () {
+                                        // Append the SweetAlert container to the document body
+                                        $('.swal2-container').appendTo($('body'));
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#loginTabs a[href="#register"]').tab('show');
+                                    }
+                                });
+
+                            }
+                        },
+                        error: function (errortxt) {
+                            console.error(errortxt);
+                        }
+                    });
+                }
+            },
+            error: function (errortxt) {
+                console.error(errortxt);
+            }
+        });
+    }
+
+    // Ensure the function is called on a specific event
+    document.getElementById("mobileNumber").addEventListener('input', function () {
+        this.setCustomValidity(""); // Clear custom validity on input
+    });
+
+
+    function CheckBookingLimitation(callback) {
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/bookingLimit',
+            success: function (response) {
+                if (response === "success") {
+                    callback(true);
+                } else if (response === "pending") {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'USER STATUS PENDING',
+                        text: 'Waiting for Approval',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/victoriahallbooking_uat/user/logout";
+                        }
+                    });
+                    callback(false);
+                } else if (response === "rejected") {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'USER STATUS REJECTED',
+                        text: 'Please change your user type to public in order to book, or contact the administrator for assistance.',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            showProfileDetails();
+                        }
+                    });
+                    callback(false);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Booking Limit Reached',
+                        text: 'You have reached your booking limit.',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/victoriahallbooking_uat/user/viewhistory";
+                        }
+                    });
+                    callback(false);
+                }
+            },
+            error: function (errortxt) {
+                console.error(errortxt);
+                callback(false);
+            }
+        });
+    }
+
+    function showprofilepopup() {
+        showProfileDetails();
+    }
+
+    function showProfileDetails() {
+        $.ajax({
+            url: '/victoriahallbooking_uat/user/api/getUser',
+            type: 'GET',
+            data: {
+                'userId': 0
+            },
+            success: function (response) {
+                $("#profileModal").hide();
+                $('#p_userId').val(response.userId);
+                $('#p_name').val(response.name);
+                $('#p_email').val(response.email);
+                $('#p_mobnum').val(response.mobileNo);
+                $('#p_doornum').val(response.doorNo);
+                $('#p_area').val(response.area);
+                $('#p_location').val(response.location);
+                $('#p_pincode').val(response.pinCode);
+                $('#p_userstatus').val(response.userstatus);
+                $('#p_image').attr('src', response.profilephoto);
+                $('#p_usertype').val(response.usertype).prop('disabled', true); // Set usertype
+
+                if (response.userstatus.toLowerCase() === 'rejected') {
+                    $('#rejectionReasonContainer').show();
+                    $('#p_rejectionreason').val(response.rejectionReason);
+                    // Make fields editable
+                    $('#p_name').prop('readonly', false);
+                    $('#p_doornum').prop('readonly', false);
+                    $('#p_area').prop('readonly', false);
+                    $('#p_location').prop('readonly', false);
+                    $('#p_usertype').prop('disabled', false);
+                    $('#p_usertype option[value="PENSIONER"]').prop('disabled', true);
+                    $('#p_usertype option[value="COUNCILLOR"]').prop('disabled', true);
+                    $('#p_usertype option[value="GCC_EMPLOYEE"]').prop('disabled', true);
+                    $('#updateButton').show();
+                } else {
+                    $('#rejectionReasonContainer').hide();
+                    $('#usertypeContainer').hide();
+                    $('#p_email').prop('readonly', false);
+                    $('#p_doornum').prop('readonly', false);
+                    $('#p_area').prop('readonly', false);
+                    $('#p_location').prop('readonly', false);
+                    $('#p_pincode').prop('readonly', false);
+                    $('#updateButton').show();
+                }
+
+                $('#profileModal').modal('show');
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function updateUserDetails() {
+        var userId = $('#p_userId').val();
+        var name = $('#p_name').val();
+        var doorNo = $('#p_doornum').val();
+        var area = $('#p_area').val();
+        var location = $('#p_location').val();
+        var userType = $('#p_usertype').val();
+        var pinCode = $('#p_pincode').val();
+        var email = $('#p_email').val();
+        var profilephoto = $('#fileInput')[0].files[0]; // Get the selected file
+        var formData = new FormData();
+        formData.append("userId", userId);
+        formData.append("name", name);
+        formData.append("doorNo", doorNo);
+        formData.append("area", area);
+        formData.append("location", location);
+        formData.append("usertype", userType);
+        formData.append("email", email);
+        formData.append("pinCode", pinCode);
+        if (profilephoto) {
+            formData.append("profilephoto", profilephoto);
+        }
+
+        Swal.fire({
+            title: 'Do you want to update this User Profile?',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'YES',
+            denyButtonText: 'NO',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/victoriahallbooking_uat/user/api/updateUserDetails',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response === 'success') {
+                            Swal.fire(
+                                'Done',
+                                'Successfully updated user details',
+                                'success'
+                            ).then(() => {
+                                window.location.reload(); // Reload the page after successful update
+                            });
+                        } else {
+                            Swal.fire(
+                                'Error',
+                                'Failed to update user details',
+                                'error'
+                            );
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        Swal.fire(
+                            'Error',
+                            'Failed to update user details',
+                            'error'
+                        );
+                    }
+                });
+            } else if (result.isDenied) {
+                Swal.fire('Changes are not saved', '', 'info');
+            }
+        });
+    }
+
+    document.getElementById('p_image').addEventListener('click', function () {
+        // Trigger the file input click event
+        document.getElementById('fileInput').click();
+    });
+
+    // Listen for changes in the file input
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('p_image').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    // Attach CSS styles for error messages dynamically
+    $('head').append('<style>.error-message { color: red; font-size: 12px; margin-top: 5px; }</style>');
+
+
+    //script for pensioner
+    document.getElementById('pensionerId').addEventListener('blur', function () {
+        var pensionerId = this.value;
+        if (pensionerId) {
+            fetchPensionerDetails(pensionerId);
+        }
+    });
+
+    function fetchPensionerDetails(pensionerId) {
+        fetch('/victoriahallbooking_uat/user/api/PensionerDetail?pensionerId=' + pensionerId)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.PensionerDetailsResult && data.PensionerDetailsResult.length > 0) {
+                    var pensionerDetails = data.PensionerDetailsResult[0];
+                    document.getElementById('pendionerdepartment').value = pensionerDetails.Department;
+                    document.getElementById('name').value = pensionerDetails.Name;
+                    document.getElementById('governmentId').value = pensionerId;
+                    document.getElementById('department').value = pensionerDetails.Department;
+                } else {
+                    document.getElementById('validationResult').innerText = "No pensioner found with this ID";
+                }
+            })
+            .catch(error => console.error('Error fetching pensioner details:', error));
+    }
+
+    document.getElementById('employeeId').addEventListener('blur', function () {
+        var employeeId = this.value;
+        if (employeeId) {
+            fetchEmployeeDetails(employeeId);
+        }
+    });
+
+    function fetchEmployeeDetails(employeeId) {
+        fetch('/victoriahallbooking_uat/user/api/EmployeeDetails?employeeId=' + employeeId)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.EmployeeDetailsResult && data.EmployeeDetailsResult.length > 0) {
+                    var employeeDetails = data.EmployeeDetailsResult[0];
+                    document.getElementById('name').value = employeeDetails.name;
+                    document.getElementById('name').readOnly = true;
+                    document.getElementById('employeedepartment').value = employeeDetails.department;
+                    document.getElementById('governmentId').value = employeeId;
+                    document.getElementById('department').value = employeeDetails.department;
+                } else {
+                    document.getElementById('validationResult').innerText = "No Employee found with this ID";
+                }
+            })
+            .catch(error => console.error('Error fetching Employee details:', error));
+    }
+
+    //Script for triggering send otp button while pressing enter key from system
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            // Prevent default form submission action
+            event.preventDefault();
+        }
+    });
+
+    let isCompressing = false;
+    // Attach the validation function to file input change event
+    $(document).on('change', '.profile-file-upload', function () {
+        validateFile(this);
+    });
+
+    function validateFile(fileInput) {
+        const allowedExtensions = /(\.jpg|\.jpeg|\.pdf)$/i;
+        const file = fileInput.files[0];
+        const filePath = fileInput.value;
+        let errorMessage = '';
+
+        // Clear any previous error message
+        clearError(fileInput);
+
+        if (!allowedExtensions.exec(filePath)) {
+            errorMessage = 'Only JPG, JPEG, and PDF files are allowed.';
+            fileInput.value = ''; // Clear the file input
+            displayError(fileInput, errorMessage);
+        } else if (file && file.size > 2097152) { // Check if file size exceeds 2 MB
+            //console.log('Starting image compression...');
+            isCompressing = true;
+            errorMessage = '';
+            compressImage(file).then(compressedFile => {
+                isCompressing = false;
+                //console.log('Image compression completed successfully.');
+                //console.log('Original file size:', file.size, 'bytes');
+                //console.log('Compressed file size:', compressedFile.size, 'bytes');
+
+                // Replace original file with compressed file
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                fileInput.files = dataTransfer.files;
+
+                // Validate file size after compression if needed
+                validateFileSize(fileInput);
+            }).catch(error => {
+                console.error('Image compression error:', error);
+                isCompressing = false;
+                errorMessage = 'Error compressing image.';
+                displayError(fileInput, errorMessage);
+            });
+            return;
+        } else {
+            // File size is within limit, proceed with validation or other actions
+            //console.log('File size is within limit:', file.size, 'bytes');
+            // Clear any previous error message since the file is valid
+            clearError(fileInput);
+        }
+    }
+
+    function clearError(fileInput) {
+        const errorElements = fileInput.parentNode.getElementsByClassName('error-message');
+        while (errorElements.length > 0) {
+            errorElements[0].remove();
+        }
+    }
+
+
+    // Function to compress image using canvas
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxSize = 2097152; // 2MB in bytes
+                    let scale = 1;
+                    if (file.size > maxSize) {
+                        scale = Math.sqrt(maxSize / file.size);
+                    }
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Convert canvas content to blob
+                    canvas.toBlob(blob => {
+                        // Resolve with a new File object from the blob
+                        resolve(new File([blob], file.name, {type: 'image/jpeg', lastModified: Date.now()}));
+                    }, 'image/jpeg', 0.7); // Adjust JPEG quality as needed (0.7 is 70% quality)
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Function to validate file size after compression
+    function validateFileSize(fileInput) {
+        const file = fileInput.files[0];
+        if (file && file.size > 2097152) {
+            //console.log('File size is still greater than 2MB after compression.');
+            // Handle the situation where the file size is still greater than 2MB
+            displayError(fileInput, 'File size is still greater than 2MB after compression.');
+            fileInput.value = ''; // Clear the file input
+        } else {
+            //console.log('File size is within limit after compression.');
+            // Handle the situation where the file size is within the limit
+        }
+    }
+
+    // Function to display error messages
+    function displayError(fileInput, errorMessage) {
+        // Example implementation: show error message near the file input
+        let errorContainer = fileInput.nextElementSibling;
+        if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+            errorContainer = document.createElement('div');
+            errorContainer.classList.add('error-message');
+            fileInput.parentNode.insertBefore(errorContainer, fileInput.nextSibling);
+        }
+        errorContainer.textContent = errorMessage;
+    }
+
+    /*Newly added for counter login*/
+
+    // Add an event listener to handle login popup
+    // document.getElementById("counterloginpopup").addEventListener("click", function () {
+    //     showcounterloginpopup(); // Call the showLoginPopup() function when login popup icon is clicked
+    // });
+
+    // Function to show counter login popup
+    function showcounterloginpopup() {
+
+        $('#cloginModal').modal('show');
+
+        // Reset input field on login modal shown
+        $('#cloginModal').on('shown.bs.modal', function () {
+            $('#cusername').val('');
+            $('#cpassword').val('');
+            // $("#error").text("").removeClass("text-danger");
+        });
+
+        // Unbind the modal shown event after it has been triggered once
+        $('#cloginModal').one('hide.bs.modal', function () {
+            $('#cloginModal').off('shown.bs.modal'); // Unbind the shown.bs.modal event
+            $("#error").text("");
+            $('#cusername').val('');
+            $('#cpassword').val('');
+        });
+    }
+
+    function verifyCounterLogin() {
+        var username = $("#cusername");
+        var password = $("#cpassword");
+
+        console.log("username: ", username[0], "\npassword:", password[0]);
+
+        // Validate Username
+        if ($.trim(username.val()) === "") {
+            username[0].setCustomValidity("Please Enter user name.");
+            username[0].reportValidity();
+            return false;
+        } else {
+            username[0].setCustomValidity("");
+        }
+
+        // Validate Password
+        if ($.trim(password.val()) === "") {
+            password[0].setCustomValidity("Please enter password");
+            password[0].reportValidity();
+            return false;
+        } else {
+            password[0].setCustomValidity("");
+        }
+
+        // Send AJAX Request
+        $.ajax({
+            type: "GET",
+            url: "/victoriahallbooking_uat/counter/verifyLogin",
+            data: {
+                username: username.val(),  // Send actual values
+                password: password.val()
+            },
+            success: function (response) {
+                console.log("Response: ", response);
+
+                if (!response || response.userType.toLowerCase() === "error") {
+                    $("#error").html("<p class='text-danger'>Invalid Username or Password!</p>");
+                    username.val("");  // Clear input
+                    password.val("");
+                    return;
+                } else {
+                    sessionStorage.setItem("jwtToken", response.token);
+                    sessionStorage.setItem("userName", response.counterName);
+
+                    $("#error").text("").removeClass("text-danger");
+                    $('#cloginModal').modal('hide');
+
+                    console.log("Successfully logged in as counter!!!"+ response.counterName);
+                    // redirectToDashboard(response);
+                    window.location.href = "/victoriahallbooking_uat/user/dashboard";
+                }
+            },
+            error: function (jqXHR) {
+                if (jqXHR.status === 400 || jqXHR.status === 417) {
+                    $("#error").html("<p class='text-danger'>" + jqXHR.responseText + "</p>");
+                } else {
+                    console.error("AJAX Error: ", jqXHR);
+                }
+            }
+        });
+
+        return false;
+    }
+
+
+</script>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-public :: head}"></head>
+<style>
+	table {
+		width: 100%;
+		padding: 100px;
+	}
+
+	th,
+	td {
+		padding: 8px;
+		text-align: left;
+	}
+</style>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-officer :: nav}"></nav>
+		<!-- END Sidebar -->
+		<!-- Header -->
+		<header th:replace="~{fragments/header-officer :: header}"></header>
+		<!-- END Header -->
+		<!-- Main Container -->
+		<main id="main-container">
+			<div class="block-header block-header-default">
+				<h3 class="block-title"> List of Bookings</h3>
+			</div>
+			<div class="block-content p-0">
+				<div class="p-sm-4 p-0">
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+							<thead class="thead-light">
+								<tr>
+									<th class="text-center no-sort" width="10%">S.No</th>
+									<th class="text-center" width="20%">User Details</th>
+									<th class="text-center" width="20%">Booking Details</th>
+									<th class="text-center" width="20%">Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="counterRefund, rowStat : ${counterRefund}">
+									<td class="text-center" th:text="${rowStat.index + 1}"></td>
+									<td class="text-center">
+										<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+											data-bs-target="#exampleModal"
+											th:onclick="UserDetails([[${counterRefund.counterDetails}]])">View</button>
+									</td>
+									<td class="text-center">
+										<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+											data-bs-target="#exampleModal"
+											th:onclick="BookingDetails([[${counterRefund.counterDetails}]])">View</button>
+									</td>
+									<td>
+										<p>
+											<span class="badge bg-warning" style="cursor: pointer;"
+												th:onclick="approve([[${counterRefund.letterdocument}]],[[${counterRefund.id}]])">INITIATED</span>
+										</p>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+
+
+
+			</div>
+		</main>
+
+		<div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+						<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<embed id="filePreview" src="" width="100%" height="600px">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="acceptButton"
+							onclick="accept()">ACCEPT</button>
+						<button type="button" class="btn btn-primary" id="rejectButton"
+							onclick="reject()">REJECT</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="userDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">User Details</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-sm-4">
+								<label class="form-label" for="name">Name:<span class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="name" id="name" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="mobileno">Mobile Number:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="mobileno" id="mobileno"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="email">E-Mail ID:<span class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="email" id="email" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="usertype">User type:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="usertype" id="usertype"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="street">Street:<span class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="street" id="street"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="area">Area:<span class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="area" id="area" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="location">Location:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="location" id="location"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="pincode">Pincode:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="pincode" id="pincode"
+									readonly />
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="bookingDetails" tabindex="-1" aria-labelledby="exampleModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Booking Details</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-sm-4">
+								<label class="form-label" for="noofdays">No of Days:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="noofdays" id="noofdays"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="startdate">Start Date:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="startdate" id="startdate"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="enddate">End Date:<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="enddate" id="enddate"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="startingslot">Starting Slot<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="startingslot"
+									id="startingslot" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="endingslot">Ending Slot<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="endingslot" id="endingslot"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="bookingdate">Booking Date<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="bookingdate" id="bookingdate"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="bookingstatus">Booking Status<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="bookingstatus"
+									id="bookingstatus" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="bankname">Bank Name<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="bankname" id="bankname"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="bankaccno">Bank Account No<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="bankaccno" id="bankaccno"
+									readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="amountreceived">Amount Received<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="amountreceived"
+									id="amountreceived" readonly />
+							</div>
+							<div class="col-sm-4">
+								<label class="form-label" for="ddnumber">DD Number<span
+										class="text-danger"></span></label>
+								<input type="text" class="form-control text-center" name="ddnumber" id="ddnumber"
+									readonly />
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--Booking Information model -->
+
+
+
+
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+
+
+	</div>
+
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script>
+		function UserDetails(counterDetails) {
+			//console.log("Initial Counter Details:", counterDetails);
+			var counterId = counterDetails.counterId;
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/counterdetails',
+				type: 'GET',
+				data: {counterId: counterId},
+				success: function (response) {
+					//console.log("Fetched User Details:", response);
+
+					// Assuming the response is an array and we need the first element
+					if (response.length > 0) {
+						var userDetails = response[0].users;
+
+						// Populate booking information
+						$('#name').val(userDetails.name);
+						$('#mobileno').val(userDetails.mobileNo);
+						$('#email').val(userDetails.email);
+						$('#usertype').val(userDetails.usertype);
+						$('#street').val(userDetails.street);
+						$('#area').val(userDetails.area);
+						$('#location').val(userDetails.location);
+						$('#pincode').val(userDetails.pinCode);
+
+						// Show the modal
+						$('#userDetails').modal('show');
+					} else {
+						console.error('No user details found for the given counter ID');
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Failed to fetch user details:', error);
+				}
+			});
+		}
+
+		function BookingDetails(counterDetails) {
+			var counterId = counterDetails.counterId;
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/counterdetails',
+				type: 'GET',
+				data: {counterId: counterId},
+				success: function (response) {
+					if (response.length > 0) {
+						var bookingDetails = response[0];
+
+						$('#noofdays').val(bookingDetails.noOfDays);
+						$('#startdate').val(bookingDetails.startDate);
+						$('#enddate').val(bookingDetails.endDate);
+						$('#startingslot').val(bookingDetails.startingSlot);
+						$('#endingslot').val(bookingDetails.endingSlot);
+						$('#bookingdate').val(bookingDetails.bookingDate);
+						$('#bookingstatus').val(bookingDetails.bookingStatus);
+						$('#bankname').val(bookingDetails.counterDetails.bankName);
+						$('#bankaccno').val(bookingDetails.counterDetails.bankAccNo);
+						$('#amountreceived').val(bookingDetails.counterDetails.amountReceived);
+						$('#ddnumber').val(bookingDetails.counterDetails.ddNumber);
+
+						$('#bookingDetails').modal('show');
+					} else {
+						console.error('No booking details found for the given counter ID');
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Failed to fetch booking details:', error);
+				}
+			});
+		}
+
+
+		function approve(letterdocument, id) {
+			document.getElementById('filePreview').src = letterdocument;
+			$('#acceptButton').data('id', id);
+			$('#rejectButton').data('id', id);
+			$('#fileModal').modal('show');
+		}
+		function accept() {
+			const id = $('#acceptButton').data('id');
+			Swal.fire({
+				title: 'Do you want to Accept this Refund?',
+				showDenyButton: true,
+				showCancelButton: true,
+				confirmButtonText: 'YES',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						type: "POST",
+						url: '/victoriahallbooking_uat/api/officer/approveRefund/' + id,
+						data: {'id': id},
+						success: function (data, textStatus, xhr) {
+							if (xhr.status === 200) { // Check if the response status is OK
+								Swal.fire(
+									'Done',
+									'Successfully Approved the Refund to the ID:' + id,
+									'success'
+								).then(() => {
+									location.reload(); // Reload the page after success message
+								});
+							} else {
+								Swal.fire(
+									'Error',
+									'Failed to accept the user',
+									'error'
+								);
+							}
+						},
+						error: function (xhr, textStatus, errorThrown) {
+							Swal.fire(
+								'Error',
+								'Failed to accept the user',
+								'error'
+							);
+						}
+					});
+				} else if (result.isDenied) {
+					Swal.fire('Changes are not saved', '', 'info');
+				}
+			});
+		}
+
+		function reject() {
+			const id = $('#rejectButton').data('id');
+			Swal.fire({
+				title: 'Do you want to Reject this Refund?',
+				showDenyButton: true,
+				showCancelButton: true,
+				confirmButtonText: 'YES',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						type: "POST",
+						url: '/victoriahallbooking_uat/api/officer/rejectRefund/' + id,
+						data: {'id': id},
+						success: function (data, textStatus, xhr) {
+							if (xhr.status === 200) { // Check if the response status is OK
+								Swal.fire(
+									'Done',
+									'Successfully Rejected the Refund for the ID: ' + id,
+									'success'
+								).then(() => {
+									window.location.reload(); // Reload the page after success message
+								});
+							} else {
+								Swal.fire(
+									'Error',
+									'Failed to reject the refund',
+									'error'
+								);
+							}
+						},
+						error: function (xhr, textStatus, errorThrown) {
+							Swal.fire(
+								'Error',
+								'Failed to reject the refund',
+								'error'
+							);
+						}
+					});
+				} else if (result.isDenied) {
+					Swal.fire('Changes are not saved', '', 'info');
+				}
+			});
+		}
+
+	</script>
+</body>
+
+</html>

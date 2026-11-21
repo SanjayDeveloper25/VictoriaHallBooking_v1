@@ -1,0 +1,118 @@
+div {
+    display: block;
+}
+
+  .card:hover {
+          box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+           }
+      .td {
+          font-family: Lato;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 14px;
+          line-height: 22px;
+           }
+/*.btn:hover{
+           color: black;
+           background-color: white;
+      }*/
+
+#page-container {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+
+    align: center;
+    min-width: 320px;
+    min-height: 100vh;
+}
+@media (min-width: 992px){
+   #page-container.sidebar-o {
+     padding-left: 250px;
+}}
+
+#page-container.page-header-fixed.sidebar-o #page-header, #page-container.page-header-glass.sidebar-o #page-header {
+    padding-center: 250px;
+    position: fixed;
+}
+#page-container.page-header-dark #page-header {
+    color: #d6d6d6;
+    background-color: #1A5973;
+}
+#page-container.page-header-fixed #page-header, #page-container.page-header-glass #page-header {
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    min-width: 320px;
+    max-width: 100%;
+    width: auto;
+}
+
+#page-container > #page-header .content-header, #page-container > #page-header .content, #page-container > #main-container .content, #page-container > #page-footer .content {
+    max-width: 1920px;
+}
+.pt-1 {
+    padding-top: 0.50rem !important;
+}
+
+/*.col-form-label{
+   padding: 0%;
+   line-height:1;
+}*/
+
+.col-12 {
+    flex: auto;
+    width: 100%;
+}
+.text-center {
+    text-align: center !important;
+}
+
+.col-2 {
+    flex: 0 0 auto;
+    width: 16.66666667%;
+}
+
+.col-8 {
+    flex: 0 0 auto;
+    width: 66.66666667%;
+}
+
+.form-text{
+    color: red;
+}
+
+.form-control, .form-select {
+    color: #343a40;
+    background-color: #fff;
+    border-color: #e1e1e1;
+}
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    height: 5rem;
+    }
+
+
+#page-container.page-header-dark #page-header {
+    color: #d6d6d6;
+    background-color: #1A5973;
+}
+.bg-primary {
+    background-color: #2a807f !important;
+}
+.block-content.block-content-full {
+    padding-bottom: 1.25rem;
+}
+.block-content {
+
+    padding: 1.25rem 1.25rem 1px;
+}
+.btn-primary {
+--bs-btn-bg: #2a807f;
+}
+
+

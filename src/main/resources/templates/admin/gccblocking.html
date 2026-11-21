@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}"></head>
+<meta charset="UTF-8">
+<style>
+    .small-input {
+        width: 150px;
+        /* Adjust the width as needed */
+    }
+
+    .small-table th,
+    .small-table td {
+        font-size: 14px;
+        /* Adjust font size as needed */
+    }
+
+    /* Reduce padding for table cells */
+    .small-table td,
+    .small-table th {
+        padding: 5px;
+        /* Adjust padding as needed */
+    }
+
+    .multiselect {
+        text-wrap: balance;
+    }
+
+    .selectBox {
+        position: relative;
+    }
+
+    .selectBox select {
+        width: 100%;
+    }
+
+    .overSelect {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    .checkboxes {
+        display: none;
+        border: 0.5px #7c7c7c solid;
+        background-color: #ffffff;
+        max-height: 74px;
+        overflow-y: scroll;
+    }
+
+    .checkboxes label {
+        display: block;
+        font-weight: normal;
+        white-space: nowrap;
+        min-height: 1.2em;
+        background-color: #ffffff00;
+        padding: 0 2.25rem 0 .75rem;
+    }
+
+    .checkboxes label:hover {
+        background-color: #1e90ff;
+    }
+
+    .multiselect .selectBox {
+        width: auto;
+        /* Allow width to adjust automatically based on content */
+        min-width: 150px;
+        /* Set a minimum width */
+        max-width: 100%;
+        /* Prevent exceeding container width */
+        overflow: hidden;
+        border: 0.5px #7c7c7c solid;
+    }
+
+    .multiselect .selectBox select {
+        height: auto;
+        /* Allow height to adjust automatically */
+        overflow: hidden;
+        /* Hide overflow if necessary */
+        text-wrap: balance;
+        /* Optional: remove border if needed */
+    }
+
+    .multiselect .checkboxes {
+        max-height: 200px;
+        /* Adjust based on your design */
+        overflow-y: auto;
+    }
+
+    /* Default style for the box */
+    .box-filled {
+        background-color: #2a807f;
+        color: white;
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 15px;
+        display: inline-block;
+    }
+
+    .box-empty {
+        background-color: #f0f0f0;
+        /* Light gray for empty state */
+        color: #888;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+</style>
+
+<body>
+<div id="page-container"
+     class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+    <aside th:replace="~{fragments/aside-right :: aside}"></aside>
+    <nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+    <header th:replace="~{fragments/header-admin :: header}"></header>
+    <main id="main-container">
+        <div class="content">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title"> List of Blocked Halls</h3>
+                    <div class="block-options">
+                        <button type="button" class="btn btn-primary" id="addButton"><i
+                                class="far fa-plus-square"></i> Block the Halls
+                        </button>
+                    </div>
+                </div>
+                <div class="block-content p-0">
+                    <div class="p-sm-4 p-0">
+                        <div class="table-responsive">
+                            <table id="gccblockingTable"
+                                   class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th class="text-center no-sort">S.No</th>
+                                    <th class="text-center">Blocking Date</th>
+                                    <th class="text-center">Start Date</th>
+                                    <th class="text-center">End Date</th>
+                                    <th class="text-center">Reason for Blocking</th>
+                                    <th class="text-center">No of Halls</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="gccblockedDate, gccIndex : ${gccblocked}">
+                                    <td class="text-center" th:text="${gccIndex.index + 1}"></td>
+                                    <td class="text-center"
+                                        th:text="${#dates.format(gccblockedDate.cdate, 'yyyy-MM-dd')}"></td>
+                                    <td class="text-center"
+                                        th:text="${#dates.format(gccblockedDate.startDate, 'yyyy-MM-dd')}"></td>
+                                    <td class="text-center"
+                                        th:text="${#dates.format(gccblockedDate.endDate, 'yyyy-MM-dd')}"></td>
+                                    <td class="text-center" th:text="${gccblockedDate.blockingReason}"></td>
+                                    <td class="text-center">
+                                        <button style="cursor: pointer;
+											            background-color:darkcyan;
+											            color: white;
+											            border: none;
+											            padding: 4px 10px;
+											            font-size: 12px;
+											            border-radius: 5px;
+											         " th:onclick="showBlockedHalls([[${gccblockedDate.hallId}]],
+											                                 [[${gccblockedDate.blockingReason}]],
+											                                 [[${gccblockedDate.startDate}]],
+											                                 [[${gccblockedDate.endDate}]],
+											                                 [[${gccblockedDate.blockingId}]],
+											                                 [[${gccblockedDate.bookingIds}]])"
+                                                th:text="${hallCountMap[gccblockedDate.blockingId]}">
+                                        </button>
+                                    </td>
+                                    <td class="text-center">
+												<span type="button" class="badge bg-warning"
+                                                      th:data-blocking-id="${gccblockedDate.blockingId}"
+                                                      th:data-from-date="${#dates.format(gccblockedDate.startDate, 'yyyy-MM-dd')}"
+                                                      th:data-end-date="${#dates.format(gccblockedDate.endDate, 'yyyy-MM-dd')}"
+                                                      onclick="cancelBlockedevent(this)">Unblock</span>
+                                    </td>
+
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for displaying blocked halls -->
+    <!-- Modal for displaying blocked halls -->
+    <div class="modal fade" id="blockedHallsModal" tabindex="-1" role="dialog"
+         aria-labelledby="blockedHallsModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 160%; margin-left: -134px;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blockedHallsModalLabel">Blocked Halls</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="blockedHallsDetails">
+                        <p>
+                            Reason for Blocking: <strong><span id="blockingReason"></span></strong>
+                        </p>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="text-center">S.No</th>
+                            <th class="text-center">Hall Name</th>
+                            <th class="text-center">Zone</th>
+                            <th class="text-center">Division</th>
+                            <th class="text-center">No. of Bookings between Dates</th>
+                            <th class="text-center">Refunded Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody id="blockedHallsTableBody">
+                        </tbody>
+                    </table>
+                    <div id="bookingDetailsSection" style="display:none;">
+                        <h5>Booking Details</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th class="text-center">S.No</th>
+                                <th class="text-center">Booking ID</th>
+                                <th class="text-center">Start Date</th>
+                                <th class="text-center">End Date</th>
+                                <th class="text-center">Booking Date</th>
+                            </tr>
+                            </thead>
+                            <tbody id="bookingDetailsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for GCC Blocked Details -->
+    <div class="modal fade" id="gccBlockedModal" tabindex="-1" role="dialog" aria-labelledby="gccBlockedModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalHallName">GCC Blocked Events for Hall:</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table id="gccBlockedEventsTable" class="table table-bordered table-striped table-vcenter">
+                            <thead class="thead-light">
+                            <tr>
+                                <th class="text-center">From Date</th>
+                                <th class="text-center">To Date</th>
+                                <th class="text-center">No of Days</th>
+                                <!--<th class="text-center">User Details</th>
+                <th class="text-center">Booking Details</th>-->
+                            </tr>
+                            </thead>
+                            <tbody id="gccBlockedEventsBody">
+                            <!-- Rows will be dynamically appended here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--List of GCC Blocked Halls -->
+    <div class="modal fade" id="viewdetails">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">List of GCC Blocked Halls </h4>
+                    <button type="button" class="btn" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Zone dropdown taking up half of the row and centered -->
+                        <div class="col-sm-6 mx-auto">
+                            <label for="zoneMultiselect">Zones:</label>
+                            <div id="zoneMultiselect" class="multiselect">
+                                <div id="zoneSelectLabel" class="selectBox"
+                                     onclick="toggleCheckboxArea('zoneSelectOptions')">
+                                    <select class="form-select">
+                                        <option>Select Zones</option>
+                                    </select>
+                                    <div class="overSelect"></div>
+                                </div>
+                                <div id="zoneSelectOptions" class="checkboxes">
+                                    <!-- Zone checkboxes will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 mx-auto">
+                            <label for="hallMultiselect">Hall Name:</label>
+                            <div id="hallMultiselect" class="multiselect">
+                                <div id="hallSelectLabel" class="selectBox"
+                                     onclick="toggleCheckboxArea('hallSelectOptions')">
+                                    <select class="form-select" id="hallSelect">
+                                        <option>Select Halls</option>
+                                    </select>
+                                    <div class="overSelect"></div>
+                                </div>
+                                <div id="hallSelectOptions" class="checkboxes">
+                                    <!-- Hall checkboxes will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-sm">
+                            <label for="fromDate">From Date:</label>
+                            <input type="date" class="form-control" id="fromDate" name="fromDate">
+                        </div>
+                        <div class="col-sm">
+                            <label for="toDate">To Date:</label>
+                            <input type="date" class="form-control" id="toDate" name="toDate">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="reasonforBlocking">Reason For Blocking</label>
+                            <input type="text" class="form-control" id="reasonforBlocking" name="reasonforBlocking"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="row" id="fileUploadSection">
+                        <!-- Upload document -->
+                        <div class="col-sm-4">
+                            <label for="uploadDocument0">Upload document</label>
+                            <input type="file" class="form-control uploadDocument" id="uploadDocument0"
+                                   name="document">
+                        </div>
+                        <div class="col-sm-4">
+                            <label for="description0">Description</label>
+                            <input type="text" class="form-control description" id="description0"
+                                   name="description">
+                        </div>
+
+                        <!-- Add More Button
+                        <div class="col-sm-2 align-self-end">
+                            <button type="button" class="btn btn-sm btn-success" id="addMoreFields">
+                                <i class="fas fa-plus"></i> Add More
+                            </button>
+                        </div>-->
+                    </div>
+
+                    <div class="row mt-3">
+                        <!-- Button at left end corner -->
+                        <div class="col text-left">
+                            <button type="button" class="btn btn-primary" id="viewButton" style="margin-left:46%"
+                                    onclick="getBlockedevents()">View
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="content" id="bookinglistdataTable" style="display:none">
+                        <div class="block block-rounded">
+                            <div class="block-content p-0">
+                                <div class="p-sm-4 p-0">
+                                    <div class="table-responsive">
+                                        <table
+                                                class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+                                            <thead class="thead-light">
+                                            <tr class="table-bordered">
+                                                <th class="text-center no-sort">S.No
+                                                    <input type="checkbox" id="selectAllCheckbox">
+                                                </th>
+                                                <th class="text-center no-sort">Hall Name</th>
+                                                <th class="text-center no-sort">Zone</th>
+                                                <th class="text-center no-sort">Division</th>
+                                                <th class="text-center no-sort">Reason For Booking</th>
+                                                <th class="text-center no-sort">No of days</th>
+                                                <th class="text-center no-sort">Hall Amount</th>
+                                                <th class="text-center">From Date</th>
+                                                <th class="text-center">To Date</th>
+                                                <th class="text-center no-sort">Status</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="bookingTableBody"></tbody>
+                                        </table>
+
+                                    </div>
+                                    <div class="row mt-3">
+                                        <!-- Button at left end corner -->
+                                        <div class="col text-left">
+                                            <button type="button" class="btn btn-primary" id="cancelAll"
+                                                    style="margin-left:46%">Block All
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/resetpassword :: div}"></div>
+<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+</div>
+
+<script th:replace="~{fragments/loginscript :: script}"></script>
+<script>
+    $(document).ready(function () {
+        let fieldIndex = 1; // To uniquely identify each field set
+
+        // Event handler for adding more fields
+        $('#addMoreFields').click(function () {
+            // Create new fields with a minus button
+            var newFields = `
+        <div class="row mt-3" id="fieldSet${fieldIndex}">
+            <div class="col-sm-4">
+                <label for="uploadDocument${fieldIndex}">Upload document</label>
+                <input type="file" class="form-control" id="uploadDocument${fieldIndex}" name="uploadDocument" required>
+            </div>
+            <div class="col-sm-4">
+                <label for="description${fieldIndex}">Description</label>
+                <input type="text" class="form-control" id="description${fieldIndex}" name="description" required>
+            </div>
+            <div class="col-sm-2 align-self-end">
+                <button type="button" class="btn btn-sm btn-danger removeFields">
+                    <i class="fas fa-minus"></i> Remove
+                </button>
+            </div>
+        </div>`;
+
+            // Append the new fields after the initial section
+            $('#fileUploadSection').after(newFields);
+            fieldIndex++; // Increment the index for uniqueness
+        });
+
+        // Event delegation to handle removing fields
+        $(document).on('click', '.removeFields', function () {
+            // Remove the entire row (field set) where the button is clicked
+            $(this).closest('.row').remove();
+        });
+    });
+
+    function showBlockedHalls(hallIds, blockingReason, startDate, endDate, blockingId) {
+        //console.log('Sending parameters - hallIds:', hallIds, ', blockingId:', blockingId);
+
+        if (!hallIds || hallIds === 'undefined') {
+            //console.error('Invalid hallIds:', hallIds);
+            return;
+        }
+
+        $.ajax({
+            url: '/victoriahallbooking_uat/admin/api/getblockedbookingdetails',
+            method: 'GET',
+            data: {
+                hallIds: hallIds,
+                blockingId: blockingId
+            },
+            success: function (data) {
+                $('#blockedHallsTableBody').empty();
+                $('#bookingDetailsSection').hide();
+
+                const formatDate = (dateString) => {
+                    if (!dateString) return 'N/A';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-CA');
+                };
+
+                $('#blockingReason').text(blockingReason || 'N/A');
+                $('#startDate').text(formatDate(startDate));
+                $('#endDate').text(formatDate(endDate));
+
+                data.forEach(function (hall, index) {
+                    $('#blockedHallsTableBody').append(
+                        `<tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td class="text-center">${hall.hallName}</td>
+                        <td class="text-center">${hall.zone}</td>
+                        <td class="text-center">${hall.division}</td>
+                        <td class="text-center">
+						    <button href="#" class="view-booking-details"
+						            data-booking-ids="${hall.bookingIds.join(',')}"
+						            data-hall-id="${hall.hallId}"
+						            data-blocking-id="${blockingId}"
+						            style="cursor: pointer;
+						                   background-color: darkcyan;
+						                   color: white;
+						                   border: none;
+						                   padding: 4px 10px;
+						                   font-size: 12px;
+						                   border-radius: 5px;">
+						        ${hall.bookingIds.length}
+						    </button>
+						</td>
+                        <td class="text-center">${hall.refundedAmount || 'N/A'}</td>
+                    </tr>`
+                    );
+                });
+
+                $('#blockedHallsModal').modal('show');
+            },
+            error: function (error) {
+                console.error('Error fetching blocked halls:', error);
+            }
+        });
+    }
+
+    $(document).on('click', '.view-booking-details', function (e) {
+        e.preventDefault();
+
+        const bookingIdsString = $(this).data('booking-ids');
+        const bookingIds = bookingIdsString.toString().split(',');
+
+        //console.log('Fetching booking details for bookingIds:', bookingIds);
+
+        if (!bookingIds || bookingIds.length === 0) {
+            console.error('Invalid bookingIds:', bookingIds);
+            return;
+        }
+
+        $('#bookingDetailsTableBody').empty();
+        let bookingDetailsFetched = 0;
+
+        bookingIds.forEach(function (bookingId) {
+            $.ajax({
+                url: '/victoriahallbooking_uat/admin/api/getbookingdetails',
+                method: 'GET',
+                data: {
+                    bookingId: bookingId
+                },
+                success: function (data) {
+                    const formatDate = (dateString) => {
+                        if (!dateString) return 'N/A';
+                        const date = new Date(dateString);
+                        return date.toLocaleDateString('en-CA');
+                    };
+
+                    data.forEach(function (booking, index) {
+                        $('#bookingDetailsTableBody').append(
+                            `<tr>
+                            <td class="text-center">${bookingDetailsFetched + index + 1}</td>
+                            <td class="text-center">${booking.bookingId}</td>
+                            <td class="text-center">${formatDate(booking.startDate)}</td>
+                            <td class="text-center">${formatDate(booking.endDate)}</td>
+                            <td class="text-center">${formatDate(booking.bookingDate)}</td>
+                        </tr>`
+                        );
+                    });
+
+                    bookingDetailsFetched += data.length;
+                    if (bookingDetailsFetched === bookingIds.length) {
+                        $('#bookingDetailsSection').show();
+                    }
+                },
+                error: function (error) {
+                    console.error('Error fetching booking details:', error);
+                }
+            });
+        });
+    });
+
+
+    $(document).ready(function () {
+        // Initialize DataTable with buttons
+        var buttons = [{
+            extend: 'pageLength',
+            className: 'btn btn-primary'
+        }, {
+            extend: 'copyHtml5',
+            text: 'Copy',
+            className: 'btn btn-primary'
+        }, {
+            extend: 'excelHtml5',
+            text: 'Excel',
+            className: 'btn btn-primary'
+        }, {
+            extend: 'csvHtml5',
+            text: 'CSV',
+            className: 'btn btn-primary'
+        }, {
+            extend: 'pdfHtml5',
+            text: 'PDF',
+            className: 'btn btn-primary'
+        }];
+
+        var dataTable = $('#gccblockingTable').DataTable({
+            dom: 'Bftip',
+            columnDefs: [{
+                targets: 'no-sort',
+                orderable: false
+            }],
+            lengthMenu: [
+                [50, 100, 200, 500, -1],
+                ['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+            ],
+            scrollY: '50vh',
+            fixedColumns: {
+                left: 1,
+                right: 1
+            },
+            buttons: buttons,
+            responsive: true,
+            searching: true,
+            select: false,
+            processing: false,
+        });
+
+        $('#gccblockingTable').on('click', '.gcc-blocked-badge', function (e) {
+            e.preventDefault();
+            var bookingRow = $(this).closest('tr');
+            var hallName = bookingRow.find('td:nth-child(2)').text().trim();
+            var hallId = $(this).data('hall-id');
+            $('#modalHallName').text('GCC Blocked Events for Hall: ' + hallName);
+
+            $.ajax({
+                url: '/victoriahallbooking_uat/admin/api/Gccblocking',
+                type: 'GET',
+                data: {hallId: hallId},
+                success: function (response) {
+                    $('#gccBlockedEventsBody').empty();
+                    response.forEach(function (event) {
+                        var startDate = new Date(event.startDate);
+                        var endDate = new Date(event.endDate);
+                        var noOfDays = Math.ceil((endDate - startDate) / (1000 * 3600 * 24)) + 1;
+
+                        var formattedStartDate = startDate.toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        }).replace(/\//g, '-');
+                        var formattedEndDate = endDate.toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        }).replace(/\//g, '-');
+
+                        var rowHtml = '<tr>' +
+                            '<td class="text-center">' + formattedStartDate + '</td>' +
+                            '<td class="text-center">' + formattedEndDate + '</td>' +
+                            '<td class="text-center">' + noOfDays + '</td>' +
+                            '</tr>';
+                        $('#gccBlockedEventsBody').append(rowHtml);
+                    });
+                }
+            });
+            $('#gccBlockedModal').modal('show');
+        });
+
+
+        // Booking details click handler
+        $(document).on('click', '.view-booking-details', function () {
+            var bookingId = $(this).data('booking-id');
+            // Implement booking detail fetching logic here
+        });
+    });
+    $(document).ready(function () {
+        // Show modal when Add button is clicked
+        $("#addButton").click(function () {
+            $("#viewdetails").modal('show');
+            getZone();
+        });
+
+        // Event handler for the View button
+        $("#viewButton").click(function () {
+            var selectedHalls = Array.from(document.querySelectorAll('#hallSelectOptions input[type="checkbox"]:checked'))
+                .map(cb => cb.value)
+                .filter(value => !isNaN(value)); // Filter out non-numeric values
+
+            var fromDate = $("#fromDate").val();
+            var toDate = $("#toDate").val();
+
+            // Make AJAX call to backend API
+            $.ajax({
+                url: '/victoriahallbooking_uat/admin/api/filter',
+                type: 'GET',
+                data: {
+                    hallIds: selectedHalls.join(','), // Pass selected hall IDs as comma-separated values
+                    fromDate: fromDate,
+                    toDate: toDate
+                },
+                success: function (response) {
+                    var bookings = response.bookings;
+                    var blockedEvents = response.blockedEvents;
+
+                    // Check if there are any blocked events
+                    if (blockedEvents && blockedEvents.length > 0) {
+                        Swal.fire({
+                            title: 'Dates Blocked',
+                            text: 'The selected dates are blocked by others. Please contact the department to unblock.',
+                            icon: 'warning'
+                        });
+                        return; // Exit the function if blocked dates are found
+                    }
+
+                    // Clear previous table rows
+                    $("#bookingTableBody").empty();
+
+                    // Populate the table with fetched data
+                    $.each(bookings, function (index, booking) {
+                        // Always show 'Booked', but show 'Unblock' only if blockingId is present
+                        var statusBadge = '<span class="badge bg-success">User Booked</span>';
+
+                        // Create table row
+                        var row = '<tr>' +
+                            '<td class="text-center">' +
+                            '<input type="checkbox" class="bookingCheckbox" id="snoCheckbox' + index + '" name="snoCheckbox" value="' + booking.bookingId + '" data-additional-value="' + booking.hallDetails.hallId + '"> ' + (index + 1) +
+                            '</td>' +
+                            '<td class="text-center">' + booking.hallDetails.hallName + '</td>' +
+                            '<td class="text-center">' + booking.hallDetails.zone + '</td>' +
+                            '<td class="text-center">' + booking.hallDetails.division + '</td>' +
+                            '<td class="text-center">' + booking.reason + '</td>' +
+                            '<td class="text-center">' + booking.noOfDays + '</td>' +
+                            '<td class="text-center">' + booking.hallAmount + '</td>' +
+                            '<td class="text-center">' + booking.startDate + '</td>' +
+                            '<td class="text-center">' + booking.endDate + '</td>' +
+                            '<td class="text-center">' + statusBadge + '</td>' +
+                            '</tr>';
+
+                        // Append the row to the table body
+                        $("#bookingTableBody").append(row);
+                    });
+
+                    // Show the table
+                    $("#bookinglistdataTable").show();
+                    $(".bookingCheckbox").change(function () {
+                        var hallId = $(this).data('additional-value');
+                        var isChecked = $(this).is(':checked');
+                        // Update all checkboxes with the same hall ID
+                        $(".bookingCheckbox").each(function () {
+                            if ($(this).data('additional-value') === hallId) {
+                                $(this).prop('checked', isChecked);
+                            }
+                            //updateHallCheckboxes();
+                            updateHallDisplay();
+                        });
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText); // Log the error for debugging
+                    // Handle error
+                }
+            });
+        });
+
+
+        // Event handler for the Select All checkbox
+        $("#selectAllCheckbox").click(function () {
+            var isChecked = $(this).prop('checked');
+            $("#bookingTableBody input[type='checkbox']").prop('checked', isChecked);
+            //updateHallCheckboxes();
+            updateHallDisplay(); // Update hall display based on selected hall IDs
+        });
+
+        // Event handler for the Cancel All button
+		$("#cancelAll").click(function () {
+			var fromDate = $("#fromDate").val();
+			var toDate = $("#toDate").val();
+			var reasonForBlocking = $("#reasonforBlocking").val();
+
+			// Validate required inputs
+			if (!reasonForBlocking.trim()) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Missing Input',
+					text: 'Please provide a reason for blocking.',
+				});
+				return;
+			}
+			if (!fromDate || !toDate) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Missing Dates',
+					text: 'Please select valid From and To dates.',
+				});
+				return;
+			}
+
+            var allCheckboxes = $("#bookingTableBody input[type='checkbox']"); // Get all checkboxes
+            var selectedCheckboxes = $("#bookingTableBody input[type='checkbox']:checked"); // Get all checked checkboxes
+            if (allCheckboxes.length !== selectedCheckboxes.length) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Incomplete Selection",
+                    text: "Please select all checkboxes before blocking.",
+                });
+                return; // Stop further execution
+            }
+
+			// Get selected checkboxes and their values and additional values
+			var selectedBookings = Array.from(document.querySelectorAll('#bookingTableBody input[type="checkbox"]:checked'))
+					.map(cb => ({
+						value: cb.value,
+						additionalValue: cb.getAttribute('data-additional-value')
+					}));
+			// Separate arrays for values and additional values
+			var selectedValues = selectedBookings.map(booking => booking.value);
+			var selectedDataHallIds = selectedBookings.map(booking => booking.additionalValue);
+
+			// Collect descriptions and file attachments dynamically
+			var descriptions = [];
+			var documents = [];
+
+			$('.description').each(function () {
+				const desc = $(this).val().trim();
+				if (desc) descriptions.push(desc); // Only add non-empty descriptions
+			});
+
+			$('.uploadDocument').each(function () {
+				if (this.files && this.files[0]) {
+					documents.push(this.files[0]); // Collect files if present
+				}
+			});
+
+			// Validate file size (Optional)
+			const MAX_FILE_SIZE_MB = 5;
+			if (documents.some(file => file.size > MAX_FILE_SIZE_MB * 1024 * 1024)) {
+				Swal.fire({
+					icon: 'error',
+					title: 'File Too Large',
+					text: 'Please upload files smaller than ${MAX_FILE_SIZE_MB} MB.',
+				});
+				return;
+			}
+
+			// Collect selected hall IDs
+			var hallIds = Array.from(document.querySelectorAll('#hallSelectOptions input[type="checkbox"]:checked'))
+					.map(cb => cb.value)
+					.filter(value => !isNaN(value))
+					.join(',');
+
+			// console.log("hallIds: "+hallIds);
+
+			// Create FormData for AJAX
+			var formData = new FormData();
+			formData.append('fromDate', fromDate);
+			formData.append('toDate', toDate);
+			formData.append('hallID', hallIds);
+			formData.append('reasonforblocking', reasonForBlocking);
+			formData.append('selectedBookings', selectedValues.join(",")); // Add selected values as comma-separated
+
+			// Append descriptions and documents to FormData
+			descriptions.forEach(desc => formData.append('description', desc));
+			documents.forEach(doc => formData.append('document', doc));
+
+			// Log formData for debugging (Optional)
+			for (let [key, value] of formData.entries()) {
+				//console.log(${key}: ${value});
+			}
+
+			// Show SweetAlert loading popup
+			const loadingSwal = Swal.fire({
+				title: 'Processing...',
+				text: 'Please wait while we process your request.',
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading(); // Show loading spinner
+				},
+			});
+
+			// AJAX request
+			$.ajax({
+				url: '/victoriahallbooking_uat/admin/api/cancelAll',
+				type: 'POST',
+				data: formData,
+				processData: false, // Prevent jQuery from processing FormData
+				contentType: false, // Allow FormData to set its own content type
+				success: function (response) {
+					loadingSwal.close();
+					Swal.fire({
+						icon: 'success',
+						title: 'Success',
+						text: 'You have successfully blocked.',
+					}).then(() => {
+						location.reload(); // Reload page after success
+					});
+				},
+				error: function (xhr, status, error) {
+					console.error("Cancel All Error:", xhr.responseText);
+					loadingSwal.close();
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'Something went wrong. Please try again later.',
+					});
+				}
+			});
+
+			// Reset checkboxes and update UI
+			resetBookingCheckboxes();
+			updateHallDisplay();
+		});
+
+        // Function to reset booking checkboxes
+        function resetBookingCheckboxes() {
+            $("#bookingTableBody input[type='checkbox']").prop('checked', false);
+        }
+
+        // Function to update hall checkboxes based on selected bookings
+        function updateHallCheckboxes() {
+            // Get selected bookings' hall IDs
+            var selectedHallIds = Array.from(document.querySelectorAll('#bookingTableBody input[type="checkbox"]:checked'))
+                .map(cb => cb.getAttribute('data-additional-value'));
+
+            // Update hall checkboxes
+            document.querySelectorAll('#hallSelectOptions input[type="checkbox"]').forEach(cb => {
+                const hallId = cb.value;
+
+                if (selectedHallIds.includes(hallId)) {
+                    cb.style.display = ''; // Show checkboxes for selected hall IDs
+                    cb.checked = true; // Keep hall IDs in selectedHallIds checked
+                } else {
+                    cb.style.display = ''; // Ensure that the checkbox remains visible
+                    cb.checked = false; // Uncheck hall IDs not in selectedHallIds
+                }
+            });
+
+            updateSelectOptions(selectedHallIds);
+        }
+
+        function updateSelectOptions(selectedHallIds) {
+            var selectElement = document.querySelector('#hallSelectLabel select');
+            var selectedIdsSet = new Set(selectedHallIds);
+
+            // Remove options that are no longer selected
+            Array.from(selectElement.options).forEach(option => {
+                if (!selectedIdsSet.has(option.value)) {
+                    selectElement.remove(option.index);
+                }
+            });
+
+            // Add new options for IDs that are selected but not yet in the dropdown
+            selectedIdsSet.forEach(id => {
+                // Check if an option with this ID already exists
+                if (![...selectElement.options].some(option => option.value === id)) {
+                    var newOption = document.createElement('option');
+                    newOption.value = id;
+                    newOption.textContent = `${id}`; // Ensure text is set correctly
+                    selectElement.appendChild(newOption);
+                }
+            });
+
+            // Update the text content of the select box to show selected IDs
+            var selectBoxText = Array.from(selectedIdsSet).map(id => `${id}`).join(', ');
+            var firstOption = selectElement.options[0];
+            if (firstOption) {
+                firstOption.textContent = selectBoxText || 'Select Halls';
+            } else {
+                // Handle the case where no options are left
+                var newOption = document.createElement('option');
+                newOption.value = '';
+                newOption.textContent = selectBoxText || 'Select Halls';
+                selectElement.appendChild(newOption);
+            }
+
+            // Log the current state of options for debugging
+            //console.log("Current dropdown options:");
+            Array.from(selectElement.options).forEach(option => {
+                //console.log(Value: ${option.value}, Text: ${option.textContent});
+            });
+        }
+
+        // Ensure this function is called whenever the checkboxes are changed
+        $(".bookingCheckbox").change(function () {
+            // Collect selected hall IDs
+            var selectedHallIds = Array.from(document.querySelectorAll('#hallSelectOptions input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            updateSelectOptions(selectedHallIds);
+        });
+
+        // Function to update the display of selected hall IDs
+        function updateHallDisplay() {
+            var checkedHallIds = Array.from(document.querySelectorAll('#hallSelectOptions input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            //console.log("Selected Hall IDs:", checkedHallIds.join(', '));
+
+            // Optional: Update a UI element with the selected hall IDs
+            // For example, set the text of a span element:
+            // $("#selectedHallIdsDisplay").text(checkedHallIds.join(', '));
+        }
+    });
+
+    function getBlockedevents() {
+
+        var selectedHalls = Array.from(document.querySelectorAll('#hallSelectOptions input[type="checkbox"]:checked'))
+            .map(cb => cb.value)
+            .filter(value => !isNaN(value)); // Filter out non-numeric values
+
+        var fromDate = $("#fromDate").val();
+        var toDate = $("#toDate").val();
+        var reasonforBlocking = $("#reasonforBlocking").val();
+        if (!reasonforBlocking) {
+            Swal.fire(
+                'Error!',
+                'Reason For Blocking is required.',
+                'error'
+            );
+        }
+        $.ajax({
+            url: '/victoriahallbooking_uat/admin/api/blockedevents',
+            type: 'GET',
+            data: {
+                hallIds: selectedHalls.join(','), // Pass selected hall IDs as comma-separated values
+                fromDate: fromDate,
+                toDate: toDate,
+                reasonforBlocking: reasonforBlocking,
+            },
+            success: function (response) {
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText); // Log the error for debugging
+                // Handle error
+            }
+        });
+    }
+
+    function cancelBlockedevent(element) {
+        var blockingId = element.getAttribute('data-blocking-id');
+        var fromDate = element.getAttribute('data-from-date');
+        var endDate = element.getAttribute('data-end-date');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to unblock this item?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, unblock it!',
+            cancelButtonText: 'No, keep it blocked'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/victoriahallbooking_uat/admin/api/cancelByid',
+                    type: 'GET',
+                    data: {
+                        blockingId: blockingId,
+                        fromDate: fromDate,
+                        endDate: endDate
+                    },
+                    success: function (response) {
+                        // console.log("Unblock response:", response);
+                        $("#viewdetails").modal('hide');
+                        window.location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error unblocking:", xhr.responseText); // Log the error for debugging
+                        // Handle error
+                    }
+                });
+            }
+        });
+    }
+
+    function unblockSpecificBlockedevent(blockingId, bookingId, fromDate, hallId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to unblock this item?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, unblock it!',
+            cancelButtonText: 'No, keep it blocked'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/victoriahallbooking_uat/admin/api/cancelByid',
+                    type: 'GET',
+                    data: {
+                        blockingId: blockingId,
+                        bookingId: bookingId,
+                        fromDate: fromDate,
+                        hallId: hallId
+                    },
+                    success: function (response) {
+                        $("#viewdetails").modal('hide');
+                        window.location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error unblocking:", xhr.responseText); // Log the error for debugging
+                        // Handle error
+                    }
+                });
+            }
+        });
+    }
+
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var formattedToday = yyyy + '-' + mm + '-' + dd;
+
+        // Set min attribute to today for both date inputs
+        document.getElementById("fromDate").setAttribute("min", formattedToday);
+        document.getElementById("toDate").setAttribute("min", formattedToday);
+    });
+
+    // Function to show/hide checkboxes
+    // Function to show/hide checkboxes
+    function toggleCheckboxArea(id, onlyHide = false) {
+        var checkboxes = document.getElementById(id);
+        var displayValue = checkboxes.style.display;
+
+        if (displayValue !== "block") {
+            if (onlyHide === false) {
+                checkboxes.style.display = "block";
+            }
+        } else {
+            checkboxes.style.display = "none";
+        }
+    }
+
+    // Function to initialize the zones
+    function getZone() {
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/getZone',
+            success: function (data) {
+                const uniqueZones = [...new Set(data.map(item => item.zone))];
+                const zoneMenu = document.getElementById('zoneSelectOptions');
+                zoneMenu.innerHTML = ''; // Clear existing options
+
+                // Add "All Zones" checkbox
+                const allZonesCheckbox = document.createElement('input');
+                allZonesCheckbox.type = 'checkbox';
+                allZonesCheckbox.value = 'All Zones';
+                allZonesCheckbox.name = 'zone';
+                allZonesCheckbox.addEventListener('change', function () {
+                    toggleAllZones(this.checked);
+                });
+                const allZonesLabel = document.createElement('label');
+                allZonesLabel.htmlFor = 'allZonesCheckbox';
+                allZonesLabel.textContent = 'All Zones';
+                allZonesLabel.prepend(allZonesCheckbox);
+                zoneMenu.appendChild(allZonesLabel);
+
+                uniqueZones.forEach(zone => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = zone;
+                    checkbox.id = zone;
+                    checkbox.name = 'zone';
+                    label.htmlFor = zone;
+                    label.textContent = zone;
+                    label.prepend(checkbox);
+                    zoneMenu.appendChild(label);
+
+                    // Bind change event
+                    checkbox.addEventListener('change', function () {
+                        loadHallsbyzone();
+                        checkboxStatusChange('zoneSelectOptions', 'zoneSelectLabel');
+                    });
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading zones:', error);
+            }
+        });
+    }
+
+    // Function to toggle all zones checkboxes
+    function toggleAllZones(checked) {
+        const zoneCheckboxes = document.querySelectorAll('#zoneSelectOptions input[type="checkbox"]');
+        zoneCheckboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        loadHallsbyzone();
+        checkboxStatusChange('zoneSelectOptions', 'zoneSelectLabel');
+    }
+
+    function addHallCheckbox(hallMenu, hall) {
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = hall.hallId;
+        checkbox.id = hall.hallName;
+        checkbox.name = 'hall';
+
+        label.htmlFor = hall.hallId;
+
+        // Remove leading comma if present
+        const hallName = hall.hallName.trim(); // Remove leading and trailing whitespace
+        label.textContent = hallName.replace(/^, */, ''); // Remove leading comma and spaces, if any
+
+        label.prepend(checkbox);
+
+        hallMenu.appendChild(label);
+
+        // Bind change event
+        checkbox.addEventListener('change', function () {
+            checkboxStatusChange('hallSelectOptions', 'hallSelectLabel');
+        });
+    }
+
+    // Function to load halls based on selected zones
+    function loadHallsbyzone() {
+        const selectedZones = Array.from(document.querySelectorAll('#zoneSelectOptions input[type="checkbox"]:checked')).map(cb => cb.value);
+
+        if (selectedZones.length === 0) {
+            document.getElementById('hallSelectOptions').innerHTML = '';
+            return;
+        }
+
+        $.ajax({
+            url: '/victoriahallbooking_uat/user/api/hallsbyzone',
+            method: 'GET',
+            data: {zones: selectedZones.join(',')}, // Pass selected zones to the backend
+            success: function (response) {
+                const hallMenu = document.getElementById('hallSelectOptions');
+                hallMenu.innerHTML = ''; // Clear existing options
+
+                // Add "All Halls" checkbox
+                const allHallsCheckbox = document.createElement('input');
+                allHallsCheckbox.type = 'checkbox';
+                allHallsCheckbox.addEventListener('change', function () {
+                    toggleAllHalls(this.checked);
+                });
+
+                const allHallsLabel = document.createElement('label');
+                allHallsLabel.htmlFor = 'allHallsCheckbox';
+                allHallsLabel.textContent = 'All Halls';
+                allHallsLabel.prepend(allHallsCheckbox);
+                hallMenu.appendChild(allHallsLabel);
+
+                // Add individual hall checkboxes
+                response.forEach(function (hall) {
+                    addHallCheckbox(hallMenu, hall);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading halls:', error);
+            }
+        });
+    }
+
+    // Function to toggle all halls checkboxes
+    function toggleAllHalls(checked) {
+        const hallCheckboxes = document.querySelectorAll('#hallSelectOptions input[type="checkbox"]');
+        hallCheckboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        checkboxStatusChange('hallSelectOptions', 'hallSelectLabel');
+    }
+
+    function checkboxStatusChange(optionsId, labelId) {
+        var multiselect = document.getElementById(labelId);
+        var multiselectOption = multiselect.getElementsByTagName('option')[0];
+
+        var values = [];
+        var checkboxes = document.getElementById(optionsId);
+        var checkedCheckboxes = checkboxes.querySelectorAll('input[type=checkbox]:checked');
+
+        // Check if all zones are selected
+        var allZonesCheckbox = document.getElementById('allZonesCheckbox');
+        var zoneCheckboxes = document.querySelectorAll('#zoneSelectOptions input[type="checkbox"]');
+        var allZonesChecked = Array.from(zoneCheckboxes).every(checkbox => checkbox.checked);
+
+        for (const item of checkedCheckboxes) {
+            var checkboxValue = item.getAttribute('id');
+            if (allZonesChecked && checkboxValue === 'All Zones') {
+                // Skip the "All Zones" label if all zones are selected
+                continue;
+            }
+            values.push(checkboxValue);
+        }
+
+        var dropdownValue = "Nothing is selected";
+        if (values.length > 0) {
+            dropdownValue = values.join(', ').replace(/^, */, ''); // Remove leading comma and spaces if any
+        }
+
+        multiselectOption.innerText = dropdownValue;
+    }
+
+
+    window.onload = function () {
+        document.addEventListener("click", function (evt) {
+            var zoneFlyoutElement = document.getElementById('zoneMultiselect'),
+                hallFlyoutElement = document.getElementById('hallMultiselect'),
+                targetElement = evt.target; // clicked element
+
+            do {
+                if (targetElement == zoneFlyoutElement || targetElement == hallFlyoutElement) {
+                    return; // Click inside
+                }
+                targetElement = targetElement.parentNode;
+            } while (targetElement);
+
+            // Click outside
+            toggleCheckboxArea('zoneSelectOptions', true);
+            toggleCheckboxArea('hallSelectOptions', true);
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        function clearModalFields() {
+            // Clear text inputs
+            document.querySelectorAll('#viewdetails input[type="text"], #viewdetails input[type="date"]').forEach(input => {
+                input.value = '';
+            });
+
+            // Reset select elements
+            document.querySelectorAll('#viewdetails select').forEach(select => {
+                select.selectedIndex = 0; // Reset to default option
+            });
+
+            // Uncheck checkboxes and clear their container
+            document.querySelectorAll('#viewdetails .checkboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.querySelectorAll('#viewdetails .checkboxes').forEach(container => {
+                container.innerHTML = ''; // Clear all checkboxes from the container
+            });
+
+            // Add default options for zones and halls
+            document.querySelector('#zoneMultiselect select').innerHTML = '<option>Select Zones</option>';
+            document.querySelector('#hallMultiselect select').innerHTML = '<option>Select Halls</option>';
+
+            // Optionally, hide content area if needed
+            document.getElementById('bookinglistdataTable').style.display = 'none';
+        }
+
+        // Event listener for when the modal is hidden
+        document.getElementById('viewdetails').addEventListener('hidden.bs.modal', clearModalFields);
+    });
+
+    function formatDate(date) {
+        let d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    // Get today's date
+    let today = new Date();
+    let todayFormatted = formatDate(today);
+
+    // Set the minimum date for fromDate input to today
+    let fromDateInput = document.getElementById('fromDate');
+    fromDateInput.setAttribute('min', todayFormatted);
+
+    // Add event listener to fromDate to update toDate min value and reset its value
+    fromDateInput.addEventListener('change', function () {
+        let selectedFromDate = this.value;
+        let toDateInput = document.getElementById('toDate');
+        toDateInput.setAttribute('min', selectedFromDate);
+        toDateInput.value = ''; // Reset the value of toDate
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:replace="~{fragments/head :: head}">
+	<style>
+		@media print {
+
+			/* Hide buttons when printing */
+			.button-container {
+				display: none !important;
+			}
+
+			.nav-display {
+				display: none !important;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div th:replace="~{fragments/collectionpendingdetails :: div}"></div>
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script>
+		function printTables(bookingId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/user/collectionpendingacknowledgement',
+				data: {bookingId: bookingId},
+				success: function (bodyMessage) {
+					exportLicToPDF(bodyMessage, bookingId);
+					// console.log(bodyMessage);
+				},
+				error: function (xhr, status, error) {
+					console.error("Failed to fetch booking details:", error);
+					alert("Error fetching booking details. Please try again.");
+				}
+			});
+		}
+		function exportLicToPDF(details, bookingId, format = 'a4', orientation = 'portrait') {
+			var parser = new DOMParser();
+			var doc = parser.parseFromString(details, 'text/html');
+			// Select the entire container element
+			var element = document.querySelector('#pcoded');
+			// Hide unwanted elements
+			document.querySelector('.button-container').style.display = 'none'; // Hide the button container
+			// Generate PDF
+			html2pdf().from(element).set({
+				margin: [0.1, 0.1, 0.1, 0.1], // Adjust margins to fit content better
+				filename: `BookingAck-${bookingId}.pdf`, // Construct the filename with bookingId
+				html2canvas: {
+					scale: 1, // Set scale to 1 to ensure content fits on a single page
+					useCORS: true, // Allow cross-origin images to load
+					scrollX: 0,
+					scrollY: 0,
+					windowWidth: element.scrollWidth,
+					windowHeight: element.scrollHeight
+				},
+				jsPDF: {
+					unit: 'in',
+					format: format, // Set format to A4
+					orientation: orientation,
+					compress: true // Enable compression to reduce file size
+				}
+			}).toPdf().get('pdf').then(function (pdf) {
+				// Check if content fits on one page; scale down if needed
+				let totalHeight = element.offsetHeight;
+				let pageHeight = pdf.internal.pageSize.height;
+				if (totalHeight > pageHeight) {
+					pdf.internal.pageSize.height = totalHeight;
+				}
+			}).save().then(() => {
+				// Restore the visibility of hidden elements
+				document.querySelector('.button-container').style.display = 'flex'; // Show the button container again
+			});
+		}
+		function formatDateTime(date) {
+			// Format date and time
+			const options = {
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false, // 24-hour time
+				timeZone: 'auto' // Use the user's local time zone
+			};
+
+			try {
+				return new Intl.DateTimeFormat('en-GB', options).format(date);
+			} catch (error) {
+				console.error('Error formatting date:', error);
+				return date.toString(); // Fallback
+			}
+		}
+
+		function updateGeneratedDate() {
+			const dateElement = document.getElementById('generatedDate');
+			if (dateElement) {
+				const now = new Date();
+				const formattedDate = formatDateTime(now);
+				// console.log('Formatted Date:', formattedDate); // Debug log
+				dateElement.textContent = formattedDate;
+			} else {
+				console.error('Date element not found');
+			}
+		}
+		window.onload = updateGeneratedDate;
+		function redirect(bookingtype) {
+			if (bookingtype === 'OFFLINE') {
+				window.location.href = "/victoriahallbooking_uat/counter/counterbooking";
+			} else {
+				window.location.href = "/victoriahallbooking_uat/user/dashboard";
+			}
+		} 
+	</script>
+</body>
+</html>

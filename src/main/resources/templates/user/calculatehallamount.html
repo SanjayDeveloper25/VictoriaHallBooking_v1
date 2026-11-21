@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}">
+	<script src="https://maps.googleapis.com/maps/api/js?key="></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<style>
+	/* Hide button and div2 on small screens */
+	@media only screen and (max-width: 576px) {
+
+		/* Adjust the font size for better readability on smaller screens */
+		body {
+			font-size: 14px;
+			padding: 0 10px;
+		}
+
+		/* Modify the layout of certain elements */
+		.col-sm-4 {
+			width: 85%;
+			margin-bottom: 10px;
+		}
+
+		.select2-container {
+			width: 100% !important;
+			margin-bottom: 10px;
+		}
+
+		.text-center {
+			text-align: center !important;
+		}
+
+		#toggleButton {
+			display: none;
+		}
+
+		#div2 {
+			display: none;
+		}
+
+		.table-container {
+			overflow-y: auto;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+		}
+
+		.table-responsive-md {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			width: 100%;
+		}
+
+		/* Custom CSS for table */
+		#amountDetails {
+			margin-top: 26px;
+			width: 95%;
+		}
+
+		#amountDetails table {
+			width: 100%;
+			max-width: 100%;
+			margin: 0 auto;
+			border-collapse: collapse;
+		}
+
+		#amountDetails th,
+		#amountDetails td {
+			padding: 8px;
+			border: 1px solid #ddd;
+			text-align: left;
+			word-wrap: break-word;
+			white-space: normal;
+		}
+
+		/* Custom CSS for carousel */
+		.thumbnail {
+			cursor: pointer;
+		}
+
+		.carousel-item img {
+			width: 100%;
+			height: auto;
+		}
+
+		.carousel-image {
+			max-height: 300px;
+			width: auto;
+			margin: 0 auto;
+		}
+
+		.carousel-control-prev,
+		.carousel-control-next {
+			color: black;
+		}
+
+		/* Custom CSS for amount details */
+		#totalAmountDiv {
+			margin-top: 20px;
+			width: 100%;
+			text-align: center;
+		}
+
+		#totalAmount {
+			font-size: 18px;
+			font-weight: bold;
+		}
+	}
+</style>
+
+<body>
+<!-- Pre-loader start -->
+<div class="theme-loader">
+	<div class="ball-scale">
+		<div class='contain'>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+			<div class="ring">
+				<div class="frame"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Pre-loader end -->
+<div id="pcoded" class="pcoded">
+	<div class="pcoded-container">
+		<!-- Menu header start -->
+		<nav th:replace="~{fragments/nav-user :: nav}"></nav>
+		<!-- Menu header end -->
+		<div class="pcoded-main-container">
+			<nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>
+			<div class="pcoded-wrapper">
+				<div class="pcoded-content">
+					<div class="pcoded-inner-content">
+						<!-- Main-body start -->
+						<div class="main-body">
+							<div class="page-wrapper">
+								<!-- Page-header start -->
+								<div class="page-header m-t-20"></div>
+								<!-- Page-header end -->
+								<!-- Page body start -->
+								<div class="page-body">
+									<div class="content">
+										<div class="block block-rounded" style="width: 75%;margin-left: 12%;">
+											<div class="block-header block-header-default">
+												<h3 class="block-title">Calculate Rent Amount</h3>
+											</div>
+											<div class="block-content p-0">
+												<div class="p-sm-4 p-0">
+													<div class="row justify-content-center">
+														<div class="col-sm-4 col-lg-6 col-md-4">
+															<label for="selecthall">Select Hall:</label>
+															<input type="hidden" id="hallIdDuplicate" value="">
+															<select id="selecthall" class="form-control"
+																	name="hallId" required>
+																<option value="">Select a hall</option>
+																<!-- Dynamically populated options will be inserted here -->
+															</select>
+														</div>
+														<br>
+														<br>
+														<div id="amountDetails"
+															 style="display:none;    margin-top: 26px;    width: 94%;">
+															<div class="row justify-content-center">
+																<div class="col-sm-4 col-lg-3 col-md-4"
+																	 id="reasonforBookingdiv">
+																	<label for="reasonforBooking">Reason For
+																		Booking:</label>
+																	<select id="reasonforBooking"
+																			name="reasonforBooking" class="form-control"
+																			required>
+																		<option value="">Select</option>
+																		<option value="SGE">State Govt Event
+																		</option>
+																		<option value="CGE">Central Govt Event
+																		</option>
+																		<option value="MARRIAGE">Marriage</option>
+																		<option value="BIRTHDAY">BirthDay</option>
+																		<option value="COMMERCIAL">Commercial</option>
+																		<option value="others">Others</option>
+																	</select>
+																</div>
+																<div class="col-sm-4 col-lg-3 col-md-4">
+																	<label for="numDaysCount">Number of
+																		Days:</label>
+																	<select class="form-control" id="numDaysCount"
+																			name="days" required>
+																		<option value="">Select</option>
+																		<option value="1">1</option>
+																		<option value="2">2</option>
+																		<!--<option value="3">3</option>
+                                                                        <option value="4">4</option>
+                                                                        <option value="5">5</option>
+                                                                        <option value="6">6</option>
+                                                                        <option value="7">7</option>-->
+																	</select>
+																</div>
+																<div class="col-sm-4 col-lg-3 col-md-4"
+																	 id="startPeriodDropdowndiv"> <label
+																		for="startPeriodDropdown">Start
+																	Period:</label>
+																	<select id="startPeriodDropdown"
+																			name="startingSlot" class="form-control"
+																			required>
+																		<option value="">Select</option>
+																		<option value="1">Morning (6:00 AM)</option>
+																		<option value="2">Evening (2:00 PM)</option>
+																	</select>
+																</div>
+																<div class="col-sm-4 col-lg-3 col-md-4"
+																	 id="endPeriodDropdowndiv"> <label
+																		for="endPeriodDropdown">End Period:</label>
+																	<select id="endPeriodDropdown" name="endingSlot"
+																			class="form-control" required>
+																		<option value="">Select</option>
+																		<option value="1">Morning (2:00 PM)</option>
+																		<option value="2">Evening (10:00 PM)
+																		</option>
+																	</select>
+																</div>
+															</div>
+															<br>
+															<div class="text-center">
+																<button id="calculateButton"
+																		class="btn btn-primary">Calculate</button>
+															</div>
+															<input type="hidden" id="selectedhallId">
+															<div id="totalAmountDiv" class="text-center mt-3"
+																 style="display:none;">
+																<table
+																		class="table table-bordered center-table table-align">
+																	<tbody>
+																	<tr>
+																		<td class="td-align"><strong> Hall
+																			Amount:</strong>
+																		</td>
+																		<td><span
+																				id="actualhallAmount_td">Rs</span>
+																		</td>
+																	</tr>
+																	<tr>
+																		<td class="td-align">
+																			<strong>Discount:</strong>
+																		</td>
+																		<td><span id="discount_td">0%</span>
+																		</td>
+																	</tr>
+																	<tr id="additionalcharges"
+																		style="display:none">
+																		<td class="td-align">
+																			<strong>Rent Amount:</strong>
+																		</td>
+																		<td><span id="rentamount_td">0</span>
+																		</td>
+																	</tr>
+																	<tr id="additionalcharges_tr"
+																		style="display:none">
+																		<td class="td-align">
+																			<strong>Additional charges (Cleaning
+																				+ P.A.
+																				System + E.B):</strong>
+																		</td>
+																		<td><span
+																				id="additionalcharges_td">0</span>
+																		</td>
+																	</tr>
+
+																	<tr>
+																		<td class="td-align"><strong>Net
+																			Amount:</strong>
+																		</td>
+																		<td><span id="hallAmount_td">Rs</span>
+																		</td>
+																	</tr>
+																	<tr>
+																		<td class="td-align"><strong>GST
+																			Amount:</strong></td>
+																		<td><span id="gst_td">Rs</span></td>
+																	</tr>
+																	<tr>
+																		<td class="td-align"><strong>Deposit
+																			Amount:</strong></td>
+																		<td><span
+																				id="depositAmount_td">Rs</span>
+																		</td>
+																	</tr>
+																	<tr>
+																		<td class="td-align"><strong>Total
+																			Amount:</strong>
+																		</td>
+																		<td><span id="totalAmount_td">Rs</span>
+																		</td>
+																	</tr>
+																	</tbody>
+																</table>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<!-- Page body end -->
+								</div>
+							</div>
+							<!-- Main-body end -->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+<!-- Login Modal-->
+<div th:replace="~{fragments/loginreg :: div}"></div>
+<script th:replace="~{fragments/script :: script}"></script>
+<script th:replace="~{fragments/logRegiOtpScript :: script}"></script>
+
+<script>
+
+	function getHallDetails(hallId, callback) {
+		$.ajax({
+			type: 'GET',
+			url: '/victoriahallbooking_uat/user/api/gethalldetails/' + hallId,
+			success: function (response) {
+				callback(response);
+			},
+			error: function (xhr, status, error) {
+				//console.error('Error fetching hall details:', error);
+			}
+		});
+	}
+
+	// Get hallId from URL parameters and fetch hall details
+	const urlParams = new URLSearchParams(window.location.search);
+	const hallId = urlParams.get('hallId');
+	$(document).ready(function () {
+		if (hallId != null) {
+			getHallDetails(hallId, function (response) {
+
+				$('#hallIdDuplicate').val(hallId);
+				$('#selecthall').val(hallId);
+				$('#fullDayAmount').data('amount', response.fullDayRent);
+				$('#halfDayAmount').data('amount', response.halfDayRent);
+				$('#depositAmount').data('amount', response.depositAmount);
+				$('#gst').data('rate', response.gst);
+				$('#amountDetails').show();
+				$('#selecthall').prop('disabled', true);
+			});
+		}
+	});
+
+	// Populate the dropdown options with the received hall names
+	$(function () {
+		$("#selecthall").select2();
+	});
+
+	$.ajax({
+		type: 'GET',
+		url: '/victoriahallbooking_uat/user/api/gethallnames',
+		success: function (response) {
+			var selectHallDropdown = $('#selecthall');
+			$.each(response, function (index, hall) {
+				selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+				if (hallId == hall.hallId) {
+					selectHallDropdown.find('option[value="' + hall.hallId + '"]').prop('selected', true);
+				}
+			});
+		},
+		error: function (xhr, status, error) {
+			console.error('Error fetching hall names:', error);
+		}
+	});
+
+	// Event listener for the Select Hall dropdown change
+	$('#selecthall').change(function () {
+		localStorage.clear();
+		var hallId = $(this).val();
+		if (hallId) {
+			getHallDetails(hallId, function (response) {
+
+				localStorage.setItem("isSGE",response.sge); // Fetch SGE status from the response
+				localStorage.setItem("isCGE",response.cge);
+
+				$('#fullDayAmount').text(response.fullDayRent.toFixed(2));
+				$('#halfDayAmount').text(response.halfDayRent.toFixed(2));
+				$('#depositAmount').text(response.depositAmount.toFixed(2));
+				$('#gst').text(response.gst.toFixed(0) + '%');
+				$('#reasonforBooking').val('');
+				$('#numDaysCount').val(''); // Clear the numDaysCount dropdown
+				$('#selectedhallId').val(hallId);
+				// Reset the startDate and endDate fields
+				$('#startPeriodDropdown').val('');
+				$('#endPeriodDropdown').val('');
+				$('#totalAmountDiv').hide();
+
+				/*if (!isSGE) {
+                    $('#reasonforBookingdiv').hide();
+                }*/
+				// $('#reasonforBookingdiv').show();
+
+
+				// Show the required amount details once hall is selected
+				$('#amountDetails').show();
+			});
+		} else {
+			// Hide the amount details if no hall is selected
+			$('#amountDetails').hide();
+		}
+	});
+
+	function calculateAmount(numDays, startPeriod, endPeriod, fullDayAmount, halfDayAmount) {
+		var amount = 0;
+
+		// If there is only one day
+		if (numDays === 1) {
+			if (startPeriod === "1" && endPeriod === "2") {
+				amount = fullDayAmount;
+			} else if (startPeriod === "1" && endPeriod === "1") {
+				amount = halfDayAmount;
+			} else if (startPeriod === "2" && endPeriod === "2") {
+				amount = halfDayAmount;
+			}
+		} else {
+			// For multiple days
+			if (startPeriod === "1" && endPeriod === "2") {
+				amount = fullDayAmount * numDays;
+			} else if (startPeriod === "1" && endPeriod === "1") {
+				amount = fullDayAmount * (numDays - 1) + halfDayAmount;
+			} else if (startPeriod === "2" && endPeriod === "2") {
+				amount = fullDayAmount * (numDays - 1) + halfDayAmount;
+			}
+			else if (startPeriod === "2" && endPeriod === "1") {
+				amount = fullDayAmount * (numDays - 2) + halfDayAmount * 2;
+			}
+		}
+
+		return amount;
+	}
+
+	function calculateGST(amount, gstRate) {
+		return parseFloat(((amount * gstRate) / 100).toFixed(2));
+	}
+	function handlePeriodDropdowns(numDays, startPeriod) {
+		if (numDays === 1 && startPeriod === "2") {
+			$('#endPeriodDropdown').val("2");
+			$('#endPeriodDropdown').prop('disabled', true);
+		} else {
+			$('#endPeriodDropdown').prop('disabled', false);
+		}
+	}
+
+	$('#numDaysCount').change(function () {
+		var numDays = parseInt($(this).val(), 10);
+		var startPeriod = $('#startPeriodDropdown').val();
+		handlePeriodDropdowns(numDays, startPeriod);
+	});
+
+	$('#startPeriodDropdown').change(function () {
+		var numDays = parseInt($('#numDaysCount').val(), 10);
+		var startPeriod = $(this).val();
+		handlePeriodDropdowns(numDays, startPeriod);
+	});
+
+	$('#calculateButton').click(function () {
+		/*alert(hallId);*/
+		var hallId = $('#selectedhallId').val();
+		/*alert("hallId:-"+hallId);*/
+		if(hallId == undefined || hallId == ''){
+			/*alert($('#hallIdDuplicate').val())*/
+			hallId = $('#hallIdDuplicate').val();
+			/*alert("hallId done :-"+hallId);*/
+
+		}
+		var numDays = parseInt($('#numDaysCount').val(), 10);
+		var startPeriod = $('#startPeriodDropdown').val();
+		var endPeriod = $('#endPeriodDropdown').val();
+		var reasonForBooking = $('#reasonforBooking').val();
+		// console.log("reasonForBooking="+reasonForBooking);
+
+		if (reasonForBooking.trim() === '') {
+			$('#reasonforBooking')[0].setCustomValidity('Please select reason for booking.');
+			$('#reasonforBooking')[0].reportValidity();
+			return;
+		} else {
+			$('#reasonforBooking')[0].setCustomValidity('');
+		}
+
+		// Validate input fields
+		if (isNaN(numDays) || numDays < 1 || numDays > 7) {
+			console.log("num of days")
+			$('#numDaysCount')[0].setCustomValidity('Please select a valid number of days.');
+			$('#numDaysCount')[0].reportValidity();
+			return;
+		}
+		if (startPeriod === '') {
+			$('#startPeriodDropdown')[0].setCustomValidity('Please select valid start period.');
+			$('#startPeriodDropdown')[0].reportValidity();
+			return;
+		} else {
+			$('#startPeriodDropdown')[0].setCustomValidity('');
+		}
+
+		if (endPeriod === '') {
+			$('#endPeriodDropdown')[0].setCustomValidity('Please select valid end period.');
+			$('#endPeriodDropdown')[0].reportValidity();
+			return;
+		} else {
+			$('#endPeriodDropdown')[0].setCustomValidity('');
+		}
+
+		if (reasonforBooking === 'SGE') {
+			var startPeriod = $('#startPeriodDropdown').val("1");
+			var endPeriod = $('#endPeriodDropdown').val("2");
+		}
+
+		$.ajax({
+			type: 'GET',
+			url: '/victoriahallbooking_uat/user/api/calculatehallamount',
+			data: {
+				hallId: hallId,
+				numDays: numDays,
+				startPeriod: startPeriod,
+				endPeriod: endPeriod,
+				reasonforBooking: reasonForBooking
+			},
+			success: function (response) {
+				// console.log(response);
+
+				// Update HTML elements with the response data
+				if ((response.reasonforBooking === 'SGE') || (response.reasonforBooking === 'CGE')) {
+					if(response.startperiod==='1' && response.endPeriod === '2'){
+						$('#actualhallAmount_td').text('₹' + response.fulldayhallAmount);
+					}else{
+						$('#actualhallAmount_td').text('₹' + response.halfdayhallAmount);
+					}
+					document.getElementById("additionalcharges").style.display = 'table-row'; // Show row
+					document.getElementById("additionalcharges_tr").style.display = 'table-row'
+					$('#discount_td').text(response.discount + '%');
+					$("#rentamount_td").html(response.rentAmount);
+					$("#additionalcharges_td").html('₹'+response.additionalCharges);
+					$('#hallAmount_td').text('₹' + response.netAmount);
+					$('#gst_td').text('₹' + response.gst);
+					$('#depositAmount_td').text('₹' + response.depositAmount);
+					$('#totalAmount_td').text('₹' + response.totalAmount);
+					$('#totalAmountDiv').show();
+				} else {
+					$('#actualhallAmount_td').text('₹' + response.amount);
+					$('#discount_td').text(response.discount + '%');
+					$('#hallAmount_td').text('₹' + response.discountAmount);
+					$('#gst_td').text('₹' + response.gst);
+					$('#depositAmount_td').text('₹' + response.depositAmount);
+					$('#totalAmount_td').text('₹' + response.totalAmount);
+					document.getElementById("additionalcharges").style.display = 'none'; // Hide row
+					document.getElementById("additionalcharges_tr").style.display = 'none'; // Hide row
+
+					// Show the total amount div
+					$('#totalAmountDiv').show();
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error('Error occurred: ' + error);
+			}
+		});
+	});
+
+	document.addEventListener("DOMContentLoaded", function () {
+		const reasonDropdown = document.getElementById("reasonforBooking");
+		const numDaysDropdown = document.getElementById("numDaysCount");
+		const startPeriodDropdown = document.getElementById("startPeriodDropdown");
+		const endPeriodDropdown = document.getElementById("endPeriodDropdown");
+
+		reasonDropdown.addEventListener("change", function () {
+			const selectedValue = reasonDropdown.value;
+
+			if (selectedValue === "MARRIAGE" || selectedValue === "COMMERCIAL") {
+				// Enable dropdowns for Marriage and Commercial
+				numDaysDropdown.disabled = false;
+				numDaysDropdown.value = ""; // Allow the user to select
+				startPeriodDropdown.disabled = false;
+				startPeriodDropdown.value = ""; // Allow the user to select
+				endPeriodDropdown.disabled = false;
+				endPeriodDropdown.value = ""; // Allow the user to select
+			} else {
+				// Set to one day and disable for other events
+				numDaysDropdown.value = "1";
+				numDaysDropdown.disabled = true;
+
+				// Reset and disable start and end period dropdowns
+				startPeriodDropdown.value = "";
+				startPeriodDropdown.disabled = false;
+				endPeriodDropdown.value = "";
+				endPeriodDropdown.disabled = false;
+			}
+		});
+	});
+
+	$('#reasonforBooking').change(function () {
+		var isSGE = localStorage.getItem("isSGE") === "true";
+		var isCGE = localStorage.getItem("isCGE") === "true";
+
+		document.getElementById("numDaysCount").disabled = false;
+
+		var reasonForBooking = $('#reasonforBooking').val();
+
+		if ((reasonForBooking === 'SGE' && !isSGE) || (reasonForBooking === 'CGE' && !isCGE)) {
+			// Show popup for Government Events
+			Swal.fire({
+				title: 'Government Event',
+				text: 'Shenoy Nagar Community Center (Auditorium) full Mandapam (Amma Arangam) is available for state government events.',
+				icon: 'info',
+				confirmButtonText: 'OK'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					window.location.reload();
+				}
+			});
+		}
+	});
+
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

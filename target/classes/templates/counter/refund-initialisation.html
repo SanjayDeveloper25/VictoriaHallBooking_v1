@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-counter :: head}">
+	<title>Refund Initialisation</title>
+</head>
+
+<body>
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<nav th:replace="~{fragments/nav-counter :: nav}"></nav>
+		<header th:replace="~{fragments/header-counter :: header}"></header>
+
+		<main id="main-container">
+
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header block-header-default">
+						<h3 class="block-title"> Refund Initialisation</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table id="refunddocsList"
+									class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+									<thead class="thead-light">
+										<tr class="table-bordered">
+											<th class="text-center no-sort">S.No</th>
+											<th class="text-center" width="20%">Letter</th>
+											<th class="text-center" width="20%">Booking Details</th>
+											<th class="text-center" width="20%">User Details</th>
+											<th class="text-center">Status</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="list, i : ${counterRefundLists}" class="${counterRefundLists}"
+											id="hallRow">
+											<td th:text="${i.count}">0</td>
+											<td class="text-center">
+												<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+													data-bs-target="#exampleModal"
+													th:onclick="viewLetter([[${list.letterdocument}]])">View</button>
+											</td>
+											<td class="text-center">
+												<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+													data-bs-target="#exampleModal"
+													th:onclick="BookingDetails([[${list.counterDetails}]])">View</button>
+											</td>
+											<td class="text-center">
+												<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+													data-bs-target="#exampleModal"
+													th:onclick="UserDetails([[${list.counterDetails}]])">View</button>
+											</td>
+											<td>
+												<span class="badge bg-primary"
+													th:text="${list.initialisationStatus}"></span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+
+	<div class="modal fade" id="userDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">User Details</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-sm-4">
+							<label class="form-label" for="name">Name:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="name" id="name" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="mobileno">Mobile Number:<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="mobileno" id="mobileno"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="email">Email:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="email" id="email" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="usertype">User type:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="usertype" id="usertype"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="street">Street:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="street" id="street" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="area">Area:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="area" id="area" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="location">Location:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="location" id="location"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="pincode">Pincode:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="pincode" id="pincode" readonly />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="bookingDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Booking Details</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-sm-4">
+							<label class="form-label" for="noofdays">No of Days:<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="noofdays" id="noofdays"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="startdate">Start Date:<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="startdate" id="startdate"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="enddate">End Date:<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="enddate" id="enddate" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="startingslot">Starting Slot<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="startingslot" id="startingslot"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="endingslot">Ending Slot<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="endingslot" id="endingslot"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="bookingdate">Booking Date<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="bookingdate" id="bookingdate"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="bookingstatus">Booking Status<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="bookingstatus" id="bookingstatus"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="bankname">Bank Name<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="bankname" id="bankname"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="bankaccno">Bank Account No<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="bankaccno" id="bankaccno"
+								readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="amountreceived">Amount Received<span
+									class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="amountreceived"
+								id="amountreceived" readonly />
+						</div>
+						<div class="col-sm-4">
+							<label class="form-label" for="ddnumber">DD Number<span class="text-danger"></span></label>
+							<input type="text" class="form-control text-center" name="ddnumber" id="ddnumber"
+								readonly />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+					<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<embed id="filePreview" src="" width="100%" height="600px">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			const maxFileSize = 1 * 1024 * 1024; // 1MB in bytes
+
+			function validateFileSize(input) {
+				const file = input.files[0];
+				if (file && file.size > maxFileSize) {
+					$(input).siblings('.text-danger.file-size-message').text('File size exceeds the limit of 1 MB.');
+					$(input).val(''); // Clear the file input
+				} else {
+					$(input).siblings('.text-danger.file-size-message').text('');
+				}
+			}
+
+
+
+
+		});
+
+		function UserDetails(counterDetails) {
+			// console.log("Initial Counter Details:", counterDetails);
+			var counterId = counterDetails.counterId;
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/counterdetails',
+				type: 'GET',
+				data: {counterId: counterId},
+				success: function (response) {
+					// console.log("Fetched User Details:", response);
+
+					// Assuming the response is an array and we need the first element
+					if (response.length > 0) {
+						var userDetails = response[0].users;
+
+						// Populate booking information
+						$('#name').val(userDetails.name);
+						$('#mobileno').val(userDetails.mobileNo);
+						$('#email').val(userDetails.email);
+						$('#usertype').val(userDetails.usertype);
+						$('#street').val(userDetails.street);
+						$('#area').val(userDetails.area);
+						$('#location').val(userDetails.location);
+						$('#pincode').val(userDetails.pinCode);
+
+						// Show the modal
+						$('#userDetails').modal('show');
+					} else {
+						console.error('No user details found for the given counter ID');
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Failed to fetch user details:', error);
+				}
+			});
+		}
+
+		function BookingDetails(counterDetails) {
+			var counterId = counterDetails.counterId;
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/counterdetails',
+				type: 'GET',
+				data: {counterId: counterId},
+				success: function (response) {
+					// console.log("Fetched Booking Details:", response);
+
+					if (response.length > 0) {
+						var bookingDetails = response[0];
+
+						$('#noofdays').val(bookingDetails.noOfDays);
+						$('#startdate').val(bookingDetails.startDate);
+						$('#enddate').val(bookingDetails.endDate);
+						$('#startingslot').val(bookingDetails.startingSlot);
+						$('#endingslot').val(bookingDetails.endingSlot);
+						$('#bookingdate').val(bookingDetails.bookingDate);
+						$('#bookingstatus').val(bookingDetails.bookingStatus);
+						$('#bankname').val(bookingDetails.counterDetails.bankName);
+						$('#bankaccno').val(bookingDetails.counterDetails.bankAccNo);
+						$('#amountreceived').val(bookingDetails.counterDetails.amountReceived);
+						$('#ddnumber').val(bookingDetails.counterDetails.ddNumber);
+
+						$('#bookingDetails').modal('show');
+					} else {
+						console.error('No booking details found for the given counter ID');
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Failed to fetch booking details:', error);
+				}
+			});
+		}
+
+
+		function viewLetter(letterdocument) {
+			document.getElementById('filePreview').src = letterdocument;
+			$('#fileModal').modal('show');
+		}
+
+		$(document).ready(
+			function () {
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+				$('#refunddocsList').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+
+			});
+
+	</script>
+</body>
+
+</html>

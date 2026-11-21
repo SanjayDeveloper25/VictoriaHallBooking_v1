@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}"></head>
+<!--<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>-->
+<!--datatables-->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+<!-- Stylesheets -->
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />-->
+<!-- JavaScript -->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>-->
+
+<!-- Stylesheets -->
+<link rel="stylesheet" type="text/css" href="css\MarkerCluster.css">
+<link rel="stylesheet" type="text/css" href="css\MarkerCluster.Default.css">
+<link rel="stylesheet" type="text/css" href="css\leaflet.css">
+<!-- JavaScript -->
+<script type="text/javascript" src="js\leaflet.js"></script>
+<script type="text/javascript" src="js\leaflet.markercluster.js"></script>
+
+<style>
+	/* Hide button and div2 on small screens */
+	@media only screen and (max-width: 768px) {
+		#toggleButton {
+			display: none;
+		}
+
+		#div2 {
+			display: none;
+		}
+
+		.table-container {
+			height: 300px;
+			/* Adjust height as needed */
+			overflow-y: auto;
+		}
+	}
+
+	/* Optional CSS styling */
+	.thumbnail {
+		cursor: pointer;
+	}
+
+	.modal-dialog {
+		margin: 30px auto;
+	}
+
+	.carousel-item img {
+		width: 100%;
+		height: auto;
+	}
+
+
+
+	/* Custom CSS to change the color of carousel controls */
+	.carousel-control-prev,
+	.carousel-control-next {
+		color: black;
+	}
+
+	#enteredDetails {
+		display: none
+	}
+
+	.card {
+		max-height: 75%;
+	}
+
+	#scrollToTopBtn {
+		display: none;
+		position: fixed;
+		bottom: 20px;
+		right: 30px;
+		height: 45px;
+		width: 45px;
+		z-index: 99;
+		border: none;
+		outline: none;
+		background-color: #FA7F08;
+		color: white;
+		cursor: pointer;
+		padding: 15px;
+		border-radius: 50%;
+		opacity: 50%;
+	}
+
+	#scrollToTopBtn:hover {
+		background-color: #22BABB;
+		opacity: 100%;
+	}
+
+	.required-field {
+		color: red;
+	}
+
+	#amounttable {
+		border-collapse: separate;
+		border-spacing: 5px;
+		/* Set cell spacing */
+		margin-bottom: 5px;
+		/* margin-left:30px;  */
+	}
+
+
+	#amounttable th {
+		padding: 2px;
+		/* Set cell padding */
+		border: none;
+		text-align: center;
+		padding: 0px 1px;
+		width: 65%;
+		font-size: 12px;
+	}
+
+	#amounttable td {
+		padding: 2px;
+		/* Set cell padding */
+		border: none;
+		text-align: left;
+		width: 35%;
+		font-size: 12px;
+	}
+
+	.swal2-container {
+		z-index: 9999999999999 !important;
+		/* Adjust this value if needed */
+	}
+
+	.image-container {
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	.image-container img {
+		display: inline-block;
+		margin-right: 10px;
+		/* Adjust as needed */
+		animation: scrollImages 5s linear infinite;
+		/* Adjust duration and timing function as needed */
+	}
+
+	@keyframes scrollImages {
+		0% {
+			transform: translateX(0);
+		}
+
+		100% {
+			transform: translateX(-100%);
+		}
+	}
+
+	#map {
+		height: 700px;
+		/* Adjust height as needed */
+		width: 100%;
+		position: relative;
+		overflow: hidden;
+		max-width: 100%;
+		/* Ensure the map doesn't overflow its container */
+	}
+
+	.border-primary {
+		border-left: white;
+	}
+
+	.swal2-container {
+		z-index: 9999999999999 !important;
+		/* Adjust this value if needed */
+	}
+
+	.carousel-inner img {
+		object-fit: cover;
+		/* Ensures images scale uniformly */
+		height: 250px;
+		/* Fixed height */
+		width: 300px;
+		/* Fixed width */
+		margin: auto;
+		/* Centers the image */
+		margin-top: 20px;
+	}
+
+	.carousel {
+		display: flex;
+		justify-content: center;
+		/* Center the carousel itself */
+	}
+
+	.carousel-image {
+		max-height: 300px;
+		/* Adjust height as needed */
+		width: auto;
+		margin: 0 auto;
+		/* Center the image horizontally */
+	}
+
+	
+
+</style>
+
+<body>
+	<!-- Pre-loader start -->
+	<div class="theme-loader">
+		<div class="ball-scale">
+			<div class='contain'>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Pre-loader end -->
+	<div id="pcoded" class="pcoded">
+
+		<div class="pcoded-container">
+			<!-- Menu header start -->
+			<nav th:replace="~{fragments/nav-user :: nav}"></nav>
+			<!-- Menu header end -->
+			<div class="pcoded-main-container">
+				<nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>
+				<div class="pcoded-wrapper">
+					<div class="pcoded-content">
+						<div class="pcoded-inner-content">
+							<!-- Main-body start -->
+							<div class="main-body">
+								<div class="page-wrapper">
+									<!-- Page body start -->
+									<div class="page-body" style="padding-top: 3%;">
+										<div id="map" style="display:none;"><br></div>
+										<div th:if="${newnotification != null && !newnotification.isEmpty()}"
+											id="notification">
+											<marquee width="100%" direction="left" height="auto" style="color:red"
+												onmouseover="this.stop();" onmouseout="this.start();">
+												<i class="fas fa-bell"></i> * <span th:text="${newnotification}"></span>
+												*
+											</marquee>
+										</div>
+										<div class="row" id="dashboardbody">
+											<div class="col-sm-12">
+												<!-- <div class="card">
+													Check Availability Start
+													<div class="z-depth-0">
+														<div class="card border-dark mb-3">
+
+															 <div class="card-body">
+																<div class="form-row col-sm-12 col-md-12 col-lg-12"
+																	id="formrow">
+																	<div class="col-sm-2">
+																		<label for="fromdate">From Date:<span
+																				class="required-field">*</span></label>
+																		<input class="form-control"
+																			th:value="${fromDate}" name="fromdate"
+																			type="date" id="fromdate"
+																			placeholder="dd-mm-yyyy">
+																	</div>
+
+																	<div class="col-sm-2">
+																		<label for="todate">To Date:<span
+																				class="required-field">*</span></label>
+																		<select class="form-control" name="todate"
+																			id="todate">
+																			<option th:value="${toDate}"
+																				th:text="${toDate}" selected></option>
+																		</select>
+																	</div>
+
+																	<div class="col-sm-2">
+																		<label for="startingslot">Starting Slot:<span
+																				class="required-field">*</span></label>
+																		<select class="form-control" id="startingslot"
+																			name="startingslot"
+																			aria-label="Starting Slot">
+																			<option value="0"
+																				th:selected="${startingSlot == 'Select'}">
+																				Select</option>
+																			<option value="1"
+																				th:selected="${startingSlot == 'Morning'}">
+																				Morning</option>
+																			<option value="2"
+																				th:selected="${startingSlot == 'Evening'}">
+																				Evening</option>
+																		</select>
+																	</div>
+																	<div class="col-sm-2">
+																		<label for="endingslot">Ending Slot:<span
+																				class="required-field">*</span></label>
+																		<select class="form-control" id="endingslot"
+																			name="endingslot" aria-label="Ending Slot">
+																			<option value="0"
+																				th:selected="${endingSlot == 'Select'}">
+																				Select</option>
+																			<option value="1"
+																				th:selected="${endingSlot == 'Morning'}">
+																				Morning</option>
+																			<option value="2"
+																				th:selected="${endingSlot == 'Evening'}">
+																				Evening</option>
+																		</select>
+																	</div>
+
+																	<div style="margin-top: 29px;">
+																		<div class="input-group-append">
+																			<button class="btn btn-outline-secondary"
+																				type="button" id="filterIcon">
+																				<i class="fas fa-filter"></i>
+																			</button>
+																		</div>
+																	</div>
+																	<div style="padding-top: 28px;display:none;margin-left:9px;"
+																		id="resetbutton">
+																		<button type="button" class="btn btn-grd-danger"
+																			onclick="resetDate()">Reset</button>
+																	</div>
+																	<div class="col-sm-2" style="padding-top: 28px;">
+																		<button type="button"
+																			class="btn btn-grd-primary"
+																			onclick="displayHallDetails()">Check
+																			Now</button>
+																	</div>
+																	<div class="col-sm-10" style="padding-top:28px;">
+																	<a
+																			href="javascript:initializeMapAndFetchCoordinates()">
+																		<i class="fas fa-map-marker-alt"></i> Click
+																		here to view Map Centers
+																	</a>
+																</div><br><br>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div> -->
+
+												<!-- <button id="toggleButton"
+													class="btn btn-inverse btn-outline-inverse btn-icon">
+												<i class="icofont icofont-exchange" data-toggle="tooltip"
+												   data-placement="left" title="Table/Grid View"></i>
+											</button> -->
+												<br>
+												<!-- Toggle button end-->
+												<!--Grid View start-->
+												<br>
+												
+												<div id="div2" style="display: none;">
+													<!-- Zero config.table start -->
+													<div class="card">
+														<div class="card-header">
+															<h5>Community Hall Details</h5>
+														</div>
+														<div class="card-block">
+															<div class="block-content p-0">
+																<div class="p-sm-4 p-0">
+																	<div class="table-responsive">
+																		<table
+																			class="table table-bordered table-striped table-vcenter js-dataTable-responsive"
+																			id="simpletable">
+																			<thead class="thead-light responsive"
+																				style="background-color: rgb(21,69,93);color: white;">
+																				<tr class="table-bordered ">
+																					<th class="text-center no-sort"
+																						width="10%">S.No</th>
+																					<th class="text-center" width="10%">
+																						Hall
+																						Name
+																					</th>
+																					<th class="text-center" width="10%">
+																						Address
+																					</th>
+																					<th class="text-center" width="10%">
+																						Landmark</th>
+																					<th class="text-center" width="10%">
+																						Seating
+																						Capacity
+																					</th>
+																					<th class="text-center" width="10%">
+																						Deposit
+																						Amount
+																					</th>
+																					<th class="text-center" width="10%">
+																						Full Day
+																						Amount
+																					</th>
+																					<th class="text-center" width="10%">
+																						Half Day
+																						Amount
+																					</th>
+																					<th>View Images</th>
+																					<th>Book Now</th>
+
+																				</tr>
+																			</thead>
+																			<tbody>
+																				<tr th:each="hall, i : ${halls}"
+																					class="${halls}">
+																					<td th:text="${i.count}"></td>
+																					<td th:text="${hall.hallName}"></td>
+																					<td th:text="${hall.area}"></td>
+																					<td th:text="${hall.city}"></td>
+																					<td
+																						th:text="${hall.seatingCapacity}">
+																					</td>
+																					<td th:text="${hall.depositAmount}">
+																					</td>
+																					<td th:text="${hall.fullDayRent}">
+																					</td>
+																					<td th:text="${hall.halfDayRent}">
+																					</td>
+																					<td>
+																						<a class="view-button"><span
+																								class="badge bg-primary"
+																								style="cursor: pointer;"
+																								th:onclick="viewHallImages([[${hall.hallId}]])">View</span></a>
+																					</td>
+
+																					<td><a href="javascript:void(0);"><span
+																								class="badge bg-success"
+																								th:onclick="return checkLoginedIn('book',[[${hall.hallId}]]);"
+																								style="cursor: pointer;">Book</span></a>
+																					</td>
+																				</tr>
+																			</tbody>
+																		</table>
+																	</div>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<!-- Zero config.table end -->
+											<div class="modal fade" id="exampleModal" tabindex="-1"
+												aria-labelledby="exampleModalLabel" aria-hidden="true">
+												<div class="modal-dialog" style="width:auto;">
+													<div class="modal-content">
+														<div class="modal-header">
+															<h5 class="modal-title" id="exampleModalLabel">Hall Image
+															</h5>
+															<button type="button" class="btn-close"
+																data-bs-dismiss="modal" aria-label="Close"></button>
+														</div>
+														<div class="modal-body"
+															style="height: 350px; overflow: hidden;">
+															<div id="carouselExample" class="carousel slide"
+																data-bs-ride="carousel1">
+																<div class="carousel-inner1"
+																	style="height:auto; width:auto;">
+																	<!-- Slides will be dynamically inserted here -->
+																</div>
+															</div>
+														</div>
+														<div class="modal-footer">
+															<!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
+														</div>
+													</div>
+												</div>
+											</div>
+											<!--Image view model END-->
+										</div>
+
+
+										<div id="div1">
+													<div class="row" style="align-items: flex-start;margin-right:0">
+														<div th:each="hall : ${halls}" class="col-lg-3 col-md-6 default-grid-item">
+															<div class="card">
+																<div class="masonry-media">
+																	<!--<div style="height:250px;width:300px"
+                                                                    id="hallImagesCarousel" class="carousel slide"
+                                                                    data-ride="carousel">
+                                                                    <div class="carousel-inner">
+                                                                        <img th:if="${hall.hallImagesList != null && !hall.hallImagesList.isEmpty()}"
+                                                                            th:src="@{${hall.hallImagesList[0].hallImage}}"
+                                                                            th:onclick="viewHallImages([[${hall.hallId}]])"
+                                                                            class="d-block w-100 carousel-image"
+                                                                            alt="Hall Image">
+                                                                    </div>
+                                                                </div>-->
+																	<div style="height:250px;width:300px"
+																		id="hallImagesCarousel" class="carousel slide"
+																		data-ride="carousel">
+																		<div class="carousel-inner">
+																			<img th:if="${hall.hallImagesList != null && !hall.hallImagesList.isEmpty()}"
+																				th:src="@{${hall.hallImagesList[0].hallImage}}"
+																				th:onclick="viewHallImages([[${hall.hallId}]])"
+																				class="d-block carousel-image"
+																				alt="Hall Image">
+																		</div>
+																	</div>
+																</div>
+
+																<div class="card-block" id="cardblock">
+																	<h6 class="job-card-desc"><span
+																			th:text="${hall.hallName}"></span></h6>
+
+																	<table id="amounttable">
+																		<tr>
+																			<th class="text-muted"> Rent:</th>
+																			<td th:text="${hall.fullDayRent}"
+																				class="text-muted"></td>
+																		</tr>
+																		<!-- <tr>
+																			<th class="text-muted">Half day Rent:</th>
+																			<td th:text="${hall.halfDayRent}"
+																				class="text-muted"></td>
+																		</tr> -->
+																		<tr>
+																			<th class="text-muted"> Security
+																				Deposit:
+																			</th>
+																			<td th:text="${hall.depositAmount}"
+																				class="text-muted"></td>
+																		</tr>
+																		<!-- <tr>
+																			<th class="text-muted">Half Day Security
+																				Deposit:
+																			</th>
+																			<td th:text="${hall.halfDepositAmount}"
+																				class="text-muted"></td>
+																		</tr> -->
+																	</table>
+																	<div class="job-meta-data"><i
+																			class="icofont icofont-location-arrow"></i>
+																		<a th:attr="data-latitude=${hall.latitude}, data-longitude=${hall.longitude}"
+																			th:onclick="showHall(this)"
+																			style="cursor: pointer;">
+																			<span th:text="${hall.doorNo}"></span>,
+																			<span th:text="${hall.street}"></span>,
+																			<span th:text="${hall.area}"></span>,
+																			<br>
+																			<span th:text="${hall.city}"></span> -
+																			<span th:text="${hall.pinCode}"></span>
+																		</a>
+																	</div>
+																	<div class="job-meta-data"><i
+																			class="icofont icofont-university"></i>Capacity:
+																		<span th:text="${hall.seatingCapacity}"></span>
+																	</div>
+																</div>
+																<div class="row" >
+																	<div class="col-md-12">
+																		<a href="javascript:void(0);"
+																			class="btn btn-primary book-button"
+																			th:onclick="return checkLoginedIn('book',[[${hall.hallId}]]);">
+																			Book
+																		</a>
+																	</div>
+
+
+																	<!-- <div class="col-md-6">
+																		<a th:href="'/victoriahallbooking_uat/viewhallform?hallId=' + ${hall.hallId}"
+																			class="btn btn-primary book-button">View</a>
+																	</div> -->
+																</div>
+															</div>
+														</div>
+														<br>
+													</div>
+												</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+						<a onclick="topFunction()" id="scrollToTopBtn" title="Go to top"><i
+								class="icofont icofont-circled-up"></i></a>
+						<footer th:replace="~{fragments/footer :: footer}"></footer>
+					</div>
+				</div>
+			</div>
+		</div>
+		<input type="hidden" id="serverDate" th:value=${serverDate}>
+		<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Filter Options</h5>
+						<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"
+							style="color:black">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-sm-6">
+								<label for="selectedStartDate">Selected Start Date:<span
+										class="required-field">*</span></label>
+								<input type="date" class="form-control" id="selectedStartDate">
+							</div>
+							<div class="col-sm-6">
+								<label for="selectedEndDate">Selected End Date:<span
+										class="required-field">*</span></label>
+								<select class="form-control" id="selectedEndDate"></select>
+							</div>
+							<div class="col-sm-6">
+								<label for="selectedMorningSlot">Selected Starting Slot:<span
+										class="required-field">*</span></label>
+								<select class="form-control" id="selectedMorningSlot">
+									<option value="0">Select</option>
+									<option value="1">Morning</option>
+									<option value="2">Evening</option>
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label for="selectedEveningSlot">Selected Ending Slot:<span
+										class="required-field">*</span></label>
+								<select class="form-control" id="selectedEveningSlot">
+									<option value="0">Select</option>
+									<option value="1">Morning</option>
+									<option value="2">Evening</option>
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label for="zone">Zone:</label>
+								<select class="form-control" id="zone" name="zone" placeholder="zone"
+									onclick="getDivision(this),loadHallsbyzone(this)" aria-label="Select Zone">
+									<option value="">Select a Zone</option>
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label for="zone">Division:</label>
+								<select class="form-control" id="division" name="division"
+									onchange="loadHallsbydivision(this)" placeholder="division"
+									aria-label="Select Division">
+									<option value="">Select a Division</option>
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label for="selecthall">Select Hall:</label>
+								<select class="form-control" id="selecthall" name="selecthall" aria-label="Select Hall">
+									<option value="">Select a Hall</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" onclick="displayHallDetailswithFilters()">Apply
+							Filters</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- MOdel for Map-->
+		<div class="modal fade" id="hallDetailsModal" tabindex="-1" aria-labelledby="hallDetailsModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-md">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="hallDetailsModalLabel">Hall Details</h5>
+						<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"
+							style="color:black">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div id="modalContent"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary booknow">Book Now</button>
+					</div>
+				</div>
+			</div>
+		</div><!-- end of Model Map-->
+	</div>
+
+	<div th:replace="~{fragments/loginreg :: div}"></div>
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script th:replace="~{fragments/logRegiOtpScript :: script}"></script>
+
+	<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+	<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+	<script>
+		// $('.carousel').carousel({
+		// 	interval: 6000
+		// })
+	</script>
+	<script>
+		$(document).ready(function () {
+			$('#simpletable').DataTable({
+				responsive: true,
+				pageLength: 10,
+				ordering: true,
+				columnDefs: [{
+					targets: 'no-sort',
+					orderable: false
+				}],
+				dom: 'Bfrtip',
+				buttons: [
+					{
+						extend: 'excelHtml5',
+						text: 'Export to Excel',
+						className: 'btn btn-primary'
+					}
+				]
+			});
+		});
+	</script>
+
+	<!--Model Script End-->
+	<!--script to show next seven days from selected from from date-->
+	<script>
+		$(document).ready(function () {
+
+			const serverDate = new Date($("#serverDate").val() + "T00:00:00")
+			// console.log("serverDate:", serverDate);
+
+			// Get today's date
+			var today = serverDate;
+
+			var sixMonthsFromNow = new Date(serverDate);
+			sixMonthsFromNow.setMonth(serverDate.getMonth() + 6);
+
+			// console.log("sixMonthsFromNow:", sixMonthsFromNow);
+
+			const day = serverDate.getDate();
+			// If the new month has fewer days, adjust the date
+			if (sixMonthsFromNow.getDate() !== day) {
+				sixMonthsFromNow.setDate(0); // Moves to the last valid day of the previous month
+			}
+
+			// Set the 'min' and 'max' attributes for input fields
+			const minDateStr = formatDateForValue(serverDate); // YYYY-MM-DD format
+			const maxDateStr = formatDateForValue(sixMonthsFromNow);
+
+			// console.log("minDateStr:", minDateStr);
+			// console.log("maxDateStr:", maxDateStr);
+
+			$("#fromdate, #todate, #selectedStartDate, #selectedEndDate").attr("min", minDateStr);
+			$("#fromdate, #todate, #selectedStartDate, #selectedEndDate").attr("max", maxDateStr);
+
+			// Populate 'todate' options based on 'fromdate'
+			// Function to format date as dd-mm-yyyy
+			function formatDateForText(date) {
+				var day = ("0" + date.getDate()).slice(-2);
+				var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-based
+				var year = date.getFullYear();
+				return day + '-' + month + '-' + year;
+			}
+
+			// Function to format date as yyyy-mm-dd
+			function formatDateForValue(date) {
+				var day = ("0" + date.getDate()).slice(-2);
+				var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-based
+				var year = date.getFullYear();
+				return year + '-' + month + '-' + day;
+			}
+
+			// Handle change event for #fromdate
+			$('#fromdate').change(function () {
+				var fromDate = new Date($(this).val());
+				var toDateSelect = $('#todate');
+				toDateSelect.empty();
+				for (var i = 0; i <= 1; i++) {
+					var toDate = new Date(fromDate);
+					toDate.setDate(fromDate.getDate() + i);
+					var dateText = formatDateForText(toDate);
+					var dateValue = formatDateForValue(toDate);
+					toDateSelect.append($('<option>', {
+						value: dateValue,
+						text: dateText
+					}));
+				}
+			});
+
+			// Handle change event for #selectedStartDate
+			$('#selectedStartDate').change(function () {
+				var selectedStartDate = new Date($(this).val());
+				var selectedEndDateSelect = $('#selectedEndDate');
+				selectedEndDateSelect.empty();
+				for (var i = 0; i <= 1; i++) {
+					var selectedEndDate = new Date(selectedStartDate);
+					selectedEndDate.setDate(selectedStartDate.getDate() + i);
+					var dateText = formatDateForText(selectedEndDate);
+					var dateValue = formatDateForValue(selectedEndDate);
+					selectedEndDateSelect.append($('<option>', {
+						value: dateValue,
+						text: dateText
+					}));
+				}
+			});
+			// Show modal with selected values
+			$('#filterIcon').click(function () {
+				getZone();
+				var fromDate = $('#fromdate').val();
+				var toDate = $('#todate').val();
+				var startingSlot = $('#startingslot option:selected').val();
+				var endingSlot = $('#endingslot option:selected').val();
+
+				$('#selectedStartDate').val(fromDate);
+				// Here, we need to manually trigger the change event to ensure selectedEndDate options are populated
+				$('#selectedStartDate').trigger('change');
+				// Setting the selected end date after options are populated
+				setTimeout(() => {
+					$('#selectedEndDate').val(toDate);
+				}, 100);
+
+				$('#selectedMorningSlot').val(startingSlot);
+				$('#selectedEveningSlot').val(endingSlot);
+
+				$('#filterModal').modal({
+					backdrop: 'static',
+					keyboard: false
+				});
+				$('#filterModal').modal('show');
+			});
+		});
+		function toggleButtonClicked() {
+			var div1 = document.getElementById('div1');
+			var div2 = document.getElementById('div2');
+
+			if (div1.style.display === 'none') {
+				div1.style.display = 'block';
+				div2.style.display = 'none';
+			} else {
+				div1.style.display = 'none';
+				div2.style.display = 'block';
+			}
+
+		}
+
+		// document.getElementById('toggleButton').addEventListener('click', toggleButtonClicked);
+	</script>
+	<script>
+
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+
+		gtag('config', 'UA-23581568-13');
+
+		/*const serverDate =new Date($("#serverDate").val() + "T00:00:00")
+		console.log("serverDate:", serverDate);
+	
+		// Get today's date
+		var today = serverDate;
+	
+		var sixMonthsFromNow = new Date(serverDate);
+		sixMonthsFromNow.setMonth(serverDate.getMonth() + 6);
+	
+		console.log("sixMonthsFromNow:", sixMonthsFromNow);
+	
+		const day = serverDate.getDate();
+		// If the new month has fewer days, adjust the date
+		if (sixMonthsFromNow.getDate() !== day) {
+			sixMonthsFromNow.setDate(0); // Moves to the last valid day of the previous month
+		}
+	
+		// Set the 'min' and 'max' attributes for input fields
+		const minDateStr = serverDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+		const maxDateStr = sixMonthsFromNow.toISOString().split('T')[0];
+	
+		$("#fromdate, #todate, #selectedStartDate, #selectedEndDate").attr("min", minDateStr);
+		$("#fromdate, #todate, #selectedStartDate, #selectedEndDate").attr("max", maxDateStr);*/
+
+		// Calculate the date 6 months from now
+		// var sixMonthsFromNow = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate()+1);
+
+		// Set the 'min' and 'max' attributes of the input fields to limit the date selection
+		/*document.getElementById("fromdate").setAttribute("min", today.toISOString().split('T')[0]);
+		document.getElementById("fromdate").setAttribute("max", sixMonthsFromNow.toISOString().split('T')[0]);
+		document.getElementById("todate").setAttribute("min", today.toISOString().split('T')[0]);
+		document.getElementById("todate").setAttribute("max", sixMonthsFromNow.toISOString().split('T')[0]);
+	
+		document.getElementById("selectedStartDate").setAttribute("min", today.toISOString().split('T')[0]);
+		document.getElementById("selectedStartDate").setAttribute("max", sixMonthsFromNow.toISOString().split('T')[0]);
+		document.getElementById("selectedEndDate").setAttribute("min", today.toISOString().split('T')[0]);
+		document.getElementById("selectedEndDate").setAttribute("max", sixMonthsFromNow.toISOString().split('T')[0]);*/
+
+		//Function for toggle button
+		function toggleButtonClicked() {
+			var hallDetailsVisible = document.getElementById('hallDetails').style.display !== 'none';
+
+			// Toggle visibility of hallDetails and div4
+			document.getElementById('hallDetails').style.display = hallDetailsVisible ? 'none' : 'block';
+			document.getElementById('div4').style.display = hallDetailsVisible ? 'block' : 'none';
+		}
+
+
+		// Function to display hall details
+		function displayHallDetails() {
+			var fromdate = $("#fromdate").val();
+			var todate = $("#todate").val();
+			var startingSlot = $("#startingslot").val();
+			var endingSlot = $("#endingslot").val();
+			var hallId = $("#selecthall").val();
+			if (fromdate == "" || fromdate == undefined || todate == "" || todate == undefined || startingSlot == "0" || endingSlot == "0") {
+				Swal.fire({
+					icon: 'error',
+					title: 'Missing Information',
+					text: 'Please ensure that all date and slot fields are selected.',
+				});
+			}
+			else {
+				window.location.href = '/victoriahallbooking_uat/user/checkAvail?fromDate=' + fromdate + '&toDate=' + todate + '&starting=' + startingSlot + '&ending=' + endingSlot;
+				$("#notification").css("display", "none");
+			}
+		}
+
+		function checkResetButtonVisibility() {
+			// Get the current URL
+			var currentUrl = window.location.pathname; // Use pathname to get the path only
+			var urlPattern = "/victoriahallbooking_uat/user/dashboard";
+
+			// Check if the current URL is exactly the pattern
+			if (currentUrl === urlPattern) {
+				// Hide the resetButton if the URL matches the pattern exactly
+				document.getElementById("resetbutton").style.display = "none";
+			} else {
+				// Show the resetButton if the URL does not match the pattern exactly
+				// document.getElementById("resetbutton").style.display = "block";
+			}
+		}
+
+		// Call the function on page load
+		window.onload = checkResetButtonVisibility;
+
+
+		function displayHallDetailswithFilters() {
+			var fromdate = $("#selectedStartDate").val();
+			var todate = $("#selectedEndDate").val();
+			var startingSlot = $("#selectedMorningSlot").val();
+			var endingSlot = $("#selectedEveningSlot").val();
+			var zone = $("#zone").val();
+			var division = $("#division").val();
+			var hallId = $("#selecthall").val();
+			if (fromdate == "" || fromdate == undefined || todate == "" || todate == undefined || startingSlot == "0" || endingSlot == "0") {
+				Swal.fire({
+					icon: 'error',
+					title: 'Missing Information',
+					text: 'Please ensure that all date and slot fields are selected.',
+				});
+			}
+			else {
+				window.location.href = '/victoriahallbooking_uat/user/checkAvail?fromDate=' + fromdate + '&toDate=' + todate + '&starting=' + startingSlot + '&ending=' + endingSlot + '&hallId=' + hallId + '&zone=' + zone;
+
+			}
+		}
+
+		function viewHallImages(hallId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/admin/api/getImageById',
+				data: {
+					'hallId': hallId
+				},
+				success: function (res) {
+					getHallImagesById(res);
+				}
+			});
+
+		}
+		function getHallImagesById(images) {
+
+			const modalSlidesContainer = document.querySelector('.carousel-inner1');
+			modalSlidesContainer.innerHTML = '';
+
+			// Loop through the images and create thumbnail elements dynamically
+			images.forEach((image, index) => {
+				const slide = document.createElement('div');
+				slide.classList.add('carousel-item');
+				if (index === 0) {
+					slide.classList.add('active');
+				}
+				const img = document.createElement('img');
+				img.src = image.hallImage;
+				img.alt = `Slide ${image.hallImageId}`; // Corrected this line to properly set the alt text
+				slide.appendChild(img);
+				modalSlidesContainer.appendChild(slide);
+			});
+
+			$('#exampleModal').modal('show'); // Show Bootstrap modal
+		}
+		function loadHallsbydivision(x) {
+			var division = x.value;
+
+			// Make an AJAX request to fetch halls based on the selected zone and division
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/hallsbydivision', // Replace 'backend_url' with the actual backend endpoint
+				method: 'GET',
+				data: { division: division },
+				success: function (response) {
+					// Clear existing options
+					$('#selecthall').empty();
+					var selectHallDropdown = $('#selecthall'); // Select the select hall dropdown
+					selectHallDropdown.empty(); // Clear existing options
+
+					// Add the default "Select Hall" option
+					selectHallDropdown.append('<option value="" selected>Select Hall</option>');
+
+					response.forEach(function (hall) {
+						$('#selecthall').append('<option value="' + hall.hallId + '">' + hall.hallName + '</option>');
+					});
+				},
+				error: function (xhr, status, error) {
+					console.error('Error loading halls:', error);
+				}
+			});
+		}
+		function loadHallsbyzone(x) {
+			var zone = x.value;
+			// Make an AJAX request to fetch halls based on the selected zone and division
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/findhallsbyzone', // Replace 'backend_url' with the actual backend endpoint
+				method: 'GET',
+				data: { zone: zone },
+				success: function (response) {
+					// Clear existing options
+					$('#selecthall').empty();
+					var selectHallDropdown = $('#selecthall'); // Select the select hall dropdown
+					selectHallDropdown.empty(); // Clear existing options
+
+					// Add the default "Select Hall" option
+					selectHallDropdown.append('<option value="" selected>Select Hall</option>');
+
+					response.forEach(function (hall) {
+						$('#selecthall').append('<option value="' + hall.hallId + '">' + hall.hallName + '</option>');
+					});
+				},
+				error: function (xhr, status, error) {
+					console.error('Error loading halls:', error);
+				}
+			});
+		}
+		window.onscroll = function () { scrollFunction() };
+		function scrollFunction() {
+			if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+				document.getElementById("scrollToTopBtn").style.display = "block";
+			} else {
+				document.getElementById("scrollToTopBtn").style.display = "none";
+			}
+		}
+		// When the user clicks on the button, scroll to the top of the document
+		function topFunction() {
+			document.body.scrollTop = 0;
+			document.documentElement.scrollTop = 0;
+		}
+
+		//Filter option date block
+
+		function setMinDate() {
+			var today = new Date();
+			var dd = String(today.getDate()).padStart(2, '0');
+			var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+			var yyyy = today.getFullYear();
+
+			today = yyyy + '-' + mm + '-' + dd;
+			document.getElementById("selectedStartDate").setAttribute("min", today);
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			setMinDate(); // Set minimum date for selectedStartDate input on page load
+
+			// document.getElementById('filterIcon').addEventListener('click', function () {
+			// 	// Populate selectedStartDate and selectedEndDate inputs with values from regular form
+			// 	document.getElementById('selectedStartDate').value = document.getElementById('fromdate').value;
+			// 	document.getElementById('selectedEndDate').value = document.getElementById('todate').value;
+			// 	document.getElementById('selectedMorningSlot').value = document.getElementById('startingslot').value;
+			// 	document.getElementById('selectedEveningSlot').value = document.getElementById('endingslot').value;
+
+
+			// 	$('#filterModal').modal({
+			// 		backdrop: 'static',
+			// 		keyboard: false
+			// 	});
+			// 	$('#filterModal').modal('show');
+			// });
+
+			document.getElementById('selectedStartDate').addEventListener('change', function () {
+				var selectedStartDate = new Date($(this).val());
+				var selectedEndDate = document.getElementById('selectedEndDate');
+				selectedEndDate.innerHTML = ''; // Clear previous options
+				for (var i = 1; i <= 7; i++) {
+					var endDate = new Date(selectedStartDate);
+					endDate.setDate(selectedStartDate.getDate() + i);
+					var dateString = endDate.toISOString().split('T')[0];
+					selectedEndDate.innerHTML += '<option value="' + dateString + '">' + dateString + '</option>';
+				}
+			});
+		});
+
+		//filter option date end
+
+		var zoneAndDivision;
+		function getZone() {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/user/api/getZone',
+				success: function (data) {
+					zoneAndDivision = data;
+
+					const uniqueZones = [...new Set(data.map(item => item.zone))];
+
+					// Get the select element
+					const selectElement = document.getElementById('zone');
+
+					// Populate the select element with options
+					uniqueZones.forEach(zone => {
+						const option = document.createElement('option');
+						option.value = zone;
+						option.textContent = zone;
+						selectElement.appendChild(option);
+					});
+					//alert(reszone);
+					//$('#zone').val(reszone.zone);
+				}
+			});
+
+		}
+		function getDivision(x) {
+			const selectedZone = x.value;
+
+			const divisionSelect = document.getElementById('division');
+			// Clear existing options in division select
+			divisionSelect.innerHTML = '';
+
+			// Add the default "Select Division" option
+			const defaultOption = document.createElement('option');
+			defaultOption.value = '';
+			defaultOption.textContent = 'Select Division';
+			divisionSelect.appendChild(defaultOption);
+
+			// Filter data to get divisions for the selected zone
+			const divisions = [...new Set(zoneAndDivision.filter(item => item.zone === selectedZone).map(item => item.division))];
+
+			// Populate the division select element with options
+			divisions.forEach(division => {
+				const option = document.createElement('option');
+				option.value = division;
+				option.textContent = division;
+				divisionSelect.appendChild(option);
+			});
+		}
+
+		// document.getElementById('fromdate').addEventListener('change', checkDates);
+		// document.getElementById('todate').addEventListener('change', checkDates);
+		// document.getElementById('startingslot').addEventListener('change', checkSlots);
+
+		// document.getElementById('selectedStartDate').addEventListener('change', checkfilterDates);
+		// document.getElementById('selectedEndDate').addEventListener('change', checkfilterDates);
+		// document.getElementById('selectedMorningSlot').addEventListener('change', checkfilterSlots);
+
+
+		function checkDates() {
+			var fromDate = document.getElementById('fromdate').value;
+			var toDate = document.getElementById('todate').value;
+			var endingSlot = document.getElementById('endingslot');
+
+			if (fromDate && toDate && fromDate === toDate) {
+				var startingSlot = document.getElementById('startingslot').value;
+				if (startingSlot === '2') { // Evening
+					endingSlot.value = '2'; // Set Ending Slot to Evening
+					document.getElementById('endingslot').disabled = true;
+					endingSlot.getElementsByTagName('option')[1].disabled = true; // Disable Morning option
+				} else {
+					document.getElementById('endingslot').disabled = false;
+					endingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+				}
+			} else {
+				document.getElementById('endingslot').disabled = false;
+				endingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+			}
+
+		}
+		function checkfilterDates() {
+			var filterfromDate = document.getElementById('selectedStartDate').value;
+			var filtertoDate = document.getElementById('selectedEndDate').value;
+			var filterendingSlot = document.getElementById('selectedEveningSlot');
+
+			if (filterfromDate && filtertoDate && filterfromDate === filtertoDate) {
+				var filterstartingSlot = document.getElementById('selectedMorningSlot').value;
+				if (filterstartingSlot === '2') { // Evening
+					filterendingSlot.value = '2'; // Set Ending Slot to Evening
+					document.getElementById('selectedEveningSlot').disabled = true;
+					filterendingSlot.getElementsByTagName('option')[1].disabled = true; // Disable Morning option
+				} else {
+					document.getElementById('selectedEveningSlot').disabled = false;
+					filterendingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+				}
+			} else {
+				document.getElementById('selectedEveningSlot').disabled = false;
+				filterendingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+			}
+
+		}
+		function checkfilterSlots() {
+			var filterfromDate = document.getElementById('selectedStartDate').value;
+			var filtertoDate = document.getElementById('selectedEndDate').value;
+			var filterendingSlot = document.getElementById('selectedEveningSlot');
+			var filterstartingSlot = document.getElementById('selectedMorningSlot').value;
+
+			if (filterfromDate && filtertoDate && filterfromDate === filtertoDate) {
+				if (filterstartingSlot === '2') { // Evening
+					filterendingSlot.value = '2'; // Set Ending Slot to Evening
+					document.getElementById('selectedEveningSlot').disabled = true;
+					filterendingSlot.getElementsByTagName('option')[1].disabled = true; // Disable Morning option
+				} else {
+					document.getElementById('selectedEveningSlot').disabled = false;
+					filterendingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+				}
+			} else {
+				document.getElementById('selectedEveningSlot').disabled = false;
+				filterendingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+			}
+		}
+		function checkSlots() {
+			var fromDate = document.getElementById('fromdate').value;
+			var toDate = document.getElementById('todate').value;
+			var startingSlot = document.getElementById('startingslot').value;
+			var endingSlot = document.getElementById('endingslot');
+
+			if (fromDate && toDate && fromDate === toDate) {
+				if (startingSlot === '2') { // Evening
+					endingSlot.value = '2'; // Set Ending Slot to Evening
+					document.getElementById('endingslot').disabled = true;
+					endingSlot.getElementsByTagName('option')[1].disabled = true; // Disable Morning option
+				} else {
+					document.getElementById('endingslot').disabled = false;
+					endingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+				}
+			} else {
+				document.getElementById('endingslot').disabled = false;
+				endingSlot.getElementsByTagName('option')[1].disabled = false; // Enable Morning option
+			}
+		}
+		var map;
+		var mapInitialized = false;
+
+
+		function initializeMapAndFetchCoordinates() {
+			var mapElement = document.getElementById("map");
+			var dashboardBody = document.getElementById("dashboardbody");
+
+			if (mapElement.style.display === "none") {
+				mapElement.style.display = "block";
+				dashboardBody.style.display = "none";
+			} else {
+				mapElement.style.display = "none";
+				dashboardBody.style.display = "block";
+			}
+
+			mapElement.style.display = 'block';
+
+			if (!mapInitialized) {
+				mapInitialized = true;
+				setTimeout(() => {
+					map = L.map('map', { attributionControl: false }).setView([13.0827, 80.2707], 9);
+
+					L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+						attributionControl: false,
+						maxZoom: 19
+					}).addTo(map);
+
+					var markers = L.markerClusterGroup();
+					$.ajax({
+						url: '/victoriahallbooking_uat/user/api/getallhallcoordinates',
+						type: 'GET',
+						success: function (data) {
+							if (data.length === 0) {
+								console.warn('No data returned from the API');
+								return;
+							}
+
+							data.forEach(function (coord) {
+								var marker = L.marker([parseFloat(coord.latitude), parseFloat(coord.longitude)], /{icon: customIcon}/);
+
+								var hallImageHtml = '';
+
+								if (coord.hallImage && Array.isArray(coord.hallImage) && coord.hallImage.length > 0) {
+									hallImageHtml = `
+								        <div id="hallImageCarousel" class="carousel slide" data-ride="carousel">
+								            <div class="carousel-inner">
+								                ${coord.hallImage.map((image, index) => `
+								                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+								                        <img src="${image.hallImage}" class="d-block w-100 fixed-size-image" alt="Hall Image">
+								                    </div>
+								                `).join('')}
+								            </div>
+								            <a class="carousel-control-prev" href="#hallImageCarousel" role="button" data-slide="prev">
+								                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+								                <span class="sr-only">Previous</span>
+								            </a>
+								            <a class="carousel-control-next" href="#hallImageCarousel" role="button" data-slide="next">
+								                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+								                <span class="sr-only">Next</span>
+								            </a>
+								        </div>
+								    `;
+								} else {
+									console.warn('coord.hallImage is either undefined, not an array, or empty.');
+								}
+
+								//console.log(hallImageHtml); // Log the final HTML for debugging purposes
+
+
+								var modalContent = `
+						<div class="card border-primary">
+							<div class="imagecontainer">${hallImageHtml}</div>
+							<div class="card-body bg-light" style="text-align:left">
+								<p class="card-text">Hall Name: <strong>${coord.hallName}</strong></p>
+								<p class="card-text">Address: <strong>${coord.doorNo}, ${coord.area}, ${coord.street}, ${coord.landMark}</strong></p>
+								<p class="card-text">Seating Capacity: <strong>${coord.seatingCapacity}</strong></p>
+								<p class="card-text">Parking Capacity: <strong>${coord.parkingCapacity}</strong></p>
+								<p class="card-text">Deposit Amount: <strong>Rs. ${coord.depositAmount}</strong></p>
+								<p class="card-text">Full Day Rent: <strong>Rs. ${coord.fullDayRent}</strong></p>
+								<p class="card-text">Half Day Rent: <strong>Rs. ${coord.halfDayRent}</strong></p>
+								<p class="card-text">Hall Area: <strong>${coord.hallArea} (sq.ft)</strong></p>
+							</div>
+						</div>`;
+
+								marker.on('click', function () {
+									$('#modalContent').html(modalContent);
+									$('#hallDetailsModal').modal('show');
+									$('#hallDetailsModal').on('click', '.booknow', function () {
+										redirectToPage(coord.hallId);
+									});
+								});
+
+								var tooltipContent = `<p class="card-text">Hall Name: <strong>${coord.hallName}</strong></p>`;
+								marker.bindTooltip(tooltipContent, {
+									direction: 'top',
+									permanent: false,
+									className: 'custom-tooltip'
+								});
+
+								markers.addLayer(marker);
+							});
+
+							map.addLayer(markers);
+						},
+						error: function (xhr, status, error) {
+							console.error('Error fetching locations:', error);
+						}
+					});
+				}, 100); // Delay to ensure the map container is rendered
+			}
+
+			// Call anotherFunction after the map is shown
+			anotherFunction();
+		}
+
+		function redirectToPage(hallId) {
+			alert(hallId);
+			window.location.href = '/victoriahallbooking_uat/hallbookingform?hallId=' + hallId;
+		}
+
+		function anotherFunction() {
+			//console.log('Another function called');
+		}
+
+		function resetDate() {
+			window.location.href = "/victoriahallbooking_uat/user/dashboard";
+		}
+
+		function showHall(element) {
+			const latitude = element.getAttribute('data-latitude');
+			const longitude = element.getAttribute('data-longitude');
+
+			var mapElement = document.getElementById("map");
+			var dashboardBody = document.getElementById("dashboardbody");
+
+			if (mapElement.style.display === "none") {
+				mapElement.style.display = "block";
+				dashboardBody.style.display = "none";
+			} else {
+				mapElement.style.display = "none";
+				dashboardBody.style.display = "block";
+			}
+
+			mapElement.style.display = 'block';
+			//console.log('Map container made visible');
+
+			if (!mapInitialized) {
+				mapInitialized = true;
+				setTimeout(() => {
+					map = L.map('map', { attributionControl: false }).setView([latitude, longitude], 18);
+
+					L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+						attributionControl: false,
+						maxZoom: 19
+					}).addTo(map);
+
+					var markers = L.markerClusterGroup();
+					$.ajax({
+						url: '/victoriahallbooking_uat/user/api/getallhallcoordinates',
+						type: 'GET',
+						success: function (data) {
+							if (data.length === 0) {
+								console.warn('No data returned from the API');
+								return;
+							}
+							data.forEach(function (coord) {
+								var marker = L.marker([parseFloat(coord.latitude), parseFloat(coord.longitude)], /{icon: customIcon}/);
+								if (coord.hallImage && Array.isArray(coord.hallImage) && coord.hallImage.length > 0) {
+									hallImageHtml = `
+								        <div id="hallImageCarousel" class="carousel slide" data-ride="carousel">
+								            <div class="carousel-inner">
+								                ${coord.hallImage.map((image, index) => `
+								                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+								                        <img src="${image.hallImage}" class="d-block w-100 fixed-size-image" alt="Hall Image">
+								                    </div>
+								                `).join('')}
+								            </div>
+								            <a class="carousel-control-prev" href="#hallImageCarousel" role="button" data-slide="prev">
+								                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+								                <span class="sr-only">Previous</span>
+								            </a>
+								            <a class="carousel-control-next" href="#hallImageCarousel" role="button" data-slide="next">
+								                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+								                <span class="sr-only">Next</span>
+								            </a>
+								        </div>
+								    `;
+								} else {
+									console.warn('coord.hallImage is either undefined, not an array, or empty.');
+								}
+
+								var modalContent = `
+						<div class="card border-primary">
+							<div class="imagecontainer">${hallImageHtml}</div>
+							<div class="card-body bg-light" style="text-align:left">
+								<p class="card-text">Hall Name: <strong>${coord.hallName}</strong></p>
+								<p class="card-text">Address: <strong>${coord.doorNo}, ${coord.area}, ${coord.street}, ${coord.landMark}</strong></p>
+								<p class="card-text">Seating Capacity: <strong>${coord.seatingCapacity}</strong></p>
+								<p class="card-text">Parking Capacity: <strong>${coord.parkingCapacity}</strong></p>
+								<p class="card-text">Deposit Amount: <strong>Rs. ${coord.depositAmount}</strong></p>
+								<p class="card-text">Full Day Rent: <strong>Rs. ${coord.fullDayRent}</strong></p>
+								<p class="card-text">Half Day Rent: <strong>Rs. ${coord.halfDayRent}</strong></p>
+								<p class="card-text">Hall Area: <strong>${coord.hallArea} (sq.ft)</strong></p>
+							</div>
+						</div>`;
+
+								marker.on('click', function () {
+									$('#modalContent').html(modalContent);
+									$('#hallDetailsModal').modal('show');
+									$('#hallDetailsModal').on('click', '.booknow', function () {
+										redirectToPage(coord.hallId);
+									});
+								});
+
+								var tooltipContent = `<p class="card-text">Hall Name: <strong>${coord.hallName}</strong></p>`;
+								marker.bindTooltip(tooltipContent, {
+									direction: 'top',
+									permanent: false,
+									className: 'custom-tooltip'
+								});
+
+								markers.addLayer(marker);
+							});
+
+							map.addLayer(markers);
+						},
+						error: function (xhr, status, error) {
+							console.error('Error fetching locations:', error);
+						}
+					});
+				}, 100); // Delay to ensure the map container is rendered
+			}
+		}
+	</script>
+
+</body>
+
+</html>

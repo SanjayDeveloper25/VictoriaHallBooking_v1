@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}">
+	<meta charset="ISO-8859-1">
+	<!-- Include DataTables CSS -->
+</head>
+<style>
+	.block-content {
+		padding-bottom: 10px;
+	}
+
+	.small-input {
+		width: 150px;
+		/* Adjust the width as needed */
+	}
+
+	.small-table th,
+	.small-table td {
+		font-size: 14px;
+		/* Adjust font size as needed */
+	}
+
+	/* Reduce padding for table cells */
+	.small-table td,
+	.small-table th {
+		padding: 5px;
+		/* Adjust padding as needed */
+	}
+</style>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+		<!-- END Sidebar -->
+		<!-- Header -->
+		<header th:replace="~{fragments/header-admin :: header}"></header>
+		<!-- END Header -->
+		<!-- Main Container -->
+		<main id="main-container">
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<form id="userdetailsform">
+						<div class="block-header bg-primary text-white">
+							<h3 class="block-title">User Details</h3>
+						</div>
+						<div class="block-content">
+							<div class="row">
+								<div class="col-sm-3">
+									<label class="form-label" for="mobileNO">Mobile NO:<span
+											class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="mobileNO" id="mobileNO"
+										placeholder="Mobile Number" required="required" minlength="10" maxlength="10"
+										oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" />
+								</div>
+								<div class="col-sm-3">
+									<br>
+									<button type="submit" class="btn btn-sm btn-primary" name="submit"
+										id="submit">Submit</button>
+									<button class="btn btn-danger" onclick="resetDate()" name="reset"
+										type="reset">Reset</button>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<!-- User Details Card Container -->
+				<!-- User Details Card Container -->
+				<div id="userDetailsCardContainer" style="display: none;">
+					<div class="card">
+						<div class="block-header bg-primary text-white">
+							<h3 class="block-title">User Details</h3>
+						</div>
+						<div class="card-body">
+							<div class="block-content row">
+								<input type="hidden" class="form-control text-center" name="userId" id="userId"
+									disabled />
+								<div class="col-sm-4">
+									<label class="form-label">Name:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="name" id="userName"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Mobile No:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="mobile" id="userMobile"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">E-Mail ID:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="email" id="userEmail"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Street:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="street" id="userStreet"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Area:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="area" id="userArea"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Location:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="location"
+										id="userLocation" disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Pincode:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="pincode" id="userPincode"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">UserType:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="usertype"
+										id="userUsertype" disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">User Status:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="userstatus"
+										id="userUserstatus" disabled />
+								</div>
+								<div class="col-12 d-flex justify-content-center mt-3">
+									<button id="viewAllBookingBtn" class="btn btn-primary mx-2">View All
+										Booking</button>
+									<button id="activateDeactivateBtn" class="btn mx-2">Activate/Deactivate</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Booking Table Card Container -->
+				<div id="bookingTableCardContainer" class="card" style="display: none;">
+					<div class="block-header bg-primary text-white">
+						<h3 class="block-title">Booking Table</h3>
+					</div>
+					<div class="card-body">
+						<div class="table-responsive">
+							<table id="requestTable1" class="table table-striped table-bordered table-hover dataTable"
+								role="grid" width="99.5%">
+								<thead class="thead-dark">
+									<tr role="row">
+										<th>S.No</th>
+										<th>Hall Name</th>
+										<th>Booking Date</th>
+										<th>Starting Date</th>
+										<th>Ending Date</th>
+										<th>Starting Slot</th>
+										<th>Ending Slot</th>
+										<th>No of Days</th>
+										<th>Reason for Booking</th>
+										<th>BookingStatus</th>
+									</tr>
+								</thead>
+								<tbody id="bookingTableBody">
+									<!-- Table rows will be populated dynamically -->
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	</div>
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+
+		function activateDeactivateUser(userId, isActive) {
+			$.ajax({
+				type: "POST",
+				url: "/victoriahallbooking_uat/api/officer/toggleStatus",
+				data: {
+					userId: userId,
+					active: isActive
+				},
+				success: function (response) {
+					//console.log(response);
+					// Refresh user details after activation/deactivation
+					var mobileNo = $('#userMobile').val();
+					fetchUserDetails(mobileNo);
+					location.reload();
+				},
+				error: function (error) {
+					//console.error('Error activating/deactivating user:', error);
+				}
+			});
+		}
+		var userId = ''; // Global variable to store userId
+
+		function fetchUserDetails(mobileNo) {
+			var userType = $('#usertype').val(); // Assuming this retrieves the current user's usertype
+
+			// Validate if mobileNo is provided and is exactly 10 digits
+			if (!mobileNo || mobileNo.length !== 10 || !/^\d{10}$/.test(mobileNo)) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Invalid Mobile Number',
+					text: 'Please enter a valid 10-digit mobile number.',
+				}).then(() => {
+					location.reload(); // Reload the page after the alert is closed
+				});
+				return; // Exit function if mobile number is invalid
+			}
+
+			$.ajax({
+				type: "GET",
+				url: "/victoriahallbooking_uat/user/api/getuserDetailsbymobileno",
+				data: {
+					'mobileNo': mobileNo
+				},
+				success: function (data) {
+					// Check if data is empty or null
+					if (!data || Object.keys(data).length === 0) {
+						Swal.fire({
+							icon: 'error',
+							title: 'Mobile Number Not Found',
+							text: 'The provided mobile number does not exist in the database.',
+						}).then(() => {
+							location.reload(); // Reload the page after the alert is closed
+						});
+						return; // Exit function if mobile number is not found
+					}
+
+					// Set global userId variable
+					userId = data.userId;
+
+					// Update UI with user details
+					$('#userId').val(data.id);
+					$('#userName').val(data.name);
+					$('#userMobile').val(data.mobileNo);
+					$('#userEmail').val(data.email);
+					$('#userStreet').val(data.street);
+					$('#userArea').val(data.area);
+					$('#userLocation').val(data.location);
+					$('#userPincode').val(data.pinCode);
+					$('#userUsertype').val(data.usertype);
+					$('#userUserstatus').val(data.userstatus);
+
+					// Determine button text and class based on user's active status
+					var isActive = data.active;
+					var buttonText = isActive ? 'Deactivate User' : 'Activate User';
+					var buttonClass = isActive ? 'btn-danger' : 'btn-success';
+
+					// Update button text and class
+					$('#activateDeactivateBtn')
+						.text(buttonText)
+						.removeClass('btn-success btn-danger')
+						.addClass(buttonClass)
+						.show();
+
+					$('#userDetailsCardContainer').show(); // Show user details container
+				},
+				error: function (error) {
+					console.error('Error fetching user details:', error);
+					// Handle error (optional): display a message or take appropriate action
+					Swal.fire({
+						icon: 'error',
+						title: 'Error Fetching User Details',
+						text: 'An error occurred while fetching user details. Please try again later.',
+					}).then(() => {
+						location.reload(); // Reload the page after the alert is closed
+					});
+				}
+			});
+		}
+
+
+
+		$(document).ready(function () {
+			$('#userdetailsform').submit(function (event) {
+				event.preventDefault();
+				var mobileNo = $('#mobileNO').val();
+				fetchUserDetails(mobileNo);
+				$('#bookingTableCardContainer').hide();
+			});
+
+			// Click event for activate/deactivate button
+			$('#activateDeactivateBtn').click(function () {
+				// Use the global userId variable
+				var action = $(this).text().includes('Deactivate') ? false : true; // Corrected logic
+
+				activateDeactivateUser(userId, action);
+			});
+			$('#viewAllBookingBtn').click(function () {
+				showBookingDetailsByUserId(userId);
+			});
+		});
+
+		function showBookingDetailsByUserId(userId) {
+			$.ajax({
+				type: "GET",
+				url: "/victoriahallbooking_uat/admin/api/bookingdetailsByuserId",
+				data: {
+					userId: userId
+				},
+				success: function (response) {
+					//console.log('Data retrieved successfully', response);
+					// Clear existing table rows
+					$('#requestTable1 tbody').empty();
+
+					// Populate the table with new data
+					$.each(response, function (index, booking) {
+						var row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${booking.hallDetails.hallName}</td>
+                        <td>${booking.bookingDate}</td>
+                        <td>${booking.startDate}</td>
+                        <td>${booking.endDate}</td>
+                        <td>${booking.startingSlot}</td>
+                        <td>${booking.endingSlot}</td>
+                        <td>${booking.noOfDays}</td>
+                        <td>${booking.reason}</td>
+                        <td>${booking.bookingStatus}</td>
+                    </tr>`;
+						$('#requestTable1 tbody').append(row);
+					});
+
+					// Show the booking details container
+					$('#bookingTableCardContainer').show();
+				},
+				error: function (error) {
+					//console.error('Error retrieving booking details:', error);
+				}
+			});
+		}
+		function resetDate() {
+			$('#bookingTableCardContainer').hide();
+			$('#userDetailsCardContainer').hide();
+		}
+	</script>
+</body>
+
+</html>

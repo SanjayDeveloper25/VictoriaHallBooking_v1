@@ -1,0 +1,126 @@
+<nav class="pcoded-navbar">
+    <div class="pcoded-inner-navbar">
+        <ul class="pcoded-item pcoded-left-item">
+            <li class="pcoded-hasmenu">
+                <a href="/victoriahallbooking_uat/dashboard">
+                    <span class="pcoded-micon"><i class="feather icon-home"></i></span>
+                    <span class="pcoded-mtext">Home</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+
+            </li>
+            <li class="pcoded-hasmenu" id="hallBookingLogin_nav" onclick="return checkLoginedIn('hallbookingform')">
+                <a href="/victoriahallbooking_uat/user/hallbookingform">
+                    <span class="pcoded-micon"><i class="feather icon-clipboard"></i></span>
+                    <span class="pcoded-mtext">Hall Booking</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class="pcoded-hasmenu" id="bookingDetailsLogin_nav" onclick=" return checkLoginedIn('viewhistory')">
+                <a href="/victoriahallbooking_uat/user/viewhistory">
+                    <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
+                    <span class="pcoded-mtext">Booking Details</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <!-- <li class="pcoded-hasmenu">
+                <a href="/victoriahallbooking_uat/communityhallList">
+                    <span class="pcoded-micon"><i class="feather icon-map-pin"></i></span>
+                    <span class="pcoded-mtext">Community Hall List</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li> -->
+            <!-- <li class="pcoded-hasmenu">
+                <a href="/victoriahallbooking_uat/hallAmountCalculation">
+                    <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                    <span class="pcoded-mtext">Calculate Rent Amount</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li> -->
+            <!--<li th:if="${counterName != null}" class="pcoded-hasmenu">
+                <a href="/victoriahallbooking_uat/counterReport">
+                    <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                    <span class="pcoded-mtext">Counter Report</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>-->
+        </ul>
+
+
+        <ul class="pcoded-item pcoded-right-item" th:if="${counterName != null}">
+            <li class="pcoded-hasmenu">
+                <div class="dropdown">
+                    <button th:if="${counterName != null}" class="btn btn-primary dropdown-toggle"
+                            type="button" id="counterloginDropdown"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            style="background-color: rgb(21,69,93); color: orange; font-weight: bold; border-color: white; margin-top: 6px;">
+                            <span class="pcoded-micon">
+                                <i class="fa fa-user" style="color: white;" aria-hidden="true"></i>
+                            </span>
+                            <span th:text="${counterName}" id="counterNameLogin"
+                                  style="cursor: not-allowed;" data-toggle="tooltip"
+                                  data-placement="bottom">
+                            </span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="counterLoginDropdown">
+                        <a href="/victoriahallbooking_uat/counter/logout" class="dropdown-item" id="counterlogout"
+                           name="counterlogout" style="cursor: pointer;"><i
+                                class="fa fa-sign-out"></i> Counter Logout</a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+
+        <ul  class="pcoded-item pcoded-right-item" id="pds1" style="display: none;">
+            <li class="pcoded-hasmenu">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle"
+                            type="button" id="profilePopup1"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            style="background-color: rgb(21,69,93); font-weight: bold; border-color: white; margin-top: 6px;">
+                            <span class="pcoded-micon">
+                                <i class="fa fa-user" style="color: white;" aria-hidden="true"></i>
+                            </span>
+                        <span class="pcoded-mtext" th:text="${userName}" id="userNameLogin"
+                              style="cursor: not-allowed;" data-toggle="tooltip"
+                              data-placement="bottom" title="View/Edit Profile">
+                            </span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="profilePopup1">
+                        <a class="dropdown-item" id="profilePopup"
+                           name="profilePopup" style="cursor: pointer;" onclick="showprofilepopup()">
+                            <i class="fa fa-user-circle"></i> View Profile
+                        </a>
+                        <a href="/victoriahallbooking_uat/user/logout" class="dropdown-item" id="userloginpopup"
+                           name="userloginpopup" style="cursor: pointer;">
+                            <i class="fa fa-sign-out"></i> User Logout
+                        </a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <ul class="pcoded-item pcoded-right-item" id="pds">
+            <li>
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="loginDropdown"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            style="background-color: white;color: black;border-color: white;">
+                        <span class="pcoded-micon"><i class="fa fa-sign-in" aria-hidden="true"></i></span>
+                        <span class="pcoded-mtext">Login</span>
+                        <span class="pcoded-mcaret"></span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="loginDropdown">
+                        <a class="dropdown-item" id="loginpopup" name="loginpopup" style="cursor: pointer;"><i
+                                class="fa fa-user"></i> User Login</a>
+                        <a th:if="${counterName == null}" class="dropdown-item" href="/victoriahallbooking_uat/login" style="cursor: pointer;" target="_blank"><i
+                                class="fa fa-lock"></i> Official Login</a>
+                        <!-- <a th:if="${counterName == null}" class="dropdown-item" id="counterloginpopup" name="counterloginpopup" style="cursor: pointer;" target="_blank"><i
+                                class="fa fa-lock"></i> Counter Login</a> -->
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

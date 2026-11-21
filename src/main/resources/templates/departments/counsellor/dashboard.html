@@ -1,0 +1,573 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-public :: head}">
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<!-- Include jQuery (you can use any other AJAX library or plain JavaScript) -->
+	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+	<!-- Include your external JavaScript file -->
+	<script th:src="@{/js/ajax.js}"></script>
+</head>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-counsellor :: nav}"></nav>
+		<!-- END Sidebar -->
+
+		<!-- Header -->
+		<header th:replace="~{fragments/header-department :: header}"></header>
+		<!-- END Header -->
+
+		<!-- Main Container -->
+		<main id="main-container">
+
+			<!-- Page Content -->
+			<div class="content" style="background-color: rgb(237, 239, 253);">
+				<div class="content content-full">
+					<div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
+						<h3 class="flex-grow-1 fs-5 fw-semibold my-2 my-sm-3">Welcome</h3>
+						<nav class="flex-shrink-0 my-2 my-sm-0 ms-sm-3" aria-label="breadcrumb">
+							<ol class="breadcrumb">
+								<li class="breadcrumb-item active" aria-current="page">Home
+							</ol>
+						</nav>
+					</div>
+					<div class="" block-content p-0>
+						<div class="row items-push">
+
+							<div class="col-sm-6 col-xl-4">
+								<div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+									<div class="block-content block-content-full flex-grow-1">
+										<div class="item rounded-3 bg-body mx-auto my-3">
+											<i class="fa fa-thumbs-up  fa-lg text-primary"></i>
+										</div>
+										<div class="fs-2 fw-bold text-success" th:utext="${APPROVED}"></div>
+										<div class="text-muted mb-1 fs-5">Accept Count</div>
+
+									</div>
+									<!--<div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+										<a class="fw-medium" href="/approval-history">
+						
+											<i class="fa fa-arrow-right ms-1 opacity-25"></i>
+										</a>
+									</div>-->
+								</div>
+							</div>
+							<div class="col-sm-6 col-xl-4">
+								<div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+									<div class="block-content block-content-full flex-grow-1">
+										<div class="item rounded-3 bg-body mx-auto my-3">
+											<i class="fa fa-thumbs-down fa-lg text-primary"></i>
+										</div>
+										<div class="fs-2 fw-bold text-info" th:utext="${REJECTED}"></div>
+										<div class="text-muted mb-1 fs-5">Reject count</div>
+
+									</div>
+									<!--<div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+										<a class="fw-medium" href="rejected-list">
+						
+											<i class="fa fa-arrow-right ms-1 opacity-25"></i>
+										</a>
+									</div>-->
+								</div>
+							</div>
+							<div class="col-sm-6 col-xl-4">
+								<div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+									<div class="block-content block-content-full flex-grow-1">
+										<div class="item rounded-3 bg-body mx-auto my-3">
+											<i class="fas fa-sync fa-lg text-primary"></i>
+										</div>
+										<div class="fs-2 fw-bold text-success" th:utext="${PENDING}"></div>
+										<div class="text-muted mb-1 fs-5"> Pending Count</div>
+
+									</div>
+									<!--<div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+										<a class="fw-medium" href="">
+						
+											<i class="fa fa-arrow-right ms-1 opacity-25"></i>
+										</a>
+									</div>-->
+								</div>
+							</div>
+
+						</div>
+						<div class="row items-push">
+							<div class="col-md-6 col-lg-6">
+								<div class="card">
+									<h3 class="card-title text-center" style="margin-top: 15px;">Monthly Data</h3>
+									<div class="card-body p-md-3 p-lg-3 w-100" style="height: 350px;">
+
+
+										<!-- Bars Chart Container -->
+										<!-- Chart.js Chart is initialized in js/pages/be_pages_dashboard.min.js which was auto compiled from _js/pages/be_pages_dashboard.js -->
+										<!-- For more info and examples you can check out http://www.chartjs.org/docs/ -->
+										<canvas id="js-chartjs-analytics-bars"></canvas>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-6 col-lg-6">
+								<div class="card">
+									<h3 class="card-title text-center" style="margin-top: 15px;">Total Counts</h3>
+									<div class="card-body p-md-3 p-lg-3 w-100 d-flex justify-content-center align-items-center"
+										style="height: 350px;">
+
+										<!-- Bars Chart Container -->
+										<!-- Chart.js Chart is initialized in js/pages/be_pages_dashboard.min.js which was auto compiled from _js/pages/be_pages_dashboard.js -->
+										<!-- For more info and examples you can check out http://www.chartjs.org/docs/ -->
+										<canvas id="myChart"></canvas>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+			</div>
+
+			<!--  <div class="col-sm-6 col-xl-3">
+          <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+            <div class="block-content block-content-full">
+              <div class="item rounded-3 bg-body mx-auto my-3">
+                <i class="fa fa-thumbs-down fa-lg text-primary"></i>
+              </div>
+              <div class="fs-2 fw-bold text-warning" th:utext="${totalNoFeedbacks}">000</div>
+              <div class="text-muted mb-1 fs-5"></div>
+
+            </div>
+            <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+              <a class="fw-medium" href="/pending-complaint">
+
+                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+              </a>
+            </div>
+          </div>
+        </div>-->
+
+
+			<!-- END Page Content -->
+		</main>
+		<!-- END Main Container -->
+
+		<!-- Footer -->
+
+		<!-- END Footer -->
+	</div>
+	<!-- Scripts -->
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script type="text/javascript" th:inline="javascript">
+
+		function addimg(x) {
+			document.getElementById("myImg").src = "data:image/jpeg;base64," + x;
+		}
+		function accept() {
+			let id = document.getElementById("uniqid").value;
+			Swal.fire({
+				title: 'Do you want to Accept this Pet ?',
+				showDenyButton: true,
+				showCancelButton: true,
+				confirmButtonText: 'YES',
+				denyButtonText: `NO`,
+			}).then((result) => {
+				/* Read more about isConfirmed, isDenied below */
+				if (result.isConfirmed) {
+					$.ajax({
+						type: "GET",
+						url: '/api/accept',
+						data: {'id': id},
+						success: function (bodyMessage) {
+							if (bodyMessage == "success") {
+								Swal.fire(
+									'Done',
+									'Successfully Accepted to the ID:' + id,
+									'success'
+								).then(() => {
+									location.reload();
+								});
+							}
+						}
+					});
+				} else if (result.isDenied) {
+					Swal.fire('Changes are not saved', '', 'info')
+				}
+			})
+		}
+
+		function reject(list) {
+			$('#rejectForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			});
+			$('#rejectForm').modal('show');
+			// console.log(list)
+			document.getElementById("uniqid").value = list.uniqueid;
+			document.getElementById("petna").value = list.petname;
+			document.getElementById("speci").value = list.species;
+			document.getElementById("bre").value = list.breed;
+			document.getElementById("gend").value = list.gender;
+			document.getElementById("age").value = list.age;
+
+			document.getElementById("arvd").value = list.arvdate;
+			document.getElementById("dewormdate").value = list.dewormdate;
+			document.getElementById("othervac").value = list.othervac;
+			document.getElementById("previoslicenseNo").value = list.previoslicenseNo;
+			document.getElementById("VeterinaryConsultant").value = list.veterinaryConsultant;
+			document.getElementById("TNVCNo").value = list.tnvcno;
+			document.getElementById("registerdate").value = list.registerdate;
+
+
+
+
+		}
+		function rejectsubmit() {
+			var reason = $("#reason").val();
+			var id = $("#uniqid").val();
+
+			Swal.fire({
+				title: 'Do you want to Reject this Pet ?',
+				showDenyButton: true,
+				showCancelButton: true,
+				confirmButtonText: 'YES',
+				denyButtonText: `NO`,
+			}).then((result) => {
+				/* Read more about isConfirmed, isDenied below */
+				if (result.isConfirmed) {
+					$.ajax({
+						type: "GET",
+						url: '/api/reject',
+						data: {'id': id, 'reason': reason},
+						success: function (bodyMessage) {
+							if (bodyMessage == "success") {
+								// console.log("done");
+								Swal.fire(
+									'Done',
+									'Successfully Rejected to the ID:' + id,
+									'success'
+								).then(() => {
+									location.reload();
+								});
+							}
+
+						}
+
+					});
+
+				} else if (result.isDenied) {
+					Swal.fire('Changes are not saved', '', 'info')
+				}
+			})
+
+			return false;
+
+		}
+
+		function viewOwner(mobilenum) {
+			// console.log(mobilenum);
+			// let list;
+			let own;
+			$.ajax({
+				type: "GET",
+				url: '/api/getpetOwner',
+				data: {
+					'mobilenum': mobilenum,
+				},
+				success: function (bodyMessage) {
+					// this.list=bodyMessage;
+					ownercall(bodyMessage);
+
+				}
+
+			});
+
+		}
+		function ownercall(list) {
+			$('#ownerForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			});
+			$('#ownerForm').modal('show');
+			document.getElementById("title").value = list.title;
+			document.getElementById("fname").value = list.fname;
+			document.getElementById("doornumber").value = list.doornumber;
+			document.getElementById("street").value = list.street;
+			document.getElementById("area").value = list.area;
+			document.getElementById("city").value = list.city;
+
+			document.getElementById("pincode").value = list.pincode;
+			document.getElementById("zone").value = list.zone;
+			document.getElementById("ward").value = list.ward;
+			document.getElementById("phone").value = list.phone;
+			document.getElementById("email").value = list.email;
+			document.getElementById("pancard").value = list.pancard;
+			document.getElementById("aadhar").value = list.aadhar;
+			document.getElementById("voterid").value = list.voterid;
+
+		}
+		// Function to call modal for New pet registration
+		callAdd = function () {
+			$('#addForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			})
+			$('#addForm').modal('show');
+		}
+		$(document).ready(function () {
+			var today = new Date();
+			$('.datepicker').datepicker({
+				dateFormat: 'yy/mm/dd',
+				maxDate: '1'
+			})
+			$('.datepicker').keyup(function () {
+				if (this.value.match(/[^0-9]/g)) {
+					this.value = this.value.replace(/[^0-9^-]/g, '');
+				}
+			});
+		});
+
+		function getbydate() {
+			var x = document.getElementById("fromdate").value;
+			var y = document.getElementById("todate").value;
+			// console.log(x, y);
+			$.ajax({
+				type: "GET",
+				url: '/api/getbydate',
+				data: {
+					'fromdate': x,
+					'todate': y
+				},
+				success: function (x) {
+					if (x == "ok") {
+						location.reload();
+					}
+				}
+			});
+
+		}
+		function resetDate() {
+			$.ajax({
+				type: "GET",
+				url: '/api/resetdate',
+				success: function (x) {
+					if (x == "ok") {
+						location.reload();
+					}
+				}
+			});
+		}
+
+
+
+		class pageDashboard {
+			/*
+			 * Init Charts
+			 *
+			 */
+			static initChartsBars() {
+				// Set Global Chart.js configuration
+				Chart.defaults.color = '#818d96';
+				Chart.defaults.scale.grid.color = 'transparent';
+				Chart.defaults.scale.grid.zeroLineColor = 'transparent';
+				Chart.defaults.scale.beginAtZero = true;
+				Chart.defaults.elements.line.borderWidth = 1;
+				Chart.defaults.plugins.legend.labels.boxWidth = 12;
+
+				// Get Chart Containers
+				let chartBarsCon = document.getElementById('js-chartjs-analytics-bars');
+
+				// Set Chart and Chart Data variables
+				let chartBars, chartLinesBarsData;
+				const acceptedBookings = [];
+				const rejectedBookings = [];
+				const pendingBookings = [];
+				const labels = [];
+
+				var monthcounts = [[${monthcounts}]];
+				monthcounts.forEach(item => {
+					labels.push(item.months);
+
+					acceptedBookings.push(item.approved_count);
+					rejectedBookings.push(item.rejected_count);
+					pendingBookings.push(item.pending_count);
+				});
+
+
+
+				// Bars Chart Data
+				chartLinesBarsData = {
+					//labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+					labels: labels,
+
+					datasets: [
+						{
+							label: 'Accept Booking',
+							fill: true,
+							backgroundColor: '#c7d7e6',
+							borderColor: 'transparent',
+							pointBackgroundColor: '#c7d7e6',
+							pointBorderColor: '#fff',
+							pointHoverBackgroundColor: '#fff',
+							pointHoverBorderColor: '#c7d7e6',
+							data: acceptedBookings
+						},
+						{
+							label: 'Rejected Booking',
+							fill: true,
+							backgroundColor: '#c2d7ab',
+							borderColor: 'transparent',
+							pointBackgroundColor: '#c2d7ab',
+							pointBorderColor: '#fff',
+							pointHoverBackgroundColor: '#fff',
+							pointHoverBorderColor: '#c2d7ab',
+							data: rejectedBookings
+						},
+						{
+							label: 'Pending',
+							fill: true,
+							backgroundColor: '#e9cb91',
+							borderColor: 'transparent',
+							pointBackgroundColor: '#e9cb91',
+							pointBorderColor: '#fff',
+							pointHoverBackgroundColor: '#fff',
+							pointHoverBorderColor: '#e9cb91',
+							data: pendingBookings
+						}
+					]
+				};
+
+				// Init Chart
+				if (chartBarsCon !== null) {
+					chartBars = new Chart(chartBarsCon, {
+						type: 'bar',
+						data: chartLinesBarsData,
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							plugins: {
+								tooltip: {
+									callbacks: {
+										label: function (context) {
+											return context.dataset.label + ': ' + context.parsed.y + '';
+										}
+									}
+								}
+							}
+						}
+					});
+				}
+			}
+
+			/*
+			 * Init functionality
+			 *
+			 */
+			static init() {
+				this.initChartsBars();
+			}
+		}
+
+		// Initialize when page loads
+		Dashmix.onLoad(() => pageDashboard.init());
+
+
+		$(function () {
+
+			var start = moment().subtract(29, 'days');
+			var end = moment();
+
+			function cb(start, end) {
+				$('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+			}
+
+			$('#reportrange').daterangepicker({
+				startDate: start,
+				endDate: end,
+				ranges: {
+					'Today': [moment(), moment()],
+					'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+					'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+					'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+					'This Month': [moment().startOf('month'), moment().endOf('month')],
+					'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+				}
+			}, cb);
+
+			cb(start, end);
+
+		});
+
+
+		//Chart Update data
+		/*		static updateChartLinesBarsData(newData) {
+				  // Update the chart data
+				  pageDashboard.chartLinesBarsData.datasets[0].data = newData.totalFeedbacks;
+				  pageDashboard.chartLinesBarsData.datasets[1].data = newData.positiveFeedbacks;
+				  pageDashboard.chartLinesBarsData.datasets[2].data = newData.negativeFeedbacks;
+	
+				  // Update the chart
+				  if (pageDashboard.chartBars !== undefined) {
+					pageDashboard.chartBars.data = pageDashboard.chartLinesBarsData;
+					pageDashboard.chartBars.update();
+				  }
+				};
+	
+				function getAndpushdata(){
+					$.ajax({
+					  url: 'api/getchartfeedbackdata', // Replace with the URL to fetch the updated data
+					  method: 'GET', // Replace with the appropriate HTTP method
+					  dataType: 'json', // Replace with the data type you are expecting
+					  success: function (response) {
+						// Assuming the response contains the updated chart data in the expected format
+						pageDashboard.updateChartLinesBarsData(response);
+					  },
+					  error: function (xhr, status, error) {
+						// Handle the error scenario
+						console.error('Error:', error);
+					  }
+					});
+				}
+	*/
+
+		var APPROVED = [[${APPROVED}]];
+		var REJECTED = [[${REJECTED}]];
+		var PENDING = [[${PENDING}]];
+		var CANCELED = [[${CANCELED}]];
+		var PAYMENT_FAILURE = [[${PAYMENT_FAILURE}]];
+		var GCC_BLOCKED = [[${GCC_BLOCKED}]];
+
+
+
+
+		var data = {
+			labels: [' Approved', 'Rejected', 'pending', 'CANCELED', 'PAYMENT FAILURE', 'GCC BLOCKED'],
+			datasets: [{
+				data: [APPROVED, REJECTED, PENDING, CANCELED, PAYMENT_FAILURE, GCC_BLOCKED], // Values for each segment
+				backgroundColor: ['#c7d7e6', '#c2d7ab', '#e9cb91', '#DB403C', '#2878C5', '#A852B7'], // Colors for each segment
+			}]
+		};
+
+		// Get the canvas element and create a pie chart
+		var ctx = document.getElementById('myChart').getContext('2d');
+		var myChart = new Chart(ctx, {
+			type: 'doughnut',
+			data: data,
+		});
+
+	</script>
+</body>
+
+</html>

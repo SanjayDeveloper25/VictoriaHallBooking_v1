@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-counter :: head}">
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<!-- <aside th:replace="~{fragments/aside-right :: aside}"></aside> -->
+		<!-- END Side Overlay (right)-->
+
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-counter :: nav}"></nav>
+		<!-- END Sidebar -->
+
+		<!-- Header -->
+		<header th:replace="~{fragments/header-counter :: header}"></header>
+		<!-- END Header -->
+
+		<!-- Main Container -->
+		<main id="main-container">
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header block-header-default">
+						<h3 class="block-title"> List of Counter Bookings</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table id="halldetailsList"
+									class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+									<thead class="thead-light">
+										<tr class="table-bordered">
+											<th class="text-center no-sort">S.No</th>
+											<th class="text-center" width="20%">Bank Name</th>
+											<th class="text-center">Bank Account No</th>
+											<th class="text-center">DD Number</th>
+											<th class="text-center">Total Amount</th>
+											<th class="text-center">Cheque Amount</th>
+											<th class="text-center">DD Image</th>
+											<th class="text-center">User Details</th>
+											<th class="text-center">Booking Details</th>
+										</tr>
+									</thead>
+									<tbody>
+										<!-- Use Thymeleaf to loop through the bookingList -->
+										<tr th:each="list, i : ${counterlist}" class="${counterlist}" id="ddRow">
+											<td th:text="${i.count}">0</td>
+											<td class="text-center" th:text="${list.bankName}"></td>
+											<td class="text-center" th:text="${list.bankAccNo}"></td>
+											<td class="text-center" th:text="${list.ddNumber}"></td>
+											<td class="text-center">
+												<span th:if="${list.bookingDetails != null}"
+													th:text="${list.bookingDetails.amountReceived}">N/A</span>
+												<span th:if="${list.bookingDetails == null}">N/A</span>
+											</td>
+											<td class="text-center" th:text="${list.amountReceived}"></td>
+
+											<td>
+												<a class="view-button"><span class="badge bg-primary"
+														style="cursor: pointer;"
+														th:onclick="viewDdImage([[${list.counterId}]])">View</span></a>
+											</td>
+											<td>
+												<a class="view-button"><span class="badge bg-primary"
+														style="cursor: pointer;">View</span></a>
+											</td>
+											<td>
+												<a class="view-button"><span class="badge bg-primary"
+														style="cursor: pointer;">View</span></a>
+											</td>
+
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- END Page Content -->
+		</main>
+		<!-- END Main Container -->
+
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+
+		<!-- END Footer -->
+	</div>
+
+	<!-- END Page Container -->
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="max-width: 800px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">DD Image</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="image-container"></div>
+				</div>
+				<div class="modal-footer">
+					<!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script type="text/javascript">
+
+		function viewDdImage(counterId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/user/api/getImageByDdId',
+				data: {
+					'counterId': counterId
+				},
+				success: function (res) {
+					if (res && res.ddphoto) {
+						getDdImagesById(res);
+					} else {
+						console.error('No images found for DDId:', counterId);
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Error fetching images:', error);
+				}
+			});
+		}
+
+		function getDdImagesById(image) {
+			const imageContainer = document.querySelector('.image-container');
+			imageContainer.innerHTML = ''; // Clear existing content
+
+			if (image.ddphoto) {
+				const img = document.createElement('img');
+				img.src = image.ddphoto;
+				img.alt = `Image ${image.counterId}`;
+				img.style.maxHeight = '550px'; // Adjust image size
+				img.style.maxWidth = '750px'; // Maintain aspect ratio
+				imageContainer.appendChild(img);
+			} else {
+				const noImageMessage = document.createElement('p');
+				noImageMessage.textContent = 'No image available.';
+				imageContainer.appendChild(noImageMessage);
+			}
+
+			$('#exampleModal').modal('show'); // Show Bootstrap modal
+		}
+
+
+		$(document).ready(
+			function () {
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+				$('#halldetailsList').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+
+			});
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-headquarters :: head}"></head>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-headquarters :: nav}"></nav>
+		<!-- END Sidebar -->
+
+		<!-- Header -->
+		<header th:replace="~{fragments/header-headquarters :: header}"></header>
+		<!-- END Header -->
+
+		<!-- Main Container -->
+		<main id="main-container">
+
+			<!-- Page Content -->
+
+			<!-- Card Container -->
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header bg-primary text-white">
+						<h3 class="block-title">Electricity Bill and Damage Details</h3>
+					</div>
+					<div class="block-content">
+
+						<h4>User Details<span>*</span></h4>
+						<div class="table-responsive">
+							<table class="table table-bordered table-vcenter">
+								<thead>
+									<tr>
+										<th>Booking Id</th>
+										<th>Name</th>
+										<th>Mobile Number</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="booking : ${booking}">
+										<td> <span th:text="${booking.bookingId}"></span></td>
+										<td><span th:text="${booking.users.name}"></span></td>
+										<td><span th:text="${booking.users.mobileNo}"></span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<form id="billForm" onsubmit="return submitBillForm()">
+							<input type="hidden" th:value="${booking.bookingId}" name="bookingId" id="bookingId">
+							<input type="hidden" th:value="${booking.ebDetails.ebId}" name="ebId" id="ebId">
+							<!-- EB Details -->
+							<h4>EB Details<span>*</span></h4>
+							<div class="table-responsive">
+								<table class="table table-bordered table-vcenter">
+									<thead>
+										<tr>
+											<th colspan="4">Consumer Number</th>
+											<th>Start Reading</th>
+											<th>End Reading</th>
+											<th>EB Cost Per Unit</th>
+											<th>Total Units</th>
+											<th>Total Amount</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="booking : ${booking}">
+											<td colspan="4">
+												<input type="text" class="form-control"
+													th:value="${booking.hallDetails.ebNumber}"
+													placeholder="Enter EB Number" required>
+											</td>
+											<td>
+												<input type="number" id="startReading" name="startReading"
+													class="form-control"
+													th:value="${booking.ebDetails != null ? booking.ebDetails.startingReading : ''}"
+													placeholder="Enter Starting Reading" required readonly>
+											</td>
+											<td>
+												<input type="text" id="endReading" name="endReading"
+													class="form-control"
+													oninput="calculateEBAmount(); calculateUsedUnits();" required>
+											</td>
+											<td>
+												<input type="number" id="ebCostPerUnit" name="ebCostPerUnit"
+													class="form-control" th:value="${booking.hallDetails.ebCostPerUnit}"
+													readonly>
+											</td>
+											<td>
+												<span id="totalUsedUnits" class="form-control-static"
+													style="display: none;"></span>
+											</td>
+											<td>
+												<span id="totalEBAmount" class="form-control-static"
+													style="display: none;"></span>
+											</td>
+										</tr>
+									</tbody>
+
+								</table>
+							</div>
+							<!-- Hidden input for Used Units -->
+							<input type="hidden" id="hiddenTotalUsedUnits" name="totalUsedUnits">
+							<input type="hidden" id="hiddenTotalEBAmount" name="totalEBAmount">
+
+							<!-- Damage Details -->
+							<h4>Damage Details</h4>
+							<div class="table-responsive">
+								<table class="table table-bordered table-vcenter" id="damageDetailsTable">
+									<thead>
+										<tr>
+											<th>Materials</th>
+											<th>No. of Quantity</th>
+											<th>Per Material Amount</th>
+											<th>Comments</th>
+											<th>Damaged Item Photo</th>
+											<th>Total Amount</th>
+										</tr>
+									</thead>
+									<tbody id="damageDetailsbody">
+										<!-- Initial Row will be here -->
+									</tbody>
+								</table>
+							</div>
+							<button type="button" class="btn btn-success mb-3" onclick="addMaterialRow()"><i
+									class="fas fa-plus"></i>Add
+								Material</button>
+
+							<!-- Hidden input for total Damage Amount -->
+							<input type="hidden" id="hiddenTotalDamageAmount" name="totalDamageAmount">
+
+							<!-- Settlement Amount -->
+							<div style="text-align: right;">
+								<h4>Settlement Amount</h4>
+								<h6>Total Settlement Amount: <span id="totalSettlementAmount"></span></h6>
+							</div>
+							<!-- Raise Bill Button -->
+							<div style="text-align: center;">
+								<button id="backButton" class="btn btn-secondary" onclick="goBack()">Back</button>
+								<button id="submitButton" class="btn btn-primary" type="submit">Raise Bill</button>
+							</div>
+
+							<br>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- END Card Container -->
+
+			<!-- END Page Content -->
+		</main>
+		<!-- END Main Container -->
+
+		<!-- Footer -->
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+		<!-- END Footer -->
+	</div>
+	<!-- END Page Container -->
+
+	<!-- Scripts -->
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script type="text/javascript">
+
+		document.addEventListener("DOMContentLoaded", function () {
+			addMaterialRow(); // Add the first row automatically
+		});
+
+		let selectedMaterials = {}; // Object to track selected materials for each row
+		var damageindex = 0;
+
+		function addMaterialRow() {
+			const tableBody = document.getElementById('damageDetailsTable').getElementsByTagName('tbody')[0];
+			const rowIndex = tableBody.rows.length;
+			selectedMaterials[rowIndex] = ""; // Initialize tracking for this row
+			const row = tableBody.insertRow(rowIndex);
+
+			// Set row's HTML with dropdown including a unique index
+			row.innerHTML = generateRowHTML(rowIndex);
+			updateAllDropdowns();
+			calculateDamageAmount();
+		}
+
+
+		function generateRowHTML(index) {
+			damageindex = index;
+			return `
+            <td>
+                <select id="materials${index}" name="materials" class="form-control"
+                    onchange="materialSelectionChanged(this, ${index});">
+                    <option value="">Select</option>
+                    <option value="chair">Chair</option>
+                    <option value="table">Table</option>
+                    <option value="kitchenessentials">Kitchen Essentials</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="Others">Electronics</option>
+                </select>
+            </td>
+            <td><input type="number" id="quantity${index}" name="quantity[${index}]" class="form-control"
+                    oninput="calculateDamageAmount()"></td>
+            <td><input type="number" id="perMaterialAmount${index}" name="perMaterialAmount[${index}]"
+                    class="form-control" oninput="calculateDamageAmount()"></td>
+            <td><input type="text" id="comments${index}" name="comments" class="form-control"
+                    placeholder="Enter Comments"></td>
+            <td><input type="file" id="damagePhoto${index}" name="damagePhoto${index}" class="form-control damage-image mb-1"></td>
+            <td><span id="totalDamageAmount${index}" class="form-control-static"></span></td>
+            <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(${index})"><i class="fas fa-minus"></i></button></td>
+        `;
+		}
+
+		function removeMaterialRow(index) {
+			const tableBody = document.getElementById('damageDetailsTable').getElementsByTagName('tbody')[0];
+			tableBody.deleteRow(index);
+
+			// Update selectedMaterials object
+			delete selectedMaterials[index];
+
+			// Reassign the indices for the remaining rows
+			const rows = tableBody.rows;
+			for (let i = index; i < rows.length; i++) {
+				updateRowIndices(rows[i], i);
+				selectedMaterials[i] = selectedMaterials[i + 1];
+			}
+
+			delete selectedMaterials[rows.length]; // Remove the last entry which is now undefined
+
+			updateAllDropdowns();
+			calculateDamageAmount();
+		}
+
+		function updateRowIndices(row, newIndex) {
+			row.cells[0].querySelector('select').setAttribute('id', `materials${newIndex}`);
+			row.cells[0].querySelector('select').setAttribute('onchange', `materialSelectionChanged(this, ${newIndex});`);
+
+			row.cells[1].querySelector('input').setAttribute('id', `quantity${newIndex}`);
+			row.cells[1].querySelector('input').setAttribute('name', `quantity[${newIndex}]`);
+			row.cells[1].querySelector('input').setAttribute('oninput', `calculateDamageAmount()`);
+
+			row.cells[2].querySelector('input').setAttribute('id', `perMaterialAmount${newIndex}`);
+			row.cells[2].querySelector('input').setAttribute('name', `perMaterialAmount[${newIndex}]`);
+			row.cells[2].querySelector('input').setAttribute('oninput', `calculateDamageAmount()`);
+
+			row.cells[3].querySelector('input').setAttribute('id', `comments${newIndex}`);
+
+			row.cells[4].querySelector('input').setAttribute('id', `damagePhoto${newIndex}`);
+
+			row.cells[5].querySelector('span').setAttribute('id', `totalDamageAmount${newIndex}`);
+
+			row.cells[6].querySelector('button').setAttribute('onclick', `removeMaterialRow(${newIndex})`);
+		}
+
+
+		function updateAllDropdowns() {
+			const allMaterials = ["chair", "table", "kitchenessentials", "electronics", "others"];
+			Object.keys(selectedMaterials).forEach(rowIndex => {
+				const dropdown = document.getElementById(`materials${rowIndex}`);
+				const selectedValue = selectedMaterials[rowIndex];
+				dropdown.innerHTML = '<option value="">Select</option>';
+				allMaterials.forEach(material => {
+					if (!Object.values(selectedMaterials).includes(material) || material === selectedValue) {
+						const option = new Option(material, material);
+						dropdown.add(option);
+					}
+				});
+				dropdown.value = selectedValue;
+			});
+		}
+
+		function materialSelectionChanged(select, index) {
+			// Update the selection tracking
+			selectedMaterials[index] = select.value;
+			updateAllDropdowns(); // Refresh all dropdowns to reflect the current selections
+			calculateDamageAmount(); // Recalculate damage amount as materials selection might change the calculation
+		}
+
+
+		function calculateEBAmount() {
+			let startReading = parseFloat(document.getElementById("startReading").value) || 0;
+			let endReading = parseFloat(document.getElementById("endReading").value) || 0;
+			let ebCostPerUnit = parseFloat(document.getElementById("ebCostPerUnit").value) || 0;
+			let totalEBAmount = (endReading - startReading) * ebCostPerUnit; // Assuming rate per unit is 10
+
+			if (!isNaN(totalEBAmount)) {
+				document.getElementById("totalEBAmount").style.display = "block"; // Show the totalEBAmount
+				document.getElementById("totalEBAmount").innerText = totalEBAmount.toFixed(2);
+				document.getElementById("hiddenTotalEBAmount").value = totalEBAmount;
+
+				calculateSettlementAmount();
+			}
+		}
+
+		function calculateUsedUnits() {
+			let startReading = parseFloat(document.getElementById("startReading").value) || 0;
+    let endReading = parseFloat(document.getElementById("endReading").value) || 0;
+
+    // Get the endReading input element
+    let endReadingInput = document.getElementById("endReading");
+
+    // Ensure end reading cannot be less than start reading
+    if (endReading < startReading) {
+        // Set custom validity message
+        endReadingInput.setCustomValidity("End reading cannot be less than start reading.");
+        endReadingInput.reportValidity();
+    } else {
+        // Clear any previous custom validity message
+        endReadingInput.setCustomValidity("");
+    }
+
+    let usedUnits = endReading - startReading;
+			// Show total used units
+			document.getElementById("totalUsedUnits").style.display = "block";
+			document.getElementById("totalUsedUnits").innerText = usedUnits;
+			document.getElementById("hiddenTotalUsedUnits").value = usedUnits;
+
+			let totalEBAmount = usedUnits * parseFloat(document.getElementById("ebCostPerUnit").value) || 0;
+
+			// Show total EB amount
+			document.getElementById("totalEBAmount").style.display = "block";
+			document.getElementById("totalEBAmount").innerText = totalEBAmount.toFixed(2);
+			document.getElementById("hiddenTotalEBAmount").value = totalEBAmount;
+
+			calculateSettlementAmount();
+		}
+
+		function calculateDamageAmount() {
+			const rows = document.getElementById('damageDetailsTable').getElementsByTagName('tbody')[0].rows;
+			let totalDamageAmount = 0;
+			for (let i = 0; i < rows.length; i++) {
+				const quantity = parseFloat(document.getElementById(`quantity${i}`).value) || 0;
+				const perMaterialAmount = parseFloat(document.getElementById(`perMaterialAmount${i}`).value) || 0;
+				const rowDamageAmount = quantity * perMaterialAmount;
+				document.getElementById(`totalDamageAmount${i}`).innerText = rowDamageAmount.toFixed(2);
+				totalDamageAmount += rowDamageAmount;
+			}
+
+			document.getElementById("hiddenTotalDamageAmount").value = totalDamageAmount.toFixed(2);
+			calculateSettlementAmount();
+		}
+
+		function calculateSettlementAmount() {
+			let totalEBAmount = parseFloat(document.getElementById("hiddenTotalEBAmount").value) || 0;
+			let totalDamageAmount = parseFloat(document.getElementById("hiddenTotalDamageAmount").value) || 0;
+			let totalSettlementAmount = totalEBAmount + totalDamageAmount;
+
+			document.getElementById("totalSettlementAmount").innerText = totalSettlementAmount.toFixed(2);
+		}
+
+		function goBack() {
+			window.history.back();
+		}
+
+		function submitBillForm() {
+			var bookingId = $("#bookingId").val();
+			var ebId = $("#ebId").val();
+			var endReading = $("#endReading").val();
+			var startReading = $("#startReading").val();
+			var usedUnit = $("#totalUsedUnits").html();
+			var ebAmount = $("#totalEBAmount").html();
+			var formData = new FormData();
+			formData.append('bookingId', bookingId);
+			formData.append('ebId', ebId);
+			formData.append('startingReading', startReading);
+			formData.append('endingReading', endReading);
+			formData.append('usedUnit', usedUnit);
+			formData.append('ebAmount', ebAmount);
+
+			var i = damageindex;
+			$('#damageDetailsbody tr').each(function () {
+				var assetName = $("#materials" + i).val();
+				var comments = $("#comments" + i).val();
+				var quantity = $("#quantity" + i).val();
+				var assetAmount = $("#totalDamageAmount" + i).html();
+				var assetImageInput = $("#damagePhoto" + i)[0].files[0]; // Assuming input type is file for assetImage
+				formData.append('assetName', assetName);
+				formData.append('comments', comments);
+				formData.append('quantity', quantity);
+				formData.append('assetAmount', assetAmount);
+				formData.append('assetImage', assetImageInput);
+				i = i - 1;
+			});
+			$.ajax({
+				url: '/victoriahallbooking_uat/careTaker/api/processEbDetailsAndDamage',
+				type: 'POST',
+				data: formData,
+				contentType: false, // Let jQuery handle the content type
+				processData: false, // Prevent jQuery from processing the data
+				success: function (response) {
+					Swal.fire({
+						title: "Success!",
+						text: "Form submitted successfully.",
+						icon: "success",
+						button: "OK",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = '/victoriahallbooking_uat/headquarters/settlementlist';
+						}
+					});
+				},
+				error: function (xhr, status, error) {
+					console.error('Error:', error);
+					Swal.fire({
+						title: "Error!",
+						text: "There was an error submitting the form.",
+						icon: "error",
+						button: "OK",
+					}).then(() => {
+						window.location.href = '/victoriahallbooking_uat/headquarters/settlementlist';
+					});
+				}
+			});
+
+			return false;
+		}
+		
+				let isCompressing = false;
+						// Attach the validation function to file input change event
+						$(document).on('change', '.damage-image', function () {
+							validateFile(this);
+						});
+
+						function validateFile(fileInput) {
+						const allowedExtensions = /(\.jpg|\.jpeg|\.pdf)$/i;
+						const file = fileInput.files[0];
+						const filePath = fileInput.value;
+						let errorMessage = '';
+
+						// Clear any previous error message
+						clearError(fileInput);
+
+						// Check for duplicate files
+						if (isDuplicateFile(file.name, fileInput)) {
+							errorMessage = 'This file has already been selected. Please choose a different file.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+							return;
+						}
+
+						// Validate file type
+						if (!allowedExtensions.exec(filePath)) {
+							errorMessage = 'Only JPG, JPEG, and PDF files are allowed.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+						}
+						// Handle image files separately
+						else if (/(\.jpg|\.jpeg)$/i.test(filePath) && file.size > 2097152) {
+							compressImage(file).then(compressedFile => {
+								const dataTransfer = new DataTransfer();
+								dataTransfer.items.add(compressedFile);
+								fileInput.files = dataTransfer.files;
+
+								// Validate file size after compression
+								validateFileSize(fileInput);
+							}).catch(error => {
+								errorMessage = 'Error compressing image.';
+								displayError(fileInput, errorMessage);
+							});
+						}
+						// Directly validate PDF file size
+						else if (/(\.pdf)$/i.test(filePath) && file.size > 2097152) {
+							errorMessage = 'PDF file size exceeds the 2MB limit.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+						}
+						else {
+							// console.log('File size is within limit:', file.size, 'bytes');
+							clearError(fileInput);
+						}
+					}
+
+
+					function isDuplicateFile(fileName, currentInput) {
+						const fileInputs = document.querySelectorAll('.file-upload-field');
+						for (let input of fileInputs) {
+							if (input !== currentInput && input.files.length > 0 && input.files[0].name === fileName) {
+								return true;
+							}
+						}
+						return false;
+					}
+
+					function clearError(fileInput) {
+						const errorElements = fileInput.parentNode.getElementsByClassName('error-message');
+						while (errorElements.length > 0) {
+							errorElements[0].remove();
+						}
+					}
+					// Function to compress image using canvas
+					function compressImage(file) {
+						return new Promise((resolve, reject) => {
+							const reader = new FileReader();
+							reader.onload = function (event) {
+								const img = new Image();
+								img.onload = function () {
+									const canvas = document.createElement('canvas');
+									const ctx = canvas.getContext('2d');
+									const maxSize = 2097152; // 2MB in bytes
+									let scale = 1;
+									if (file.size > maxSize) {
+										scale = Math.sqrt(maxSize / file.size);
+									}
+									canvas.width = img.width * scale;
+									canvas.height = img.height * scale;
+									ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+									// Convert canvas content to blob
+									canvas.toBlob(blob => {
+										resolve(new File([blob], file.name, {type: 'image/jpeg', lastModified: Date.now()}));
+									}, 'image/jpeg', 0.7); // Adjust JPEG quality as needed (0.7 is 70% quality)
+								};
+								img.src = event.target.result;
+							};
+							reader.readAsDataURL(file);
+						});
+					}
+					// Function to validate file size after compression
+					function validateFileSize(fileInput) {
+						const file = fileInput.files[0];
+						if (file && file.size > 2097152) {
+							//console.log('File size is still greater than 2MB after compression.');
+							// Handle the situation where the file size is still greater than 2MB
+							displayError(fileInput, 'File size is still greater than 2MB after compression.');
+							fileInput.value = ''; // Clear the file input
+						} else {
+							//console.log('File size is within limit after compression.');
+							// Handle the situation where the file size is within the limit
+						}
+					}
+
+					// Function to display error messages
+					function displayError(fileInput, errorMessage) {
+						// Example implementation: show error message near the file input
+						let errorContainer = fileInput.nextElementSibling;
+						if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+							errorContainer = document.createElement('div');
+							errorContainer.classList.add('error-message');
+							fileInput.parentNode.insertBefore(errorContainer, fileInput.nextSibling);
+						}
+						errorContainer.textContent = errorMessage;
+					}
+	</script>
+</body>
+
+</html>

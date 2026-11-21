@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}"></head>
+
+<meta charset="ISO-8859-1">
+
+</head>
+
+<body>
+
+	<style>
+		.small-input {
+			width: 150px;
+			/* Adjust the width as needed */
+		}
+
+		.small-table th,
+		.small-table td {
+			font-size: 14px;
+			/* Adjust font size as needed */
+		}
+
+		/* Reduce padding for table cells */
+		.small-table td,
+		.small-table th {
+			padding: 5px;
+			/* Adjust padding as needed */
+		}
+	</style>
+
+	<body>
+
+		<!-- Page Container -->
+		<div id="page-container"
+			class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+			<!-- Side Overlay aside (right)-->
+			<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+			<!-- END Side Overlay (right)-->
+			<!-- Sidebar Nav-->
+			<nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+			<!-- END Sidebar -->
+			<!-- Header -->
+			<header th:replace="~{fragments/header-admin :: header}"></header>
+			<!-- END Header -->
+			<!-- Main Container -->
+			<main id="main-container">
+				<!-- Page Content -->
+				<!-- Card Container -->
+				<div class="content">
+					<div class="block block-rounded">
+						<div class="block-header bg-primary text-white">
+							<h3 class="block-title">Reasons For Booking</h3>
+						</div>
+						<div class="block-content">
+							<h4>Booking Reasons Details<span>*</span></h4>
+							<div class="row">
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="bookingReason">Booking Reason:</label>
+										<div class="input-group">
+											<select class="form-control" id="bookingReason" name="bookingReason">
+
+											</select>
+											<div class="input-group-append">
+												<button type="button" class="btn btn-primary" id="addReasonField">
+													<i class="fas fa-plus fa-fw fa-lg"></i>
+												</button>
+											</div>
+
+										</div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div id="maxdaysContainer" style="display:none">
+										<label for="maxdays">Max Days:</label>
+										<input type="text" id="maxdays" class="form-control">
+									</div>
+								</div>
+								<!-- Plus icon wrapped inside a box -->
+								<div class="row" id="inputBox" style="display:none">
+									<div class="col-md-4">
+										<div class="form-group">
+											<label for="bookingReason">Add New Reason:</label>
+											<input type="text" class="form-control" id="newReason"
+												placeholder="New Reason" required>
+										</div>
+									</div>
+									<div class="col-md-4" id="maxDaysContainer">
+										<div class="form-group">
+											<label for="maxdays">Max Days:</label>
+											<input type="text" class="form-control" id="newmaxdays"
+												placeholder="Max Days" required>
+										</div>
+									</div>
+								</div>
+							</div>
+							<br>
+							<div id="documentDetailsTable" style="width:100%;display:none">
+								<h4>Booking Reasons Document Details<span>*</span></h4>
+								<div class="row">
+									<div>
+										<div class="col-md-9">
+											<table class="table" <thead>
+												<tr>
+													<th>Field Show</th>
+													<th>Field Label</th>
+													<th>Document Show</th>
+													<th>Document Label</th>
+												</tr>
+												</thead>
+												<tbody id="documentDetailsBody">
+												</tbody>
+											</table>
+										</div>
+										<div class="col-md-3">
+											<button type="button" class="btn btn-success" id="addDocumentRow"><i
+													class="fas fa-plus"></i></button>
+										</div>
+									</div>
+									<div style="text-align:right">
+										<button type="button" id="resetbutton" class="btn btn-danger">Reset</button>
+										<button type="button" id="reasondoc" class="btn btn-primary">Submit</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+			<div th:replace="~{fragments/resetpassword :: div}"></div>
+			<script th:replace="~{fragments/loginscript :: script}"></script>
+			<script>
+
+
+				var rowcount = 0;
+				$(document).ready(function () {
+					$('#addReasonField').click(function () {
+						// Show the input box when plus icon is clicked
+						$('#inputBox').show();
+						$('#documentDetailsTable').show();
+					});
+
+					$('#bookingReason').change(function () {
+						if ($(this).val() === "0") {
+							// Disable the plus icon button
+							$('#addReasonField').prop('disabled', false);
+
+						} else {
+							// Enable the plus icon button if no selection is made
+							$('#addReasonField').prop('disabled', true);
+							$('#inputBox').hide();
+						}
+						var selectedReasonId = $(this).val();
+						if (selectedReasonId) {
+							// Show the table
+							$('#documentDetailsTable').show();
+							// Clear existing table rows
+							$('#documentDetailsBody').empty();
+							// Populate table fields based on selected reason
+							populateTableFields(selectedReasonId);
+						}
+					});
+					// Add new row when plus button is clicked
+					$('#addDocumentRow').click(function () {
+						rowcount += 1;
+						var newRow = `
+				        <tr class="new-row">
+				            <td>
+				                <input type="hidden" class="form-control" name="reasonDocId_${rowcount}" value="0">
+				                <label class="radio-inline"><input type="radio" name="addTextField_${rowcount}" value="1" checked> Yes</label>
+				                <label class="radio-inline"><input type="radio" name="addTextField_${rowcount}" value="0"> No</label>
+				            </td>
+				            <td><input type="text" class="form-control" name="fieldName_${rowcount}" placeholder="Field Label"></td>
+				            <td>
+				                <label class="radio-inline"><input type="radio" name="addDocumentField_${rowcount}" value="1" checked> Yes</label>
+				                <label class="radio-inline"><input type="radio" name="addDocumentField_${rowcount}" value="0"> No</label>
+				            </td>
+				            <td><input type="text" class="form-control" name="docFieldName_${rowcount}" placeholder="Document Label"></td>
+				            <td><button type="button" class="btn btn-danger deleteRow"><i class="fas fa-minus"></i></button></td>
+				        </tr>`;
+						$('#documentDetailsBody').append(newRow);
+					});
+
+					$('#resetbutton').click(function () {
+						window.location.reload();
+					});
+					// Delete row when minus button is clicked
+					$(document).on('click', '.deleteRow', function () {
+						$(this).closest('tr').remove();
+						if (rowcount > 0) {
+							rowcount -= 1;
+						}
+					});
+
+
+
+				});
+
+				$(document).ready(function () {
+					// AJAX request to fetch all reasons from the API
+					$.ajax({
+						url: '/victoriahallbooking_uat/admin/api/getReasons', // Your API endpoint
+						type: 'GET',
+						success: function (reasons) {
+							// Clear existing options
+							$('#bookingReason').empty();
+							$('#bookingReason').append('<option value="0" selected>Select a reason</option>');
+
+							// Append options to the dropdown
+							reasons.forEach(function (reason) {
+								$('#bookingReason').append('<option value="' + reason.reasonId + '" data-maxdays="' + reason.maxdays + '">' + reason.reason + '</option>');
+							});
+						},
+						error: function (xhr, status, error) {
+						}
+					});
+
+					// Event listener for dropdown change
+					$('#bookingReason').on('change', function () {
+						var selectedOption = $(this).find('option:selected');
+						var maxdays = selectedOption.data('maxdays');
+
+						// Display maxdays in the text field
+						if (maxdays !== undefined) {
+							$('#maxdays').val(maxdays);
+							$('#maxdaysContainer').show();
+						} else {
+							$('#maxdays').val(''); // Clear the field if no valid reason is selected
+							$('#maxdaysContainer').hide();
+						}
+					});
+				});
+
+
+				function populateTableFields(selectedReasonId) {
+					// AJAX request to fetch table fields from the API
+					$.ajax({
+						url: '/victoriahallbooking_uat/admin/api/getReasonDocumentDetails?reasonId=' + selectedReasonId,
+						type: 'GET',
+						success: function (documentDetails) {
+							// Log the documentDetails to debug
+							$('#documentDetailsBody').empty();
+
+							// Append rows for each document detail
+							rowcount = documentDetails.length;
+
+							documentDetails.forEach(function (detail, index) {
+								// Create the new row
+								var newRow = `
+                    <tr>
+                        <td>
+                            <input type="hidden" class="form-control" name="reasonDocId_${index}" value="${detail.reasonDocId}">
+                            <label class="radio-inline"><input type="radio" name="addTextField_${index}" value="1"> Yes</label>
+                            <label class="radio-inline"><input type="radio" name="addTextField_${index}" value="0"> No</label>
+                        </td>
+                        <td><input type="text" class="form-control" name="fieldName_${index}" value="${detail.fieldName}"></td>
+                        <td>
+                            <label class="radio-inline"><input type="radio" name="addDocumentField_${index}" value="1"> Yes</label>
+                            <label class="radio-inline"><input type="radio" name="addDocumentField_${index}" value="0"> No</label>
+                        </td>
+                        <td><input type="text" class="form-control" name="docFieldName_${index}" value="${detail.docFieldName}"></td>
+                    </tr>`;
+
+								// Convert the newRow string into a jQuery object
+								var $row = $(newRow);
+
+								// Set the radio button values based on the detail object's properties
+								$row.find(`input[name="addTextField_${index}"][value="${detail.addTextField ? '1' : '0'}"]`).prop('checked', true);
+								$row.find(`input[name="addDocumentField_${index}"][value="${detail.addDocumentField ? '1' : '0'}"]`).prop('checked', true);
+
+								// Append the row to the table body
+								$('#documentDetailsBody').append($row);
+							});
+						},
+						error: function (xhr, status, error) {
+						}
+					});
+				}
+
+
+				$(document).ready(function () {
+					// Add an event listener for the "add reason doc" button
+					$('#reasondoc').click(function () {
+						saveReasonAndDocument();
+					});
+				});
+
+				function saveReasonAndDocument() {
+					var reason = $('#bookingReason').val();
+					var maxdays = $('#maxdays').val();
+					var newreason = $('#newReason').val().trim().replace(/\s+/g, ' '); // Trim and remove extra spaces
+					var newmaxdays = $('#newmaxdays').val();
+					var data = {
+						"updatedBy": "Test",
+						"reasonDocumentMasterList": []
+					};
+
+					// Validate the reason
+					if (reason !== "0") {
+						data.reasonId = reason;
+						data.maxdays = maxdays;
+						data.reason = $('#bookingReason option:selected').text().trim().replace(/\s+/g, ' '); // Trim and remove extra spaces
+					} else if (newreason === "" || newmaxdays === "") {
+						Swal.fire({
+							icon: 'warning',
+							title: 'Validation Error',
+							text: 'New Reason and MaxDays should not be empty.'
+						});
+						return; // Prevent further execution
+					} else {
+						data.reason = newreason;
+						data.maxdays = newmaxdays;
+					}
+
+					// Validate the document details
+					var valid = true;
+					$('#documentDetailsBody tr').each(function () {
+						var reasonDocId = $(this).find('input[name^="reasonDocId_"]').val();
+						var addTextField = $(this).find('input[name^="addTextField_"]:checked').val();
+						var addDocumentField = $(this).find('input[name^="addDocumentField_"]:checked').val();
+						var fieldName = $(this).find('input[name^="fieldName_"]').val().trim().replace(/\s+/g, ' '); // Trim and remove extra spaces
+						var docFieldName = $(this).find('input[name^="docFieldName_"]').val().trim().replace(/\s+/g, ' '); // Trim and remove extra spaces
+
+						// Check if fieldName is empty
+						if (addTextField === '1' && fieldName === "") {
+							Swal.fire({
+								icon: 'warning',
+								title: 'Validation Error',
+								text: 'Field Name should not be empty.'
+							});
+							valid = false;
+							return false; // Break the loop
+						}
+
+						// Check if docFieldName is empty and addDocumentField is selected
+						if (addDocumentField === '1' && docFieldName === "") {
+							Swal.fire({
+								icon: 'warning',
+								title: 'Validation Error',
+								text: "Document Label should not be empty if 'Document Show' is Yes."
+							});
+							valid = false;
+							return false; // Break the loop
+						}
+
+						var reasonDoc = {
+							"fieldName": fieldName,
+							"addTextField": addTextField === '1',
+							"docFieldName": docFieldName,
+							"addDocumentField": addDocumentField === '1'
+						};
+
+						// Include reasonDocId if it's not zero (indicating an existing entry)
+						if (reasonDocId && reasonDocId !== "0") {
+							reasonDoc.reasonDocId = reasonDocId;
+						}
+
+						data.reasonDocumentMasterList.push(reasonDoc);
+					});
+
+					// If validation failed, stop further execution
+					if (!valid) {
+						return;
+					}
+
+					$.ajax({
+						url: '/victoriahallbooking_uat/admin/api/saveReason',
+						type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(data),
+						success: function (response) {
+							window.location.reload(); // Reload the page on success
+						},
+						error: function (xhr, status, error) {
+							console.error('Error saving reason and document details:', error);
+						}
+					});
+				}
+			</script>
+
+	</body>
+
+</html>

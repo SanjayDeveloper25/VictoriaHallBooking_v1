@@ -1,0 +1,130 @@
+	
+		.book-button {
+		display: block;
+		margin: 0 auto;
+	}
+
+	.carousel-control-prev,
+	.carousel-control-next {
+	
+		/* Dark background color */
+		width: 5%;
+		/* Adjust width as needed */
+	}
+
+	.carousel-control-prev-icon,
+	.carousel-control-next-icon {
+		filter: invert(1);
+		/* Invert color for white arrow icon */
+	}
+
+	/* Highlight previous and next buttons on hover */
+	.carousel-control-prev:hover,
+	.carousel-control-next:hover {
+		/*background-color: #555;*/
+
+	}
+
+	.custom-btn-close {
+		color: white;
+		font-size: 20px;
+		border: none;
+		background-color: transparent;
+		cursor: pointer;
+	}
+
+	/* Modal Body */
+	.custom-modal-body {
+		background-color: #f8f9fa;
+		/* Light grey background for the body */
+	}
+
+	.custom-form-group label {
+		color: #333;
+		/* Darker text for better readability */
+	}
+
+	.custom-input {
+		border-radius: 20px;
+		/* Rounded borders for input */
+		border: 1px solid #ced4da;
+		padding: 10px;
+	}
+
+	/* Buttons */
+	.custom-btn-primary {
+		background-color: #016d6f !important;
+		/* Primary button color updated */
+		border: none;
+		border-radius: 20px;
+		/* Rounded borders for buttons */
+		color: white;
+		padding: 10px 20px;
+		margin-top: 10px;
+		/* Spacing between buttons and form */
+		cursor: pointer;
+	}
+
+	.custom-btn-primary:hover {
+		background-color: #015a5c !important;
+		/* Slightly darker shade on hover for a nice effect */
+	}
+
+	.custom-btn-secondary {
+		background-color: #6c757d;
+		/* Secondary button color */
+		border: none;
+		border-radius: 20px;
+		color: white;
+		padding: 10px 20px;
+		cursor: pointer;
+	}
+
+	.custom-btn-secondary:hover {
+		background-color: #5a6268;
+		/* Darker shade on hover */
+	}
+
+	/* Adjust modal title color dynamically if needed */
+	#bookingModalLabel {
+		color: #fff;
+		/* Ensure visibility against the header background */
+	}
+
+/* Ensure the card itself is a flex container to align the button at the bottom */
+.card.gallery-desc {
+    display: flex;
+    flex-direction: column;
+}
+
+/* This will make the content of the card (excluding the image) a flex container */
+#cardblock {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Adjust this to align items vertically (e.g., flex-start, flex-end, center) */
+    align-items: center; /* This centers the content horizontally */
+    text-align: center; /* This centers the text inside each block */
+    flex-grow: 1; /* This makes the card-block grow to fill available space, pushing the button down */
+}
+
+/* Adjust the image container */
+.masonry-media {
+    width: 100%; /* Adjust this as necessary */
+    display: flex;
+    justify-content: center; /* Center the image container */
+}
+
+.masonry-media img {
+    max-width: 100%; /* Make sure the image is responsive and fits its container */
+    height: auto;
+}
+
+/* Style the button to be full width if desired */
+.book-button {
+    width: calc(100% - 30px); /* Adjust based on your padding and margin preferences */
+    margin: 15px; /* Adjust or remove based on your design */
+}
+
+	.hidden {
+		display: none;
+	}

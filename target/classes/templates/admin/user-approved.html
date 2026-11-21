@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}"></head>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Sidebar Nav-->
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<!-- END Side Overlay (right)-->
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-admin :: nav}"></nav>
+		<!-- END Sidebar -->
+		<!-- Header -->
+		<header th:replace="~{fragments/header-admin :: header}"></header>
+		<!-- END Header -->
+		<!-- Main Container -->
+		<main id="main-container">
+			<!-- END Hero -->
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header block-header-default">
+						<h3 class="block-title"> List of Approved Users</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table id="userApprovedList"
+									class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+									<thead class="thead-light">
+										<tr class="table-bordered">
+											<th class="text-center no-sort">S.No</th>
+											<th class="text-center" width="20%">Usertype</th>
+											<th class="text-center">Name</th>
+											<th class="text-center">Mobile Number</th>
+											<th class="text-center">E-Mail ID</th>
+											<th class="text-center">User Status</th>
+											<th class="text-center">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<!-- Use Thymeleaf to loop through the bookingList -->
+										<tr th:each="users, rowStat : ${approvedlist}">
+											<!--<td class="text-center" th:text="${i.index + 1}"></td>-->
+											<td class="text-center" th:text="${rowStat.index + 1}"></td>
+											<td class="text-center" th:text="${users.usertype}"></td>
+											<td class="text-center" th:text="${users.name}"></td>
+											<td class="text-center" th:text="${users.mobileNo}"></td>
+											<td class="text-center" th:text="${users.email}"></td>
+											<td class="text-center" th:text="${users.userstatus}"></td>
+											<td>
+												<p>
+
+													<span class="badge bg-success" style="cursor: pointer;"
+														th:onclick="approved([[${users.userId}]])">Approved</span>
+
+												</p>
+
+
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- END Page Content -->
+		</main>
+		<!-- END Main Container -->
+
+		<!-- END Main Container -->
+		<!--modal for pening-->
+		<div class="modal fade backdrop" id="approvalForm" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<form id="ownform">
+						<div class="block block-rounded block-themed block-transparent mb-0">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="2mtitle">User Approval Information</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="block-content row">
+								<!-- <div class="col-sm-4"> -->
+								<!-- <label class="form-label">Pet ID:<span class="text-danger">*</span></label> -->
+								<input type="hidden" class="form-control text-center" name="userid" id="userid"
+									disabled />
+								<!--<input type="hidden" class="form-control text-center" name="Mobii" id="Mobii"
+									disabled />-->
+
+								<!-- </div> -->
+								<div class="col-sm-4">
+									<label class="form-label">Name:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="name" id="name"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Mobile No:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="mobile" id="mobile"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">E-Mail ID:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="email" id="email"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Street:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="street" id="street"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Area:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="area" id="area"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">Location:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="location" id="location"
+										disabled />
+								</div>
+
+								<div class="col-sm-4">
+									<label class="form-label">Pincode:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="pincode" id="pincode"
+										disabled />
+								</div>
+								<div class="col-sm-4">
+									<label class="form-label">UserType:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="usertype" id="usertype"
+										disabled />
+								</div>
+
+								<div class="col-sm-4">
+									<label class="form-label">User Status:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="userstatus"
+										id="userstatus" disabled />
+								</div>
+								<div class="col-sm-4" style="display:none" id="idField">
+									<label class="form-label">Usertype Id:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="governmentId" id="governmentId"
+										readonly />
+								</div>
+								<div class="col-sm-4" style="display:none" id="departmentField">
+									<label class="form-label">Department:<span class="text-danger"></span></label>
+									<input type="text" class="form-control text-center" name="department" id="department"
+										readonly />
+								</div>
+								<div class="mb-4">
+									<label class="form-label">Reason:<span class="text-danger"></span></label>
+									<textarea class="form-control " name="reason" id="reason" disabled></textarea>
+								</div>
+
+								<!--<div class="mb-4">
+                        <label class="form-label">Reason:<span class="text-danger"></span></label>
+                        <textarea   class="form-control " name="reason" id="reason"  required ></textarea>
+                    </div>-->
+
+							</div>
+						</div>
+						<div class="block-content block-content-full text-end bg-body" id="mbutton2">
+							<!--<button type="button" class="btn btn-sm btn-alt-success"
+								th:onclick="accept()">Accept</button>-->
+							<button type="button" class="btn btn-sm btn-alt-secondary"
+								data-bs-dismiss="modal">Close</button>
+							<!--<button type="submit" class="btn btn-sm btn-primary">Reject</button>-->
+						</div>
+					</form>
+				</div>
+			</div>
+
+		</div>
+		<div th:replace="~{fragments/resetpassword :: div}"></div>
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+
+		<!-- Scripts -->
+		<script th:replace="~{fragments/loginscript :: script}"></script>
+		<script type="text/javascript">
+			$(document).ready(
+				function () {
+					var buttons = [{
+						extend: 'pageLength',
+						className: 'btn btn-primary'
+					}, {
+						title: 'Data export',
+						extend: 'copyHtml5',
+						text: 'Copy',
+						className: 'btn btn-primary',
+						id: 'copyBtn'
+					}, {
+						extend: 'excelHtml5',
+						text: 'Excel',
+						className: 'btn btn-primary',
+						id: 'excelBtn'
+					}, {
+						extend: 'csvHtml5',
+						text: 'CSV',
+						className: 'btn btn-primary',
+						id: 'csvBtn'
+					}, {
+						extend: 'pdfHtml5',
+						text: 'PDF',
+						className: 'btn btn-primary',
+						id: 'pdfBtn'
+					},
+
+					];
+
+					$('#userApprovedList').DataTable(
+						{
+							dom: 'Bftip',
+							columnDefs: [{
+								targets: 'no-sort',
+								orderable: false
+							}],
+							lengthMenu: [
+								[50, 100, 200, 500, -1],
+								['50 rows', '100 rows', '200 rows',
+									'500 rows', 'Show all']],
+							scrollY: '50vh',
+							fixedColumns: {
+								left: 1,
+								right: 1
+							},
+							buttons: [buttons],
+							responsive: true,
+							searching: true, // Enable search
+							select: false,
+							processing: false,
+						});
+
+					// Link the search input to DataTable
+					$('#searchInput').on('keyup', function () {
+						dataTable.search(this.value).draw();
+					});
+
+				});
+
+			function approved(userId) {
+				$.ajax({
+					type: "GET",
+					url: '/victoriahallbooking_uat/api/officer/getUserDetails',
+					data: {
+						'usersid': userId
+					},
+					success: function (x) {
+						//console.log(x);
+						showUserInfo(x)
+					}
+				});
+
+			}
+
+			function showUserInfo(list) {
+				$('#approvalForm').modal({
+					backdrop: 'static',
+					keyboard: false
+				});
+				$('#approvalForm').modal('show');
+				document.getElementById("userid").value = list.userId;
+				document.getElementById("name").value = list.name;
+				document.getElementById("mobile").value = list.mobileNo;
+				document.getElementById("email").value = list.email;
+				document.getElementById("street").value = list.street;
+				document.getElementById("area").value = list.area;
+				document.getElementById("location").value = list.location;
+				document.getElementById("pincode").value = list.pinCode;
+				document.getElementById("usertype").value = list.usertype;
+				document.getElementById("userstatus").value = list.userstatus;
+				document.getElementById("governmentId").value=list.governmentId
+				document.getElementById("department").value=list.department
+				if (list.usertype === 'GCC_EMPLOYEE' || list.usertype === 'PENSIONER') {
+		        idField.style.display = 'block';
+		        departmentField.style.display = 'block';
+		    	} else {
+		        idField.style.display = 'none';
+		        departmentField.style.display = 'none';
+		    	}
+			}
+
+
+		</script>
+</body>
+
+</html>

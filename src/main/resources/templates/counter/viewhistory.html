@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-counter :: head}"></head>
+
+<style>
+	#showBookingDetails table {
+		width: 100%;
+		padding: 100px;
+	}
+
+	#showBookingDetails th,
+	td {
+		padding: 8px;
+		text-align: left;
+		word-wrap: break-word;
+		/* Break long words */
+		white-space: normal;
+		/* Allow text to wrap */
+	}
+
+	.otp-input {
+		width: 30px;
+		height: 30px;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		text-align: center;
+		font-size: 16px;
+		margin-right: 10px;
+
+	}
+
+	.otp-input-box {
+		justify-content: center;
+		margin: 0 auto;
+		/* Centers the box horizontally */
+		align-items: center;
+		/* Align items in the center for flex containers */
+		width: 100%;
+	}
+</style>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Side Overlay aside (right)-->
+		<!-- <aside th:replace="~{fragments/aside-right :: aside}"></aside> -->
+		<!-- END Side Overlay (right)-->
+
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-counter :: nav}"></nav>
+		<!-- END Sidebar -->
+
+		<!-- Header -->
+		<header th:replace="~{fragments/header-counter :: header}"></header>
+		<!-- END Header -->
+
+		<!-- Main Container -->
+		<main id="main-container">
+			<!-- Page Content -->
+			<div class="content">
+				<div class="block block-rounded">
+					<div class="block-header block-header-default">
+						<h3 class="block-title"> List of Counter Bookings</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table id="BookingdetailsList"
+									class="table table-bordered table-striped table-vcenter js-dataTable-responsive">
+									<thead class="thead-light">
+										<tr class="table-bordered">
+											<th class="text-center no-sort">S.No</th>
+											<th class="text-center">Booking Id</th>
+											<th class="text-center">Hall Zone/Div</th>
+											<th class="text-center">Booking date</th>
+											<th class="text-center">Starting Date</th>
+											<th class="text-center">Ending Date</th>
+											<th class="text-center">No of Days</th>
+											<th class="text-center">Booking Status</th>
+											<th class="text-center">Reason for booking</th>
+											<th class="text-center">Booking Type</th>
+											<th class="text-center">View</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="list, i : ${bookinglist}" class="${bookinglist}" id="ddRow">
+											<td th:text="${i.count}">0</td>
+											<td class="text-center" th:text="${list['booking_id']}"></td>
+											<td class="text-center"
+												th:text="${list['hall_zone']} + '/' + ${list['hall_division']}"></td>
+											<td class="text-center" th:text="${list['booking_date']}"></td>
+											<td class="text-center" th:text="${list['start_date']}"></td>
+											<td class="text-center" th:text="${list['end_date']}"></td>
+											<td class="text-center" th:text="${list['no_of_days']}"></td>
+											<td class="text-center" th:text="${list['booking_status']}"></td>
+											<td class="text-center" th:text="${list['reason']}"></td>
+											<td th:switch="${list['event_category']}">
+												<p th:case="'Current'">
+													<span class="badge bg-primary">Current</span>
+												</p>
+												<p th:case="'Past'">
+													<span class="badge bg-info">Past</span>
+												</p>
+												<!-- <p th:case="'Pay'">
+                                    <a class="view-button" th:if="${list['booking_status'] == 'PENDING'}"
+                                       th:onclick="'openDDForm(' + ${list['booking_id']} + ');'">
+                                       <span class="badge bg-warning" style="cursor: pointer;">Pay</span>
+                                    </a>
+                                 </p>-->
+												<p th:case="'Future'">
+													<span class="badge bg-success">Future</span>
+													<a class="view-button"
+														th:if="${list['booking_status'] == 'APPROVED'}">
+														<span class="badge bg-danger" style="cursor: pointer;"
+															th:onclick="cancelBooking([[${list['booking_id']}]], [[${list['mobile_no']}]], [[${list['booking_type']}]])">
+															Cancel Booking
+														</span>
+													</a>
+												</p>
+											</td>
+											<td>
+												<a class="view-button">
+													<span class="badge bg-primary" style="cursor: pointer;"
+														th:onclick="showBookingDetails([[${list['booking_id']}]] )">View</span>
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- END Page Content -->
+		</main>
+		<!-- END Main Container -->
+		<!-- Modal for DD Details -->
+		<div class="modal fade backdrop" id="ddDetailsModal" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<form action="/counter/saveDDdetails" id="ddform" method="post" onsubmit="return submitForm()"
+						enctype="multipart/form-data">
+						<div class="block block-rounded block-themed block-transparent mb-0">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="mtitle">Add Demand Draft Number</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="block-content row">
+								<!-- Existing form fields -->
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="bankName">Bank Name:</label>
+										<input type="text" class="form-control" id="bankName" name="bankName"
+											placeholder="Bank Name" pattern="[A-Za-z\s'-]+" required>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="bankAccNo">Bank Account Number:</label>
+										<input type="number" class="form-control" id="bankAccNo" name="bankAccNo"
+											placeholder="Bank Account No" minlength="8" maxlength="17" pattern="[0-9]"
+											required>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="ddNumber">Demand Draft Number:</label>
+										<input type="number" class="form-control" id="ddNumber" name="ddNumber"
+											placeholder="DD No" minlength="6" maxlength="10" pattern="[0-9]" required>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="totalamount">Total Amount:</label>
+										<input type="number" class="form-control" id="totalamount" name="totalamount"
+											readonly>
+									</div>
+								</div>
+								<div class="col-4">
+									<div class="form-group">
+										<lable for="amountReceived">Cheque Amount:</lable>
+										<input type="number" class="form-control" id="amountReceived"
+											name="amountReceived" required="required" pattern="[0-9]">
+									</div>
+								</div>
+								<div class="col-md-4">
+									<input type="hidden" id="bookingId" name="bookingId">
+								</div>
+								<div class="row">
+									<div class="col">
+										<p class="p1 text-center"><strong>DOCUMENTS DETAILS</strong></p>
+									</div>
+								</div>
+								<div class="row" id="photoInputs">
+									<div class="col-md-8">
+										<div class="form-group">
+											<label for="counterddphoto" style="color:red;">Photo 1: Only (.JPEG, .JPG,
+												.PDF)
+												then uploading File size should not exceed above 1mb</label>
+											<input type="file" class="form-control dd-image" id="counterddphoto"
+												name="counterddphoto" accept="image/jpeg, image/jpg, image/pdf"
+												required>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="block-content block-content-full text-end bg-body" id="mbutton">
+							<button type="button" class="btn btn-sm btn-alt-secondary"
+								data-bs-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-sm btn-primary">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div class="modal fade backdrop" id="refundcounterModal" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<form id="docsform" enctype="multipart/form-data">
+						<input type="hidden" id="counterId" name="counterId" />
+						<div class="block block-rounded block-themed block-transparent mb-0">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="mtitle">Upload Documents</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="block-content row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="photo1">Upload Letter : Only .JPEG, .JPG, .PDF </label>
+										<input type="file" class="form-control" id="photo1" name="uploadLetter"
+											accept="image/jpeg, image/jpg, application/pdf" required>
+										<small class="text-danger file-size-message"></small>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="reason">Reason for Cancelling</label>
+										<input type="text" class="form-control" id="reason" name="reason" required>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="block-content block-content-full text-end bg-body" id="mbutton">
+							<button type="button" class="btn btn-danger" onclick="reset()">Reset</button>
+							<button type="button" class="btn btn-sm btn-alt-secondary"
+								data-bs-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-sm btn-primary">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!--showBookingDetails-->
+		<div class="modal fade backdrop" id="showBookingDetails" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content" id="printableContent">
+
+					<form id="regform" onsubmit="return rejectsubmit();">
+						<div class="block block-rounded block-themed block-transparent mb-0">
+
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="2mtitle">Booking
+									Information</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+
+							<div class="block-content row" style="margin: 0px;">
+
+								<div class="col-md-12 col-lg-12 col-sm-12" style="margin: 0px;">
+
+									<table>
+										<tr>
+											<th colspan="4" style="background-color: #f2f2f2; color: red;"><b>User
+													Details</b></th>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Name:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="name"></td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Mobile
+												Number:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="mobileno">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Email:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="email"></td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">User type:
+											</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="usertype">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">User Address:</th>
+											<td class="fw-semibold" style="text-wrap: pretty; padding: 0.45rem 0.45rem;"
+												id="userAddress"></td>
+										</tr>
+									</table>
+
+								</div>
+
+
+
+
+								<div class="col-md-12 col-lg-12 col-sm-12">
+									<input type="hidden" class="form-control text-center" name="bookingid"
+										id="bookingid" disabled />
+
+									<table>
+										<tr>
+											<th colspan="4" style="background-color: #f2f2f2; color: red;"><b>Booking
+													Details</b></th>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">No of Days
+												Booked:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="noofdays">
+											</td>
+											<th style="padding: 0.45rem 0.45rem;">Booking
+												Reason:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="reasonforbooking"></td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Booking
+												Deposit Amount:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="depositeamount">
+											</td>
+											<th style="padding: 0.45rem 0.45rem;">Hall
+												Amount:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="hallamount">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Amount
+												Received:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="amountreceived">
+											</td>
+											<th style="padding: 0.45rem 0.45rem;">Booking
+												Status:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="bookingstatus">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Start Date:
+											</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="startingdate">
+											</td>
+											<th style="padding: 0.45rem 0.45rem;">End Date:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="endingdate">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Starting slot:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="startingslot">
+											</td>
+											<th style="padding: 0.45rem 0.45rem;">Ending slot:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="endingslot">
+											</td>
+										</tr>
+									</table>
+
+								</div>
+
+
+								<div class="col-md-12 col-lg-12 col-sm-12" id="paymentsdetails" style="display:none">
+
+									<table>
+										<tr>
+											<th colspan="4" style="background-color: #f2f2f2; color: red;"><b>Payment
+													Details</b></th>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">
+												Bank Name:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="banknames">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Bant Account Number:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="bankaccountNumber"></td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">DD
+												Number:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="ddnumbers">
+											</td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Amount
+												Received:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="ddamountReceived">
+											</td>
+										</tr>
+									</table>
+
+								</div>
+
+
+
+								<div class="col-md-12 col-lg-12 col-sm-12">
+
+									<table>
+										<tr>
+											<th colspan="4" style="background-color: #f2f2f2; color: red;"><b>Hall
+													Details</b></th>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">Hall
+												Details:</th>
+											<td class="fw-semibold" style="text-wrap: pretty; padding: 0.45rem 0.45rem;"
+												id="hallname"></td>
+										</tr>
+
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">CareTaker
+												Name:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="hallInchargeName"></td>
+										</tr>
+										<tr>
+											<th style="padding: 0.45rem 0.45rem;">CareTaker
+												PhoneNo:</th>
+											<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="hallInchargeMobno"></td>
+										</tr>
+									</table>
+
+								</div>
+
+
+							</div>
+
+
+							<div class="block-content block-content-full text-end bg-body" id="mbutton">
+								<button class="btn btn-success" onclick="printTables()"
+									style="background: #FB6340;">Print</button>
+								<button type="button" style="background-color: rgb(21, 69, 93); color: white;"
+									class="btn btn-sm btn-alt-secondary" data-bs-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!--OTP Form-->
+		<div class="modal fade" id="otpForm" tabindex="-1" role="dialog" aria-labelledby="otpFormLabel"
+			aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<form action="#" th:action="@{/otpForm}" th:object="${otpForm}" method="post"
+						onsubmit="return verifyOtp(); ">
+						<div class="modal-header">
+							<h6 class="modal-title m-0" id="exampleModalDefaultLabel">OTP Login</h6>
+							<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"
+								style="color:black;border: white;background-color: white;">
+								<span aria-hidden="true">&times;</span></button>
+						</div><!--end modal-header-->
+						<div class="modal-body">
+							<div class="row">
+								<div class="mb-3 text-center">
+									<img src="media/images/mobileotp.png" width="50%" alt="Mobileotp">
+								</div>
+								<div class="mb-0 text-center">
+									<h4>OTP Verification</h4>
+									<p class="text-mute">Enter the OTP sent to <b class="text-info"
+											id="mobilenotxt"></b>
+									</p>
+									<p class="text-danger" id="otperror"></p>
+								</div>
+								<div class="mb-3 text-center">
+									<div class="otp-input-box">
+										<input type="text" maxlength="1" class="otp-input" id="otp1" required />
+										<input type="text" maxlength="1" class="otp-input" id="otp2" required />
+										<input type="text" maxlength="1" class="otp-input" id="otp3" required />
+										<input type="text" maxlength="1" class="otp-input" id="otp4" required />
+										<input type="text" maxlength="1" class="otp-input" id="otp5" required />
+									</div>
+								</div>
+								<div class="mb-3 text-center">
+									<div id="resend-containers">
+										<p class="mb-0">Didn't receive OTP?</p>
+										<p class="mb-0 text-info" id="resendlink"></p>
+									</div>
+								</div>
+							</div><!--end row-->
+						</div><!--end modal-body-->
+						<div class="modal-footer">
+							<button type="button" class="btn btn-de-secondary btn-sm"
+								data-bs-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary btn-sm" id="but">Verify OTP</button>
+						</div><!--end modal-footer-->
+					</form>
+				</div><!--end modal-content-->
+			</div><!--end modal-dialog-->
+		</div>
+
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+
+		<!-- END Footer -->
+	</div>
+
+	<!-- END Page Container -->
+
+
+
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+
+	<script type="text/javascript">
+
+		// Define the buttons for exporting data
+		$(document).ready(
+			function () {
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+				$('#BookingdetailsList').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+			});
+
+		//function to get the slot value
+		function getTimeSlot(slotValue) {
+			// console.log("Slot Value in getTimeSlot function:", slotValue);
+			var timeSlot;
+			var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+			if (trimmedSlotValue === '1') {
+				timeSlot = 'Morning';
+			} else if (trimmedSlotValue === '2') {
+				timeSlot = 'Evening';
+			} else {
+				timeSlot = 'Unknown';
+			}
+			// console.log("Time Slot:", timeSlot);
+			return timeSlot;
+		}
+
+		//Perform an ajax call to view booking details with the booking id
+		function showBookingDetails(bookingId) {
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+				method: 'GET',
+				data: {bookingId: bookingId},
+				success: function (response) {
+					// console.log("response=", response);
+					document.getElementById("name").innerHTML = response.users.name;
+					document.getElementById("mobileno").innerHTML = response.users.mobileNo;
+					document.getElementById("email").innerHTML = response.users.email;
+					document.getElementById("usertype").innerHTML = response.users.usertype;
+					var userDetailsAddress = "Street:-" + response.users.street +
+						"   Area:-" + response.users.area +
+						"   Location:-" + response.users.location +
+						"   Pincode:-" + response.users.pinCode;
+					document.getElementById("userAddress").innerHTML = userDetailsAddress
+					document.getElementById("noofdays").innerHTML = response.noOfDays;
+					document.getElementById("reasonforbooking").innerHTML = response.reason;
+					document.getElementById("depositeamount").innerHTML = response.depositAmount;
+					document.getElementById("hallamount").innerHTML = response.hallAmount;
+					document.getElementById("amountreceived").innerHTML = response.amountReceived;
+					document.getElementById("bookingstatus").innerHTML = response.bookingStatus;
+					document.getElementById("startingdate").innerHTML = response.startDate;
+					document.getElementById("endingdate").innerHTML = response.endDate;
+
+					document.getElementById("startingslot").innerHTML = getTimeSlot(response.startingSlot);
+					document.getElementById("endingslot").innerHTML = getTimeSlot(response.endingSlot);
+					var hallDetailsString = "Hall Name: " + response.hallDetails.hallName +
+						"Door No: " + response.hallDetails.doorNo +
+						"Street: " + response.hallDetails.street +
+						"<br>" +  // Add an extra <br> to break the line after "Street"
+						"Area: " + response.hallDetails.area +
+						"Zone: " + response.hallDetails.zone +
+						"Division: " + response.hallDetails.division;
+					document.getElementById("hallname").innerHTML = hallDetailsString;
+					document.getElementById("hallInchargeName").innerHTML = response.hallDetails.hallInchargeName;
+					document.getElementById("hallInchargeMobno").innerHTML = response.hallDetails.hallInchargeMobno;
+
+					if (response.counterDetails) {
+						document.getElementById("paymentsdetails").style.display = "block";
+						document.getElementById("banknames").innerHTML = response.counterDetails.bankName;
+						document.getElementById("bankaccountNumber").innerHTML = response.counterDetails.bankAccNo;
+						document.getElementById("ddnumbers").innerHTML = response.counterDetails.ddNumber;
+						document.getElementById("ddamountReceived").innerHTML = response.counterDetails.amountReceived;
+					}
+					// Show the modal
+					$('#showBookingDetails').modal('show');
+				},
+				error: function () {
+				}
+			});
+		}
+
+		//function to take print
+		function printTables() {
+			// Get the printable content
+			var printableContent = document.getElementById('printableContent').innerHTML;
+
+			// Open a print window
+			var printWindow = window.open('', '', 'height=400,width=600');
+
+			// Write the printable content to the print window
+			printWindow.document.write('<html><head><title>Print</title></head><body>' + printableContent + '</body></html>');
+
+			// Close the print window after printing
+			printWindow.document.close();
+			printWindow.print();
+			printWindow.close();
+		}
+
+		// Function to cancel the booking
+		function cancelBooking(booking, mobileNo, bookingType) {
+			var bookingId = booking;
+			var mobileNum = mobileNo;
+
+			// console.log("mobileNumber", mobileNum);
+			// console.log("bookingId", bookingId);
+
+			// Check if the booking type is OFFLINE
+			if (bookingType === "ONLINE") {
+				Swal.fire({
+					title: 'Cancellation Not Available',
+					text: 'Cancellation is not available for online bookings.',
+					icon: 'error'
+				});
+			} else {
+				Swal.fire({
+					title: 'Are you sure?',
+					text: 'Once canceled, you cannot undo this action!',
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Yes, cancel it!'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						// If user confirms, show OTP form
+						mobileNumberForCancel = mobileNum;
+						cancelBookingId = bookingId;
+						cancelBookingLogin = true;
+						sendOTP(mobileNum);
+					}
+				});
+			}
+		}
+
+		$('.otp-input').on('keyup', function (e) {
+			var $this = $(this);
+			if ($this.val().length === 1) {
+				$this.next('.otp-input').focus();
+			}
+			if ($this.val().length === 0) {
+				$this.prev('.otp-input').focus();
+			}
+		});
+
+
+		// Function to send OTP
+		function sendOTP(mobileNum) {
+			if (mobileNum != "" || mobileNum != undefined || mobileNum != null) {
+				mobileNo = mobileNum;
+				$("#mobilenotxt").html(mobileNo);
+				$.ajax({
+					type: "GET",
+					url: '/victoriahallbooking_uat/user/api/sendOTP',
+					data: {'mobileNo': mobileNo, 'purpose': 'New User'},
+					success: function (bodyMessage) {
+						if (bodyMessage != "Error") {
+							$('#otpForm').modal({
+								backdrop: 'static',
+								keyboard: false
+							});
+							$('#otpForm').modal('show');
+
+							// Resend OTP Link function
+							var resendTimeout;
+							$("#resendlink").html('Please wait..<span id="countdown">60</span>s');
+							var countdown = $("#countdown");
+
+							// Function to start the countdown timer
+							function startCountdown() {
+								var timeleft = 60;
+								countdown.text(timeleft);
+
+								resendTimeout = setInterval(function () {
+									timeleft--;
+									countdown.text(timeleft);
+
+									if (timeleft <= 0) {
+										clearInterval(resendTimeout);
+										$("#resendlink").html('<a href="#" id="resend-link" class="text-info" onclick="return sendOTP(mobileNo);">Resend OTP</a>');
+									}
+								}, 1000);
+							}
+							startCountdown(); // Start Resend OTP count
+						} else {
+							alert("OTP Not Send!!!");
+						}
+					}
+				});
+			} else {
+				mobileNo = $("#mobileNumber").val(); // Assuming mobile number input field has ID "mobileNumber"
+				$("#mobile").val(mobileNo); // Set final mobile number after request otp
+				$.ajax({
+					type: "GET",
+					url: '/victoriahallbooking_uat/user/api/sendOTP',
+					data: {'mobileNo': mobileNo, 'purpose': 'New User'},
+					dataType: 'json',
+					success: function (bodyMessage) {
+						return false;
+					}
+				});
+			}
+			return false;
+		}
+		function verifyOtp() {
+			// console.log("cancel booking    hhjjjh" + cancelBookingLogin);
+			var otpInputs = $('.otp-input');
+			var otpValue = '';
+			otpInputs.each(function () {
+				otpValue += $(this).val();
+			});
+
+			var mobileNoValue = 0;
+			if (cancelBookingLogin) {
+				mobileNoValue = mobileNumberForCancel;
+				bookingId = cancelBookingId;
+			} else {
+				mobileNoValue = $("#mobileNumber").val(); // Add your logic to get the mobile number value here
+			}
+
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/user/api/verifyOTP',
+				data: {
+					'otp': otpValue,
+					'mobileNo': mobileNoValue
+				},
+				dataType: 'text',
+				success: function (bodyMessage) {
+					if (bodyMessage.trim() == "Success") {
+						// console.log("OTP is Verified!!!");
+						$('#otpForm').modal('hide'); // Hide OTP form modal
+
+						$.ajax({
+							type: "GET",
+							url: '/victoriahallbooking_uat/user/api/cancelBookingbyId',
+							data: {
+								bookingId: bookingId,
+								status: 'CANCELED',
+								comments: 'user cancelled'
+							},
+							success: function (response) {
+								// console.log(response);
+								if (response.trim() === "success") {
+									Swal.fire(
+										'Cancelled!',
+										'Your booking has been cancelled.',
+										'success'
+									).then((result) => {
+										if (result.isConfirmed) {
+											location.reload();
+										}
+									});
+								}
+								else {
+									Swal.fire(
+										'Error!',
+										'Contact Admin for cancelling.',
+										'error'
+									);
+								}
+							},
+							error: function () {
+								Swal.fire(
+									'Error!',
+									'An error occurred while cancelling the booking. Please try again.',
+									'error'
+								);
+							}
+						});
+
+						// Enable the "Select Hall" button upon successful OTP verification
+						$('#selectHallButton').prop('disabled', false); // Change to false to enable
+					} else {
+						$("#otperror").html("OTP is Incorrect!!!");
+					}
+				},
+				error: function () {
+					// console.log("Error verifying OTP");
+				}
+			});
+			return false;
+		}
+
+		function newPinCall() {
+
+			$('#otpForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			});
+			$('#otpForm').modal('hide');
+			return false;
+		}
+
+		$("#sendOTPButton").click(function (event) {
+			event.preventDefault();
+			checkMobileNo(); // Call the checkMobileNo() function first
+		});
+
+		//handling the submission form to save a cancellation
+		$(document).ready(function () {
+			$('#docsform').on('submit', function (event) {
+				event.preventDefault(); // Prevent default form submission
+
+				var formData = new FormData(this);
+				var counterId = $('#counterId').val();
+				// console.log("counterId: " + counterId);
+				$.ajax({
+					url: '/victoriahallbooking_uat/user/api/saveCancellation',
+					type: 'POST',
+					data: formData,
+					processData: false,
+					contentType: false,
+					success: function (response) {
+						Swal.fire(
+							'Cancelled!',
+							'Your booking has been cancelled.',
+							'success'
+						).then((result) => {
+							if (result.isConfirmed) {
+								location.reload(); // Reload the page
+							}
+						});
+						$('#refundcounterModal').modal('hide');
+						$('#docsform')[0].reset();
+					},
+					error: function (response) {
+						Swal.fire(
+							'Error!',
+							'There was an error cancelling your booking.',
+							'error'
+						);
+					}
+				});
+			});
+		});
+
+		function openDDForm(bookingId) {
+			// Set the booking ID in the hidden input field
+			document.getElementById('bookingId').value = bookingId;
+			$.ajax({
+				url: '/victoriahallbooking_uat/user/api/viewAllBookingDetails',
+				type: 'GET',
+				data: {bookingId: bookingId},
+				success: function (response) {
+					$('#ddDetailsModal').modal('show');
+					$('#totalamount').val(response.amountReceived); // Adjust according to your response structure
+				},
+				error: function (error) {
+					// console.log("Error fetching booking details: ", error);
+				}
+			});
+		}
+
+		//function for submit the form
+		function submitForm() {
+			var bookingId = $('#ddform #bookingId').val();
+			if (!bookingId) {
+				alert("Booking ID is missing!");
+				return false;
+			}
+			// console.log("Submitting form with bookingId=", bookingId);
+			return true;
+		}
+
+	</script>
+
+
+</body>
+
+</html>

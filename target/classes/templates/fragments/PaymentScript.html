@@ -1,0 +1,437 @@
+<script type="text/javascript">
+	var token = "";
+	token = "[[${token}]]"
+	//console.log(token);
+
+	var txansactionId = "";
+	txansactionId = "[[${txansactionId}]]"
+	//console.log(txansactionId);
+
+	var amount = "";
+	amount = "[[${amount}]]"
+	//console.log(amount);
+
+	var merchantId = "";
+	merchantId = "[[${merchantId}]]"
+	//console.log(merchantId);
+
+	var ConsumerId = "";
+	ConsumerId = "[[${consumerId}]]"
+	//console.log(ConsumerId);
+
+	var ConsumerMobileNo = "";
+	ConsumerMobileNo = "[[${consumerMobileNo}]]"
+	//console.log(ConsumerMobileNo);
+
+	var ConsumerEmailId = "";
+	ConsumerEmailId = "[[${consumerEmailId}]]"
+	//console.log(ConsumerEmailId);
+
+
+	$(document).ready(function () {
+		function handleResponse(res) {
+			if (typeof res != "undefined" && typeof res.paymentMethod != "undefined" && typeof res.paymentMethod.paymentTransaction != "undefined" && typeof res.paymentMethod.paymentTransaction.statusCode != "undefined" && res.paymentMethod.paymentTransaction.statusCode == "0300") {
+				// success block
+				//console.log("Success ");
+				//console.log(res);
+			} else if (typeof res != "undefined" && typeof res.paymentMethod != "undefined" && typeof res.paymentMethod.paymentTransaction != "undefined" && typeof res.paymentMethod.paymentTransaction.statusCode != "undefined" && res.paymentMethod.paymentTransaction.statusCode == "0398") {
+				// initiated block
+				//console.log("Initiated ");
+				//console.log(res);
+			} else {
+				//console.log("error ");
+				//console.log(res);
+				// error block
+			}
+		};
+
+		$(document).off("click", "#btnSubmit").on("click", "#btnSubmit", function (e) {
+			e.preventDefault();
+
+			var reqJson = {
+				"features": {
+					"enableAbortResponse": true,
+					"enableExpressPay": true,
+					"enableInstrumentDeRegistration": true,
+					"enableMerTxnDetails": true,
+					"enableNewWindowFlow": true    //for hybrid applications please disable this by passing false
+				},
+				"consumerData": {
+					"deviceId": "WEBSH2",    //possible values "WEBSH1" or "WEBSH2"
+					"token": token,
+					"returnUrl": "/victoriahallbooking_uat/payment/response",    //merchant response page URL
+					"responseHandler": handleResponse,
+					"paymentMode": "all",
+					"merchantLogoUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Chennai_Corporation_Emblem.png",  //provided merchant logo will be displayed
+					"merchantName": "Greater Chennai Corporation",
+					"merchantMsg": "Victoria Hall Booking",
+					"merchantId": merchantId,
+					"currency": "INR",
+					"consumerId": consumerId,
+					"consumerMobileNo": consumerMobileNo,
+					"consumerEmailId": consumerEmailId,
+					"txnId": txansactionId,   //Unique merchant transaction ID
+					"items": [{
+						"itemId": "FIRST",
+						"amount": amount,
+						"comAmt": "0"
+					}],
+					"customStyle": {
+						"PRIMARY_COLOR_CODE": "#45beaa",   //merchant primary color code
+						"SECONDARY_COLOR_CODE": "#FFFFFF",   //provide merchant's suitable color code
+						"BUTTON_COLOR_CODE_1": "#2d8c8c",   //merchant's button background color code
+						"BUTTON_COLOR_CODE_2": "#FFFFFF"   //provide merchant's suitable color code for button text
+					}
+				}
+			};
+			//console.log(reqJson);
+			$.pnCheckout(reqJson);
+			if (reqJson.features.enableNewWindowFlow) {
+				pnCheckoutShared.openNewWindow();
+			}
+		});
+	});
+
+
+   /* function paymentStart(counterUserId, counterBookingId, counterOption) {
+
+        //alert(this.userId);
+        if (counterOption) {
+            this.userId = counterUserId;
+            this.bookingId = counterBookingId;
+        } else {
+            if (this.userId == 0) {
+                alert("Please Login & Retry");
+                return false;
+            }
+            if (this.bookingId == 0) {
+                alert("Please try retry booking");
+                return false;
+            }
+        }
+        if (this.userId != 0 && this.bookingId != 0) {
+            var userIdd = userId;
+            var bookingIdd = bookingId;
+            //console.log("userIdd:-" + userIdd);
+            //console.log("bookingIdd:-" + bookingIdd);
+            $.ajax({
+                type: "POST",
+                url: '/victoriahallbooking_uat/payment/api/payment-request',
+                data: {'userId': userIdd, 'bookingId': bookingIdd},
+                success: function (response) {
+                    console.log(response);
+                    /!*if (response.status == 'created') {
+                        //open payment form
+                        openPayment(response.key, 0, response.customerName, response.customerEmail, response.customerPhone, response.id, response.description, response.callback_url,response.refid);
+                    }
+
+                },error: function (error) {
+                    console.log(error);
+                    alert("error");
+                }*!/
+
+                // console.log(response);
+                if (response.error) {
+                    alert("please Contact Admin..")
+                } else {
+
+                    txansactionId = response.txansactionId;
+                    consumerMobileNo = response.consumerMobileNo;
+                    consumerEmailId = response.consumerEmailId;
+                    token = response.token;
+                    merchantId = response.merchantId;
+                    consumerId = response.consumerId;
+                    amount = response.amount;
+                    //console.log(txansactionId);
+                    //console.log(consumerMobileNo);
+                    //console.log(token);
+                    //console.log(merchantId);
+                    //console.log(consumerId);
+                    //console.log(amount);
+                    $("#btnSubmit").click();
+
+                }
+            },
+            error: function () {
+                //console.log("Error");// Handle error here
+            }
+            });
+        }
+        else {
+            alert("please logout & retry")
+        }
+        return false;
+    }*/
+
+
+	function paymentStart(counterUserId, counterBookingId, counterOption) {
+
+		//alert(this.userId);
+		if (counterOption) {
+			this.userId = counterUserId;
+			this.bookingId = counterBookingId;
+		} else {
+			if (this.userId == 0) {
+				alert("Please Login & Retry");
+				return false;
+			}
+			if (this.bookingId == 0) {
+				alert("Please try retry booking");
+				return false;
+			}
+		}
+		if (this.userId != 0 && this.bookingId != 0) {
+			var userIdd = userId;
+			var bookingIdd = bookingId;
+			//console.log("userIdd:-" + userIdd);
+			//console.log("bookingIdd:-" + bookingIdd);
+			$.ajax({
+				type: "POST",
+				url: '/victoriahallbooking_uat/payment/api/payment-request',
+				data: {'userId': userIdd, 'bookingId': bookingIdd},
+				success: function (response) {
+                    console.log(response);
+                    if (response.status == 'created') {
+                        //open payment form
+                        openPayment(response.key, 0, response.customerName, response.customerEmail, response.customerPhone, response.id, response.description, response.callback_url,response.refid);
+                    }
+
+                },error: function (error) {
+                    console.log(error);
+                    alert("error");
+                }
+
+					// console.log(response);
+					/*if (response.error) {
+						alert("please Contact Admin..")
+					} else {
+
+						txansactionId = response.txansactionId;
+						consumerMobileNo = response.consumerMobileNo;
+						consumerEmailId = response.consumerEmailId;
+						token = response.token;
+						merchantId = response.merchantId;
+						consumerId = response.consumerId;
+						amount = response.amount;
+						//console.log(txansactionId);
+						//console.log(consumerMobileNo);
+						//console.log(token);
+						//console.log(merchantId);
+						//console.log(consumerId);
+						//console.log(amount);
+						$("#btnSubmit").click();
+
+					}
+				},
+				error: function () {
+					//console.log("Error");// Handle error here
+				}*/
+			});
+		}
+		else {
+			alert("please logout & retry")
+		}
+		return false;
+	}
+
+
+    function openPayment(key_id, amount,customerName,customerEmail,customerPhone,order_id,description,callbackUrl,ref_id) {
+
+        var form = document.createElement("form");
+        form.setAttribute("action", "https://api.razorpay.com/v1/checkout/embedded");
+
+        form.setAttribute("method", "POST");
+
+        var hiddenField = document.createElement("input");
+        hiddenField.setAttribute("type","hidden");
+        hiddenField.setAttribute("name",  "key_id");
+        hiddenField.setAttribute("id",  "key_id");
+        hiddenField.setAttribute("value", key_id);
+        form.appendChild(hiddenField);
+
+        var hiddenField2 = document.createElement("input");
+        hiddenField2.setAttribute("type","hidden");
+        hiddenField2.setAttribute("name",  "amount");
+        hiddenField2.setAttribute("id",  "amount");
+        hiddenField2.setAttribute("value", amount);
+        form.appendChild(hiddenField2);
+
+
+        var hiddenField3 = document.createElement("input");
+        hiddenField3.setAttribute("type","hidden");
+        hiddenField3.setAttribute("name",  "name");
+        hiddenField3.setAttribute("id",  "name");
+        hiddenField3.setAttribute("value", customerName );
+        form.appendChild(hiddenField3);
+
+        var hiddenField4 = document.createElement("input");
+        hiddenField4.setAttribute("type","hidden");
+        hiddenField4.setAttribute("name",  "prefill[email]");
+        hiddenField4.setAttribute("id",  "email");
+        hiddenField4.setAttribute("value", customerEmail );
+        form.appendChild(hiddenField4);
+
+        var hiddenField5 = document.createElement("input");
+        hiddenField5.setAttribute("type","hidden");
+        hiddenField5.setAttribute("name",  "prefill[contact]");
+        hiddenField5.setAttribute("id",  "contact");
+        hiddenField5.setAttribute("value", customerPhone );
+        form.appendChild(hiddenField5);
+
+        var hiddenField6 = document.createElement("input");
+        hiddenField6.setAttribute("type","hidden");
+        hiddenField6.setAttribute("name",  "order_id");
+        hiddenField6.setAttribute("id",  "order_id");
+        hiddenField6.setAttribute("value", order_id );
+        form.appendChild(hiddenField6);
+
+
+        var hiddenField7 = document.createElement("input");
+        hiddenField7.setAttribute("type","hidden");
+        hiddenField7.setAttribute("name",  "description");
+        hiddenField7.setAttribute("id",  "description");
+        hiddenField7.setAttribute("value", description );
+        form.appendChild(hiddenField7);
+
+
+        var hiddenField8 = document.createElement("input");
+        hiddenField8.setAttribute("type","hidden");
+        hiddenField8.setAttribute("name",  "callback_url");
+        hiddenField8.setAttribute("id",  "callback_url");
+        hiddenField8.setAttribute("value", callbackUrl );
+        form.appendChild(hiddenField8);
+
+        var hiddenField9 = document.createElement("input");
+        hiddenField9.setAttribute("type","hidden");
+        hiddenField9.setAttribute("name",  "notes[transaction_id]");
+        hiddenField9.setAttribute("id",  "transaction_id");
+        hiddenField9.setAttribute("value", ref_id );
+        form.appendChild(hiddenField9);
+
+
+
+        //  form.setAttribute("target", "_blank");
+
+        document.body.appendChild(form);
+        form.submit();
+
+    }
+
+	
+	
+	function extrapaymentStart(userId, bookingId) {
+		if (this.userId != 0 && this.bookingId != 0) {
+			var userIdd = userId;
+			var bookingIdd = bookingId;
+			//console.log("userIdd:-" + userIdd);
+			//console.log("bookingIdd:-" + bookingIdd);
+			$.ajax({
+				type: "POST",
+				url: '/victoriahallbooking_uat/payment/api/additionaldamage-payment-request',
+				data: {'userId': userIdd, 'bookingId': bookingIdd},
+				success: function (response) {
+					// console.log(response);
+					if (response.error) {
+						alert("please Contact Admin..")
+					} else {
+
+						txansactionId = response.txansactionId;
+						consumerMobileNo = response.consumerMobileNo;
+						consumerEmailId = response.consumerEmailId;
+						token = response.token;
+						merchantId = response.merchantId;
+						consumerId = response.consumerId;
+						amount = response.amount;
+						//console.log(txansactionId);
+						//console.log(consumerMobileNo);
+						//console.log(token);
+						//console.log(merchantId);
+						//console.log(consumerId);
+						//console.log(amount);
+						$("#extrapaymentbtnSubmit").click();
+
+					}
+				},
+				error: function () {
+					//console.log("Error");// Handle error here
+				}
+			});
+		}
+		else {
+			alert("please logout & retry")
+		}
+		return false;
+	}
+	
+	$(document).ready(function () {
+		function handleResponseED(res) {
+			if (typeof res != "undefined" && typeof res.paymentMethod != "undefined" && typeof res.paymentMethod.paymentTransaction != "undefined" && typeof res.paymentMethod.paymentTransaction.statusCode != "undefined" && res.paymentMethod.paymentTransaction.statusCode == "0300") {
+				// success block
+				//console.log("Success ");
+				//console.log(res);
+			} else if (typeof res != "undefined" && typeof res.paymentMethod != "undefined" && typeof res.paymentMethod.paymentTransaction != "undefined" && typeof res.paymentMethod.paymentTransaction.statusCode != "undefined" && res.paymentMethod.paymentTransaction.statusCode == "0398") {
+				// initiated block
+				//console.log("Initiated ");
+				//console.log(res);
+			} else {
+				//console.log("error ");
+				//console.log(res);
+				// error block
+			}
+		};
+
+		$(document).off("click", "#extrapaymentbtnSubmit").on("click", "#extrapaymentbtnSubmit", function (e) {
+			e.preventDefault();
+
+                        // console.log(txansactionId);
+						// console.log(consumerMobileNo);
+						// console.log(token);
+						// console.log(merchantId);
+						// console.log(consumerId);
+						// console.log(amount);
+
+
+			var reqJson = {
+				"features": {
+					"enableAbortResponse": true,
+					"enableExpressPay": true,
+					"enableInstrumentDeRegistration": true,
+					"enableMerTxnDetails": true,
+					"enableNewWindowFlow": true    //for hybrid applications please disable this by passing false
+				},
+				"consumerData": {
+					"deviceId": "WEBSH2",    //possible values "WEBSH1" or "WEBSH2"
+					"token": token,
+					"returnUrl": "/victoriahallbooking_uat/payment/additionaldamage-response",    //merchant response page URL
+					"responseHandler": handleResponseED,
+					"paymentMode": "all",
+					"merchantLogoUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Chennai_Corporation_Emblem.png",  //provided merchant logo will be displayed
+					"merchantName": "Greater Chennai Corporation",
+					"merchantMsg": "Victoria Hall Booking",
+					"merchantId": merchantId,
+					"currency": "INR",
+					"consumerId": consumerId,
+					"consumerMobileNo": consumerMobileNo,
+					"consumerEmailId": consumerEmailId,
+					"txnId": txansactionId,   //Unique merchant transaction ID
+					"items": [{
+						"itemId": "FIRST",
+						"amount": amount,
+						"comAmt": "0"
+					}],
+					"customStyle": {
+						"PRIMARY_COLOR_CODE": "#45beaa",   //merchant primary color code
+						"SECONDARY_COLOR_CODE": "#FFFFFF",   //provide merchant's suitable color code
+						"BUTTON_COLOR_CODE_1": "#2d8c8c",   //merchant's button background color code
+						"BUTTON_COLOR_CODE_2": "#FFFFFF"   //provide merchant's suitable color code for button text
+					}
+				}
+			};
+			$.pnCheckout(reqJson);
+			if (reqJson.features.enableNewWindowFlow) {
+				pnCheckoutShared.openNewWindow();
+			}
+		});
+	});
+
+</script>

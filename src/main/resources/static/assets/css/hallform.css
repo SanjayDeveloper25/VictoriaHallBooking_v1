@@ -1,0 +1,252 @@
+.ui-datepicker {
+        background-color: blue; /* Set the background color to blue */
+    }
+	.red-background {
+    background-color: red !important;
+}
+
+.yellow-background {
+    background-color: yellow !important;
+}
+
+	.ui-datepicker {
+    width:20%;
+}
+  .date-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding and border are included in the width */
+}
+
+
+    /* Style for the label */
+    .date-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+    }
+
+    /* Style for the highlight of the current date */
+    .highlight-current-date a {
+        background-color: green !important;
+        color: white !important;
+    }
+
+    /* Style for the highlight of other dates */
+ .highlight-red a {
+    background-color: red !important;
+    color: white !important;
+}
+
+	.hidden {
+		display: none;
+	}
+
+	#selecthall.select2-container--default .select2-selection--single {
+		height: 35px;
+		border: 1px solid #ddd;
+		padding-left: 10px;
+	}
+
+	.select2-container--default .select2-selection--single .select2-selection__rendered {
+		color: #444;
+		line-height: 28px;
+		margin-top: -8px;
+	}
+
+	#hallDetailsContainer {
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		padding: 20px;
+		margin-top: 20px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		background-color: #fff;
+	}
+
+	#hallDetailsContainer p {
+		margin: 0;
+		padding: 5px 0;
+	}
+
+	#hallDetailsContainer p:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+
+	/* CSS styles for the amount details container */
+	#amountDetailsContainer {
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		padding: 20px;
+		margin-top: 20px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		background-color: #fff;
+	}
+
+	#amountDetailsContainer h4 {
+		margin-top: 0;
+		margin-bottom: 10px;
+	}
+
+	#amountDetailsContainer div {
+		list-style: none;
+		padding: 0;
+	}
+
+	#amountDetailsContainer p {
+		margin-bottom: 10px;
+	}
+
+	#amountDetailsContainer p span {
+		font-weight: bold;
+	}
+
+	#amountDetailsContainer p:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+
+	.carousel-item img {
+		width: 100%;
+		/* Ensure images take up full width */
+		height: 300px;
+		/* Set a fixed height for uniformity */
+		object-fit: cover;
+		/* Maintain aspect ratio */
+	}
+
+	.content-container {
+		padding: 20px;
+	}
+
+
+	.otp-input {
+		width: 30px;
+		height: 30px;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		text-align: center;
+		font-size: 16px;
+		margin-right: 10px;
+
+	}
+
+	/* Ensures content within these classes is centered */
+	.modal-header,
+	.modal-body,
+	.modal-footer,
+	#resend-container {
+		text-align: center;
+	}
+
+	/* Center content with Flexbox if needed */
+	.center-flex {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		/* Stack elements vertically */
+	}
+
+	/* Adjust the margin of the otp-input-box for better alignment */
+	.otp-input-box {
+		justify-content: center;
+		margin: 0 auto;
+		/* Centers the box horizontally */
+		align-items: center;
+		/* Align items in the center for flex containers */
+		width: 100%;
+	}
+
+	.center-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		/* Or set a specific height */
+		flex-direction: column;
+		/* Stack children vertically */
+	}
+
+	/* To ensure the form takes up the necessary width */
+	.form-group {
+		width: 100%;
+		/* Adjust based on your layout's needs */
+	}
+
+	/* Custom styles for the jQuery UI Dialog */
+	.custom-dialog .ui-dialog-content {
+		background-color: #fff;
+		color: #333;
+		padding: 20px;
+	}
+
+	.custom-dialog .ui-dialog-titlebar {
+		background: #007bff;
+		color: #ffffff;
+	}
+
+	.custom-dialog .ui-dialog-buttonpane {
+		background-color: #f1f1f1;
+	}
+
+	.custom-dialog .ui-dialog-buttonpane .ui-dialog-buttonset button {
+		background-color: #007bff;
+		color: #ffffff;
+		border-color: #007bff;
+	}
+
+	.custom-dialog a {
+		color: #007bff;
+		text-decoration: none;
+	}
+
+	.custom-dialog a:hover {
+		text-decoration: underline;
+	}
+	 table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 2px solid black;
+        padding: 3px;
+        text-align: left;
+    }
+     tr,th {
+        border: 2px solid black;
+        padding: 3px;
+        text-align: left;
+    }
+       .date-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .checkbox-label {
+        display: block;
+        margin-top: 5px;
+    }
+
+ #calendar {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+
+    /* Style for date checkboxes */
+    .date-checkboxes {
+        margin-top: 10px;
+    }
+
+    /* Style for checkbox labels */
+    label {
+        margin-right: 10px;
+    }

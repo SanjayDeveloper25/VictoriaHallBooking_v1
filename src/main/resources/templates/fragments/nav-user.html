@@ -1,0 +1,43 @@
+<!-- Header Start -->
+<nav class="navbar header-navbar pcoded-header"
+	 th:style="${counterName != null} ? 'background-color:#FFA500;' : ''">
+	<div class="navbar-wrapper">
+
+		<div class="navbar-logo" th:style="${counterName != null} ? 'background-color:#FFA500;' : 'background-color: rgb(21,69,93);'">
+			<a class="mobile-menu" id="mobile-collapse" href="" onclick="return false">
+			    <i class="fas fa-bars" style="margin-right: 335px;"></i>
+			</a>
+			<a href="/victoriahallbooking_uat">
+				<img class="img-fluid" src="https://gccservices.in/victoriahallbooking/assets/media/images/logo-sm.png" style="width:45px;height:38px">
+			</a>
+			<a>
+				<p style="font-size: 12px;margin-top: 15px;margin-right:30px">Greater Chennai Corporation
+				</p>
+			</a>
+			<a class="mobile-options">
+				<i class="feather icon-more-horizontal"></i>
+			</a>
+		</div>
+
+		<div class="navbar-container container-fluid  ">
+			<ul class="nav-left">
+				<li>
+					<div>
+						<p style="font-size: 16px;  margin-top: 12px;text-align: center;margin-left: 310px;">
+							Victoria Hall Booking
+						</p>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="navbar-container container-fluid">
+			<ul class="nav-right">
+				<li>
+					<a href="javascript:toggleFullScreen()">
+						<i class="feather icon-maximize full-screen"></i>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>

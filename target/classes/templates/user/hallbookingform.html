@@ -1,0 +1,3525 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}"></head>
+<script src="https://cdn.jsdelivr.net/npm/compressorjs@5.0.3/dist/compressor.js"></script>
+<style>
+    .table-align {
+        width: 100%;
+    }
+
+    .td-align {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+
+    @media (max-width: 600px) {
+        .td-align {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    .center-table {
+        justify-content: center;
+        align-items: center;
+    }
+
+    .highlight-greens .ui-state-default {
+        background: green !important;
+        color: #FFF !important;
+    }
+
+    .highlight-yellow .ui-state-default {
+        background: yellow !important;
+        color: #000 !important;
+    }
+
+    .highlight-violet .ui-state-default {
+        background: #a93da9 !important;
+        color: #000 !important;
+    }
+
+    .highlight-pink .ui-state-default {
+        background: red !important;
+        color: #000 !important;
+    }
+
+    .btn-square-md {
+        width: 16px !important;
+        max-width: 100% !important;
+        max-height: 50% !important;
+        height: 30px !important;
+        text-align: center;
+        padding: 0px;
+        font-size: 2px;
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 1;
+        /* Example: reduce opacity to indicate disabled state */
+    }
+
+    .ui-datepicker {
+        width: 100%;
+        background-color: #333;
+    }
+
+    .ui-datepicker-header {
+        background-color: #f0f0f0;
+        /* Light gray background for header */
+        border: none;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .ui-datepicker-title {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        margin: 0;
+        padding: 0;
+        color: white;
+        /* Text color for dates */
+        font-weight: bold;
+        /* Bold font for dates */
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+        text-align: center;
+    }
+
+    .ui-datepicker-week-end {
+        color: yellow;
+        font-weight: bold;
+    }
+
+    /* Style for the label */
+    .date-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+    }
+
+    .highlight-current-date a {
+        background-color: green;
+        /* Current date highlight color */
+        color: white;
+    }
+
+    .highlight-greens a {
+        background-color: green;
+        color: white;
+    }
+
+    .highlight-yellow a {
+        background-color: yellow;
+        color: black;
+        /* Change text color for visibility */
+    }
+
+    .highlight-pink a,
+    input[type=button]:disabled {
+        background-color: pink;
+        /* Pink highlight for disabled or booked dates */
+        color: white;
+    }
+
+    .highlight-orange a {
+        background-color: orange;
+        /* Orange highlight color */
+        color: white;
+    }
+
+    input[type=button]:disabled {
+        background: red;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #selecthall.select2-container--default .select2-selection--single {
+        height: 35px;
+        border: 1px solid #ddd;
+        padding-left: 10px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #444;
+        line-height: 28px;
+        margin-top: -8px;
+    }
+
+    #hallDetailsContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Center items horizontally */
+        justify-content: center;
+        /* Center items vertically */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    /* Style for the image */
+    #hallImagesCarousel {
+        margin-bottom: 20px;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    .col-md-6 {
+        width: 50%;
+        padding: 0 10px;
+        /* Optional: Add padding to columns */
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6 {
+            width: 100%;
+            /* Full width on smaller screens */
+        }
+    }
+
+    #hallDetailsContainer p {
+        margin: 0;
+        padding: 5px 0;
+    }
+
+    #hallDetailsContainer p:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* CSS styles for the amount details container */
+    #amountDetailsContainer {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    #amountDetailsContainer h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    #amountDetailsContainer div {
+        list-style: none;
+        padding: 0;
+    }
+
+    #amountDetailsContainer p {
+        margin-bottom: 10px;
+    }
+
+    #amountDetailsContainer p span {
+        font-weight: bold;
+    }
+
+    #amountDetailsContainer p:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Style for the image container */
+    #hallImagesCarousel {
+        display: flex;
+        justify-content: center;
+        /* Center content horizontally */
+        align-items: center;
+        /* Center content vertically */
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    /* Style for the images inside the carousel */
+    .carousel-item img {
+        max-width: 100%;
+        /* Ensure image does not exceed container width */
+        min-height: 9%;
+        /* Maintain aspect ratio */
+        display: block;
+        /* Ensure image is block-level element */
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+        margin: 0 auto;
+        /* Center the image horizontally */
+    }
+
+    .content-container {
+        padding: 20px;
+    }
+
+    .otp-input {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        margin-right: 10px;
+    }
+
+    /* Ensures content within these classes is centered */
+    .modal-header,
+    .modal-body,
+    .modal-footer,
+    #resend-container {
+        text-align: center;
+    }
+
+    /* Center content with Flexbox if needed */
+    .center-flex {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        /* Stack elements vertically */
+    }
+
+    /* Adjust the margin of the otp-input-box for better alignment */
+    .otp-input-box {
+        justify-content: center;
+        margin: 0 auto;
+        /* Centers the box horizontally */
+        align-items: center;
+        /* Align items in the center for flex containers */
+        width: 100%;
+    }
+
+    .center-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        /* Or set a specific height */
+        flex-direction: column;
+        /* Stack children vertically */
+    }
+
+    /* To ensure the form takes up the necessary width */
+    .form-group {
+        width: 100%;
+        /* Adjust based on your layout's needs */
+    }
+
+    /* Custom styles for the jQuery UI Dialog */
+    .custom-dialog .ui-dialog-content {
+        background-color: #fff;
+        color: #333;
+        padding: 20px;
+    }
+
+    .custom-dialog .ui-dialog-titlebar {
+        background: #007bff;
+        color: #ffffff;
+    }
+
+    .custom-dialog .ui-dialog-buttonpane {
+        background-color: #f1f1f1;
+    }
+
+    .custom-dialog .ui-dialog-buttonpane .ui-dialog-buttonset button {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
+    }
+
+    .custom-dialog a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .custom-dialog a:hover {
+        text-decoration: underline;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .date-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 5px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .checkbox-label {
+        display: block;
+        margin-top: 5px;
+    }
+
+    #calendar {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+
+    /* Style for date checkboxes */
+    .date-checkboxes {
+        margin-top: 10px;
+    }
+
+    label {
+        margin-right: 10px;
+    }
+
+    .ui-datepicker-container {
+        width: 100%
+    }
+
+    .fixedcontainer {
+        width: 250%;
+        margin: 40px 0;
+    }
+
+    .ui-widget {
+        width: 40%
+    }
+
+    .ui-datepicker {
+        padding: 3px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        left: 29.1418px;
+    }
+
+    .ui-datepicker-header {
+        background-color: #f0f0f0;
+        border: none;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .ui-datepicker-title {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        margin: 0;
+        padding: 0;
+        font-weight: bold;
+        /* Bold font for dates */
+    }
+
+    .ui-datepicker-calendar th,
+    .ui-datepicker-calendar td {
+        padding: 5px;
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar .ui-state-default {
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .ui-datepicker-week-end {
+        color: black;
+        font-weight: bold;
+    }
+
+    .ui-datepicker-calendar th span {
+        color: black;
+        font-weight: bold;
+    }
+
+    .booking-form-container {
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 960px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-form-container label {
+        font-weight: bold;
+    }
+
+    .booking-form-container .form-control {
+        margin-bottom: 10px;
+    }
+
+    .booking-form-container .btn-primary {
+        background-color: #017bff;
+    }
+
+    .white-background {
+        background-color: white;
+        /* Set the background color as needed */
+        border: 1px solid #ccc;
+        /* Optional: Add border for better visualization */
+        padding: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        /* Hide overflow content during animation */
+        position: relative;
+    }
+
+    .slide-left {
+        animation: slideLeft 0.5s ease both;
+    }
+
+    .slide-right {
+        animation: slideRight 0.5s ease both;
+    }
+
+    @keyframes slideLeft {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+    }
+
+    @keyframes slideRight {
+        0% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Apply styles to the booking-section container */
+    .booking-section {
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 960px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-section label {
+        font-weight: bold;
+    }
+
+    .booking-section .form-control {
+        margin-bottom: 10px;
+    }
+
+    .booking-section .btn-primary {
+        background-color: #017bff;
+    }
+
+    /* Apply white background to the booking-section */
+    #reasonforbookingSection {
+        background-color: #ffffff;
+        /* White background color */
+        padding: 20px;
+        /* Optional: Add padding for spacing */
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .progressbar {
+        display: flex;
+        margin-bottom: 20px;
+    }
+
+    .progress-step {
+        width: 100%;
+        height: 9px;
+        background-color: #e0e0e0;
+        /* Light gray background */
+        border-radius: 10px;
+        /* Rounded corners */
+        margin-right: 10px;
+    }
+
+    .progress-step-active {
+        background-color: #4caf50;
+        /* Green active step */
+        color: white;
+        /* White text color */
+        font-weight: bold;
+        /* Bold font for active step */
+    }
+
+    .progress {
+        width: 100%;
+        height: 10px;
+        background-color: #ddd;
+        position: relative;
+    }
+
+    .progress-step::before {
+        content: attr(data-title);
+        display: block;
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: #888;
+    }
+
+    .form {
+        margin-bottom: 20px;
+    }
+
+    .form-step {
+        display: none;
+        margin-bottom: 20px;
+    }
+
+    .form-step-active {
+        display: block;
+    }
+
+    .btn-prev,
+    .btn-next {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        background-color: #337ab7;
+        color: #fff;
+    }
+
+    .btn-prev {
+        margin-right: 10px;
+    }
+
+    /* Media Query for small screens */
+    @media (max-width: 768px) {
+        .progress-step::before {
+            display: none;
+            /* Hide step titles on small screens */
+        }
+    }
+
+    #container {
+        max-width: 1183px;
+    }
+
+    .step-container {
+        position: relative;
+        text-align: center;
+        transform: translateY(-60%);
+    }
+
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        line-height: 29px;
+        text-align: center;
+        border-radius: 50%;
+        cursor: pointer;
+        background-color: #016d6f;
+        color: white;
+        border: 2px solid #016d6f;
+    }
+
+    .step-circle.active {
+        background-color: #FFFFFF;
+        color: #016d6f;
+    }
+
+    .step-line {
+        position: absolute;
+        top: 16px;
+        left: 50px;
+        width: calc(100% - 100px);
+        height: 2px;
+        background-color: #FFFFFF;
+        /* Set the line color here */
+        z-index: -1;
+    }
+
+    #multi-step-form {
+        overflow-x: hidden;
+
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .custom-container {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #FFFFFF;
+        border: 1px solid #CCCCCC;
+        overflow: auto;
+    }
+
+    .header {
+        z-index: 1000;
+        margin-bottom: 20px;
+    }
+
+    .logo-img {
+        height: 30px;
+        position: absolute;
+        left: 10px;
+        top: 10px;
+    }
+
+    .header h6 {
+        color: white;
+        text-align: center;
+        margin: 0;
+        line-height: 2.1;
+    }
+
+    .invoice-details h3 {
+        margin: 5px 0;
+
+    }
+
+    .invoice-details p {
+        margin: 5px 0;
+        /* Adjusted margin for <p> tags */
+    }
+
+    .total-section {
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    .step-content p {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 20px;
+    }
+
+    .error {
+        border: 1px solid red;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        padding-top: 5px;
+    }
+
+    /* Style for small thumbnail images */
+    .thumbnail-img {
+        width: 44px;
+        /* Adjust the width as needed */
+        height: 35px;
+        /* Adjust the height as needed */
+        cursor: pointer;
+        /* Show cursor as pointer on hover */
+        margin-right: 10px;
+        /* Optional margin between images */
+    }
+
+    .large-image-container {
+        position: fixed;
+        top: 10%;
+        left: 34%;
+        width: 36%;
+        height: 72%;
+        background-color: slategrey;
+        z-index: 1050;
+        /* High z-index to ensure it's on top of other content */
+        padding: 25px;
+        box-sizing: border-box;
+        overflow: hidden;
+        /* Prevents scrollbars from iframe from appearing outside the container */
+    }
+
+    #largeImage {
+        max-width: 90%;
+        /* Limit maximum width of large image */
+        max-height: 90vh;
+        /* Limit maximum height of large image */
+        display: block;
+        /* Ensure it behaves as a block element */
+        margin: 0 auto;
+        /* Center horizontally */
+    }
+
+    .btn-square-md {
+        width: 72px !important;
+        max-width: 100% !important;
+        max-height: 50% !important;
+        height: 18px !important;
+        text-align: center;
+        padding: 0px;
+        font-size: 2px;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 1051;
+        /* Ensure close button is above the iframe */
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        /* Take full size of the container minus any paddings if necessary */
+        border: none;
+    }
+
+    #uploadedDocsList {
+        list-style-type: none;
+        /* Removes the bullet points */
+        padding: 0;
+        /* Removes padding */
+        margin: 0;
+        /* Removes margin */
+    }
+
+    #uploadedDocsList li {
+        margin-bottom: 10px;
+        text-wrap: balance;
+        /* Adds space between items */
+    }
+
+    #termsModal .table td,
+    #termsModal .table th {
+        padding: 0.5rem;
+        /* Reducing padding */
+        font-size: 0.8rem;
+        /* Smaller font size */
+    }
+
+    .table-wrap td {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .swal2-container {
+        z-index: 9999999999999 !important;
+        /* Adjust this value if needed */
+    }
+
+    #ui-datepicker-div {
+        width: 40%;
+    }
+
+    /* Media query for mobile screens */
+    @media (max-width: 768px) {
+        #ui-datepicker-div {
+            width: 72%;
+        }
+    }
+
+    .highlight-disabled {
+        cursor: default !important;
+        /* Default cursor for disabled dates */
+    }
+
+    .form-check-label {
+        padding-left: 0px
+    }
+
+    h5 {
+        margin-left: 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid black;
+        /* Set the border color to black */
+    }
+
+    .table-bordered td,
+    .table-bordered th {
+        border-color: black;
+        /* Ensure that all table cells and headers have a black border */
+    }
+
+    .sand-clock::before {
+        content: "\231B";
+        /* Unicode for hourglass icon */
+        display: inline-block;
+        animation: move 1.5s infinite;
+        font-size: 1.2em;
+        /* Adjust size as needed */
+    }
+
+    /* Animation keyframes */
+    @keyframes move {
+        0% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+
+        100% {
+            transform: translateY(0);
+        }
+    }
+
+    .snackbar {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        bottom: 30px;
+        font-size: 17px;
+    }
+
+    .snackbar.show {
+        visibility: visible;
+        animation: fadeInOut 0.5s, fadeOut 0.5s 2.5s;
+    }
+
+    @keyframes fadeInOut {
+        from {
+            bottom: 0;
+            opacity: 0;
+        }
+
+        to {
+            bottom: 30px;
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            bottom: 30px;
+            opacity: 1;
+        }
+
+        to {
+            bottom: 0;
+            opacity: 0;
+        }
+    }
+
+    .highlight-blue .ui-state-default {
+        background: blue !important;
+        color: #FFF !important;
+    }
+
+    .highlight-blue a {
+        background-color: blue;
+        color: white;
+
+    }
+
+    /* css fror toast */
+    /* Toast styling */
+    #toast {
+        visibility: hidden;
+        min-width: 200px;
+        margin-left: -100px;
+        background: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px;
+        position: fixed;
+        z-index: 9999;
+        left: 50%;
+        bottom: 30px;
+        font-size: 14px;
+    }
+
+    #toast.show {
+        visibility: visible;
+        animation: fadein 0.5s, fadeout 0.5s 2s;
+    }
+
+    @keyframes fadein {
+        from {
+            bottom: 10px;
+            opacity: 0;
+        }
+
+        to {
+            bottom: 30px;
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeout {
+        from {
+            bottom: 30px;
+            opacity: 1;
+        }
+
+        to {
+            bottom: 10px;
+            opacity: 0;
+        }
+    }
+</style>
+
+<body>
+    <!-- Pre-loader start -->
+    <div class="theme-loader">
+        <div class="ball-scale">
+            <div class='contain'>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+                <div class="ring">
+                    <div class="frame"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pre-loader end -->
+    <div id="pcoded" class="pcoded">
+        <div class="pcoded-container">
+            <!-- Menu header end -->
+            <div class="pcoded-main-container">
+                <!-- Menu header start -->
+                <nav th:replace="~{fragments/nav-user :: nav}"></nav>
+                <!-- Menu header end -->
+                <div class="pcoded-main-container">
+                    <nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>
+                    <div class="pcoded-wrapper">
+                        <div class="pcoded-content">
+                            <div class="pcoded-inner-content">
+                                <div class="page-header m-t-20">
+                                </div>
+                                <!-- Page-header end -->
+                                <!-- Page body start -->
+                                <div class="page-body">
+                                    <div class="row">
+                                        <!--<div class="col-sm-12">-->
+                                        <!-- Register your self card start -->
+                                        <div>
+                                            <div id="container" class="container mt-5">
+                                                <div class="progress px-1" style="height: 3px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: 0%;"
+                                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <div class="step-container d-flex justify-content-between">
+                                                    <div class="step-circle" onclick="displayStep(1)">1</div>
+                                                    <div class="step-circle" onclick="displayStep(2)">2</div>
+                                                    <div class="step-circle" onclick="displayStep(3)">3</div>
+                                                    <div class="step-circle" onclick="displayStep(4)">4</div>
+                                                </div>
+                                                <form action="javascript:saveBookingDetails()" id="booking"
+                                                    method="post" enctype="multipart/form-data"
+                                                    onsubmit="return handleSaveAndContinueStep3()">
+                                                    <input type="hidden" id="serverDate" th:value=${serverDate}>
+                                                    <div class="step step-1">
+                                                        <h5>Step:1</h5>
+                                                        <div class="container custom-container"
+                                                            style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: #FFFFFF; border: 1px solid #CCCCCC;overflow-x: hidden;">
+                                                            <!-- Updated inline styles -->
+                                                            <div class="row justify-content-center">
+                                                                <div class="col-sm-6 col-md-6 col-lg-6">
+                                                                    <label class="form-check-label"
+                                                                        for="selecthall">Select Hall:</label>
+
+                                                                    <select id="selecthall" class="form-control"
+                                                                        name="hallId" required
+                                                                        onchange="toggleHallDetailsContainer()">
+                                                                        <option value="">Select a hall</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <br>
+                                                            <!-- Main content row -->
+                                                            <div id="hallDetailsContainer" style="display: none;">
+                                                                <!-- Initially hidden -->
+                                                                <div class="row">
+                                                                    <!-- Hall Images Carousel -->
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <h6>Hall Images & Availability:</h6>
+                                                                        <br>
+                                                                        <div id="hallImagesCarousel"
+                                                                            class="carousel slide" data-ride="carousel">
+                                                                            <div class="carousel-inner">
+                                                                                <div class="carousel-item active">
+                                                                                    <img id="hallImage"
+                                                                                        class="d-block w-100"
+                                                                                        alt="Hall Image">
+                                                                                </div>
+                                                                            </div>
+                                                                            <a class="carousel-control-prev"
+                                                                                href="#hallImagesCarousel" role="button"
+                                                                                data-slide="prev">
+                                                                                <span class="carousel-control-prev-icon"
+                                                                                    aria-hidden="true"></span>
+                                                                                <span class="sr-only">Previous</span>
+                                                                            </a>
+                                                                            <a class="carousel-control-next"
+                                                                                href="#hallImagesCarousel" role="button"
+                                                                                data-slide="next">
+                                                                                <span class="carousel-control-next-icon"
+                                                                                    aria-hidden="true"></span>
+                                                                                <span class="sr-only">Next</span>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="datepicker-container"
+                                                                            class="fixedcontainer"></div>
+                                                                        <div class="row">
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color:#008000;"></button>
+                                                                                <span
+                                                                                    style="margin-left: 21px;">Available</span>
+                                                                            </div>
+                                                                            <!-- <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: #ac2bac;"></button>
+                                                                                <span style="margin-left: 14px;">Morning
+                                                                                    <br>
+                                                                                    &nbsp;&nbsp;(Available)</span>
+                                                                            </div>
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color:#FFEA00;"></button>
+                                                                                <span
+                                                                                    style="margin-left: 14px;">Evening<br>
+                                                                                    &nbsp;&nbsp;(Available)</span>
+                                                                            </div> -->
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: red;"></button>
+                                                                                <span style="margin-left: 14px;">Not
+                                                                                    Available</span>
+                                                                            </div>
+                                                                            <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary btn-square-md"
+                                                                                    style="background-color: blue"></button>
+                                                                                <span style="margin-left: 14px;">GCC
+                                                                                    Blocked</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="hallDetails">
+                                                                            <br>
+                                                                            <p>
+                                                                            <h4>Victoria Public Hall – Venue Description
+                                                                            </h4><br>
+
+                                                                            Victoria Public Hall (VPH), built in
+                                                                            1887, is Chennai’s historic Town Hall
+                                                                            and a landmark under the custodianship
+                                                                            of the Greater Chennai Corporation.
+                                                                            Restored with sensitivity to its
+                                                                            architectural and cultural heritage, VPH
+                                                                            now functions as a vibrant civic and
+                                                                            cultural venue.<br><br>
+
+                                                                            The Hall is dedicated to hosting
+                                                                            educational, cultural, intellectual, and
+                                                                            heritage-aligned programmes that serve
+                                                                            the public interest while preserving
+                                                                            the historic fabric of the
+                                                                            building.<br><br>
+
+                                                                            <b>Facilities Available</b><br>
+                                                                            300-seater Main Auditorium (with stage,
+                                                                            green room, VIP hall, basic lighting &
+                                                                            sound)
+
+                                                                            <p><b>Suitable For</b></p>
+                                                                            <ul>
+                                                                                <li>Cultural performances</li>
+                                                                                <li>Lectures, talks, and panel
+                                                                                    discussions</li>
+                                                                                <li>Academic and intellectual events
+                                                                                </li>
+                                                                                <li>Exhibitions and curated displays
+                                                                                </li>
+                                                                            </ul>
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+
+
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="hallDetails">
+                                                                            <br><br><br>
+                                                                            <p><b>Not Permitted</b></p>
+                                                                            <ul>
+                                                                                <li>Political events</li>
+                                                                                <li>Religious events</li>
+                                                                                <li>Weddings, receptions, family or
+                                                                                    private functions</li>
+                                                                                <li>Commercial promotions unrelated to
+                                                                                    culture or public interest</li>
+                                                                            </ul>
+
+                                                                            <p>
+                                                                                <i>
+                                                                                    All bookings are subject to approval
+                                                                                    by the Competent Authority of the
+                                                                                    Greater Chennai Corporation
+                                                                                    and must comply with the heritage
+                                                                                    character and operational guidelines
+                                                                                    of VPH.
+                                                                                </i>
+                                                                            </p>
+
+                                                                            <p>
+                                                                                <i>You must submit <b>No Object
+                                                                                        Certificate (NOC)</b> obtained
+                                                                                    from
+                                                                                    the police authorities for your
+                                                                                    booking to be confirmed. Failure to
+                                                                                    submit
+                                                                                    will lead to an automatic
+                                                                                    cancellation of the event, the day
+                                                                                    bfeore the event date.
+                                                                                    Incase of cancellation, only the
+                                                                                    deposit amount will be refunded and
+                                                                                    the booking
+                                                                                    charges will be forfeited.</i>
+                                                                            </p>
+
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- Hall Details -->
+                                                                    <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="hallDetails">
+                                                                            <br>
+                                                                            <h6><b>Hall Details:</b></h6>
+                                                                            <p>Zone: <span id="zone"></span></p>
+                                                                            <p>Address: <span id="address"></span></p>
+                                                                            <p>Landmark: <span id="landmark"></span></p>
+                                                                            <p>Total Area: <span
+                                                                                    id="hallareainsqft"></span></p>
+                                                                            <p>Seating Capacity: <span
+                                                                                    id="seatingCapacity"></span></p>
+                                                                            <p>Parking Capacity: <span
+                                                                                    id="parkingCapacity"></span></p>
+                                                                            <input type="hidden" id="statichallId">
+                                                                            <input type="hidden" id="mindays">
+                                                                            <input type="hidden" id="maxdays">
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+                                                                    <!-- Amount Details -->
+                                                                    <!-- <div class="col-md-6 col-lg-6 col-sm-6">
+                                                                        <div id="amountDetails">
+                                                                            <br>
+                                                                            <h6><b>Amount Details:</b></h6>
+                                                                            <p>Security Deposit: Rs <span
+                                                                                    id="rentAmount"></span></p>
+                                                                            <p>Full Day Rent: Rs <span
+                                                                                    id="fullDayAmount"></span></p>
+                                                                            <p>Half Day Security Deposit: Rs <span
+                                                                                    id="halfrentAmount"></span></p>
+                                                                            <p>Half Day Rent: Rs <span
+                                                                                    id="halfDayAmount"></span></p> 
+                                                                            <p>GST: <span id="gst"></span>%</p>
+                                                                            <p>EB for 1 Unit:* Rs <span
+                                                                                    id="ebunit"></span></p>
+                                                                            <p>CareTaker Number: <span
+                                                                                    id="caretakerNumber"></span></p>
+                                                                            <input type="hidden" id="depositAmount"
+                                                                                name="depositamount" value="100">
+                                                                            <input type="hidden" id="hallamount"
+                                                                                name="hallamount" value="100">
+                                                                        </div>
+                                                                    </div> -->
+                                                                </div>
+                                                                <div
+                                                                    class="row d-flex justify-content-center align-items-center">
+                                                                    <div
+                                                                        class="col-md-12 col-sm-12 col-lg-12 d-flex justify-content-center">
+                                                                        <!-- Center align the button -->
+                                                                        <button type="button"
+                                                                            class="btn btn-primary next-step"
+                                                                            id="bookandcontinue"
+                                                                            style="background-color: #016d6f; color: white;">
+                                                                            Book the Hall
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="step step-2">
+                                                        <!-- Step 2 form fields here -->
+                                                        <h4 style="margin-left:10px">Step 2</h4>
+                                                        <div class="container custom-container"
+                                                            style="padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: #FFFFFF; border: 1px solid #CCCCCC;">
+                                                            <!-- Updated inline styles -->
+                                                            <div class="mb-3">
+                                                                <div class="row">
+                                                                    <div class=" row col-md-12 col-lg-12 col-sm-12">
+                                                                        <table
+                                                                            class="table table-bordered table-align center-table">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td class="td-align" style="word-wrap: break-word;
+																						white-space: normal;"><strong>Hall
+                                                                                            Name:</strong>
+                                                                                        <span
+                                                                                            id="hallNameDisplayStep2"></span>
+                                                                                    </td>
+                                                                                    <td class="td-align"><strong>Zone:
+                                                                                        </strong>
+                                                                                        <span id="zoneStep2"></span>
+                                                                                    </td>
+                                                                                    <td class="td-align">
+                                                                                        <strong>Division: </strong>
+                                                                                        <span id="divisionStep2"></span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                    <div class="row">
+                                                                        <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color:#008000;"></button>
+                                                                            <p style="margin-left: -7px;">Available
+                                                                            </p>
+                                                                        </div>
+                                                                        <!-- <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color: #ac2bac;"></button>
+                                                                            <p style="margin-left: -7px;;">
+                                                                                &nbsp;&nbsp;Morning(Available)</p>
+                                                                        </div>
+                                                                        <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color:#FFEA00;"></button>
+                                                                            <p style="margin-left: -8px;">
+                                                                                Evening(Available)</p>
+                                                                        </div> -->
+                                                                        <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color: red;"></button>
+                                                                            <P style="margin-left: -4px;">
+                                                                                Not(Available)</P>
+                                                                        </div>
+
+                                                                        <div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                            <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color: blue"></button>
+                                                                            <p style="margin-left:-1px;">GCC
+                                                                                Blocked</p>
+                                                                        </div>
+
+                                                                        <!--<div class="col col-lg-2 col-sm-2 col-md-2">
+                                                                        <button type="button"
+                                                                                class="btn btn-primary btn-square-md"
+                                                                                style="background-color: lightpink"></button>
+                                                                        <p style="margin-left: 6px;">Temporary
+                                                                            Blocked</p>
+                                                                    </div>-->
+
+                                                                    </div>
+                                                                    <br>
+                                                                    <br>
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label>Relationship of the Functionary:*</label>
+                                                                        <select id="relation" name="relation"
+                                                                            class="form-control"
+                                                                            onchange="validateForm()" required>
+                                                                            <option value="0">Select</option>
+                                                                            <option value="self" selected>Self</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <!--edit code-->
+                                                                    <input type="hidden" id="reasonMaxDates">
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label>Reason for
+                                                                            Booking:*</label>
+                                                                        <select type="text" class="form-control"
+                                                                            id="reasonforbooking" name="reasonId"
+                                                                            required>
+                                                                        </select>
+                                                                    </div>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+
+                                                                    <!--end of edit code-->
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label for="startDateInput">Start Date:*</label>
+                                                                        <!-- Input field for start date -->
+                                                                        <input type="text" id="startDateInput"
+                                                                            name="startDate"
+                                                                            class="date-input form-control"
+                                                                            style="background-color:white" readonly
+                                                                            required>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label for="endDateInput">End Date:*</label>
+                                                                        <select id="endDateInput" name="endDate"
+                                                                            class="form-control" disabled>
+                                                                            <option value="0">Select</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <input type="hidden" id="numDaysCount" val=""
+                                                                        name="days">
+                                                                    <input type="hidden" id="noofdaysbetweenstartend"
+                                                                        val="" name="daysrange">
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+
+                                                                        <label for="startPeriodDropdown">Start
+                                                                            Period:*</label>
+
+                                                                        <select id="startPeriodDropdown"
+                                                                            name="startingSlot" class="form-control"
+                                                                            required>
+                                                                            <option value="0">Select</option>
+                                                                            </option>
+                                                                            <option value="1" selected>Evening (7:00 PM)
+                                                                            </option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label>End
+                                                                            Period:*</label>
+                                                                        <select id="endPeriodDropdown" name="endingSlot"
+                                                                            class="form-control" required>
+                                                                            <option value="0">Select</option>
+                                                                            <option value="1" selected>Evening (10:00
+                                                                                PM)
+                                                                            </option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <label for="numDaysCountDisplay">Selected
+                                                                            Slots:</label>
+                                                                        <textarea type="text" id="numDaysCountDisplay"
+                                                                            class="form-control" readonly
+                                                                            style="background-color:white"></textarea>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-lg-6 col-md-4">
+                                                                        <h4>Booking Summary:</h4>
+                                                                        <p id="summary" val=""></p>
+                                                                    </div>
+
+                                                                </div>
+                                                                <br>
+                                                                <div class="row">
+                                                                    <div
+                                                                        class="col-md-12 col-lg-12 col-sm-12 text-center">
+                                                                        <!-- Center align the button -->
+                                                                        <button type="button"
+                                                                            class="btn btn-primary prev-step"
+                                                                            style="background-color: #016d6f; color: white;float: left;">
+                                                                            Previous
+                                                                        </button>
+                                                                        <button type="button"
+                                                                            class="btn btn-warning reset-step"
+                                                                            style=" background-color: orangered; color: white; margin: auto;">
+                                                                            Reset
+                                                                        </button>
+                                                                        <button type="button"
+                                                                            class="btn btn-primary next-step"
+                                                                            style="background-color: #016d6f; color: white; float: right;">
+                                                                            Next
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="step step-3">
+                                                        <!-- Step 3 form fields here -->
+                                                        <h4 style="    margin-left: 10px;">Step 3</h4>
+                                                        <div class="container custom-container"
+                                                            style="padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: #FFFFFF; border: 1px solid #CCCCCC;">
+                                                            <div>
+                                                                <div class="card-body">
+                                                                    <div class="col-md-12 col-sm-12 col-lg-12">
+                                                                        <table
+                                                                            class="table table-bordered table-align center-table">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td class="td-align" style="word-wrap: break-word;
+																						white-space: normal;"><strong>Hall
+                                                                                            Name:</strong><span
+                                                                                            id="hallNameDisplayStep3"></span>
+                                                                                    </td>
+                                                                                    <td class="td-align"><strong>Zone:
+                                                                                        </strong><span
+                                                                                            id="zoneStep3"></span>
+                                                                                    </td>
+                                                                                    <td class="td-align">
+                                                                                        <strong>Division:
+                                                                                        </strong><span
+                                                                                            id="divisionStep3"></span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-lg-4 col-md-4">
+                                                                        <input type="hidden" id="userId" name="userId">
+                                                                        <label class="form-check-label"
+                                                                            for="uploadDocument">Upload Document for
+                                                                            Booking:*</label>
+                                                                        <input type="text" id="showReasonLabel" readonly
+                                                                            class="form-control"
+                                                                            style="background-color:white">
+                                                                        <!--	<div class="col-sm-4 col-lg-4 col-md-4">
+                                                                        <label class="form-check-label"
+                                                                            for="reasonforbooking">Reason for Booking:*</label>
+                                                                        <select type="text" class="form-control"
+                                                                            id="reasonforbooking" name="reasonId"
+                                                                            required>
+                                                                        </select>
+                                                                    </div> -->
+                                                                    </div>
+                                                                    <br>
+                                                                    <div id="reasonFieldsContainer">
+                                                                    </div>
+                                                                    <input type="hidden" name="bookingId" id="bookingId"
+                                                                        value="0">
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-12 col-lg-12 col-sm-12 text-center">
+                                                                    <!-- Center align the button -->
+                                                                    <button type="button"
+                                                                        class="btn btn-primary prev-step"
+                                                                        style="background-color: #016d6f; color: white; float: left;">
+                                                                        Previous
+                                                                    </button>
+                                                                    <button type="button"
+                                                                        class="btn btn-warning reset-step"
+                                                                        style="background-color: orangered; color: white; margin: auto;">
+                                                                        Reset
+                                                                    </button>
+                                                                    <button type="submit"
+                                                                        class="btn btn-primary next-step"
+                                                                        style="background-color: #016d6f; color: white; float: right;"
+                                                                        disabled>Next
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                <div class="step step-4">
+                                                    <h4 style="margin-left:166px">Step 4</h4>
+                                                    <div class="container custom-container">
+                                                        <div class="header"
+                                                            style="background-color: rgb(21,69,93); position: relative;">
+                                                            <img src="media/images/logo-sm.png" alt="Logo"
+                                                                style="position: absolute; left: 10px; top: 7px; height: 30px;">
+                                                            <h6
+                                                                style="color: white; text-align: center; line-height: 3.1;">
+                                                                Payment Details for Confirmation
+                                                                <span id="timer"
+                                                                    style="display: inline; float:right;margin-right:10px;">
+                                                                    <span class="sand-clock"></span>
+                                                                    <!-- Hourglass icon -->
+                                                                    <span id="timerText">Payment Closes in 15:00</span>
+                                                                    <!-- Timer text -->
+                                                                </span>
+                                                            </h6>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <table
+                                                                class="table table-bordered center-table table-align">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td class="td-align"><strong>Full Name:</strong>
+                                                                            <span id="name_td"></span>
+                                                                        </td>
+                                                                        <td class="td-align">
+                                                                            <strong>Mobile Number:</strong> <span
+                                                                                id="mobileno_td"></span>
+                                                                        </td>
+                                                                        <td class="td-align"><strong>User Type:</strong>
+                                                                            <span id="usertype_td"></span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <table
+                                                                    class="table table-bordered center-table table-align">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Hall
+                                                                                    Name:</strong></td>
+                                                                            <td class="td-align"
+                                                                                style="text-wrap:wrap;">
+                                                                                <span id="selecthall_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>No. of
+                                                                                    Days:</strong>
+                                                                            </td>
+                                                                            <td class="td-align"><span
+                                                                                    id="numDaysCount_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Start
+                                                                                    Date:</strong>
+                                                                            </td>
+                                                                            <td class="td-align"><span
+                                                                                    id="startDateInput_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>End
+                                                                                    Date:</strong></td>
+                                                                            <td class="td-align"><span
+                                                                                    id="endDateInput_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Starting Slot &
+                                                                                    Ending Slot:</strong>
+                                                                            </td>
+                                                                            <td class="td-align"><span
+                                                                                    id="startingslot_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Uploaded
+                                                                                    Documents:</strong></td>
+                                                                            <td class="td-align">
+                                                                                <!-- List to display uploaded docs with small images and names -->
+                                                                                <div id="uploadedDocsList"
+                                                                                    class="uploaded-docs-list">
+                                                                                    <!-- Each item in the list will have a small image and name -->
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <div>
+                                                                            <div id="largeImageContainer"
+                                                                                class="large-image-container"
+                                                                                style="display: none;">
+                                                                                <button id="closeButton" type="button"
+                                                                                    class="close-button">
+                                                                                    <i class="fa fa-times"></i>
+                                                                                </button>
+                                                                                <img id="largeImage" src=""
+                                                                                    alt="Large Image">
+                                                                            </div>
+                                                                        </div>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <table
+                                                                    class="table table-bordered center-table table-align">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Reason for
+                                                                                    Booking:</strong>
+                                                                            </td>
+                                                                            <td class="td-align"><span
+                                                                                    id="reasonforbooking_td"></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong> Hall
+                                                                                    Amount:</strong>
+                                                                            </td>
+                                                                            <td><span id="actualhallAmount_td">Rs</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <!-- <tr>
+                                                                            <td class="td-align">
+                                                                                <strong>Discount:</strong>
+                                                                            </td>
+                                                                            <td><span id="discount_td">0%</span>
+                                                                            </td>
+                                                                        </tr> -->
+                                                                        <!-- <tr id="additionalcharges" style="display:none">
+                                                                            <td class="td-align">
+                                                                                <strong>Rent Amount:</strong>
+                                                                            </td>
+                                                                            <td><span id="rentamount_td">0</span></td>
+                                                                        </tr>
+                                                                        <tr id="additionalcharges_tr"
+                                                                            style="display:none">
+                                                                            <td class="td-align">
+                                                                                <strong>Additional charges (Cleaning +
+                                                                                    P.A.
+                                                                                    System + E.B):</strong>
+                                                                            </td>
+                                                                            <td><span id="additionalcharges_td">0</span>
+                                                                            </td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Net
+                                                                                    Amount:</strong>
+                                                                            </td>
+                                                                            <td><span id="hallAmount_td">Rs</span>
+                                                                            </td>
+                                                                        </tr>-->
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>GST
+                                                                                    Amount:</strong></td>
+                                                                            <td><span id="gst_td">Rs</span></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Deposit
+                                                                                    Amount:</strong></td>
+                                                                            <td><span id="depositAmount_td">Rs</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="td-align"><strong>Total
+                                                                                    Amount:</strong>
+                                                                            </td>
+                                                                            <td><span id="totalAmount_td">Rs</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-center">
+                                                                <!-- Center align the button -->
+                                                                <button type="button" class="btn btn-primary prev-step"
+                                                                    style="background-color: #016d6f; color: white;">
+                                                                    Previous
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div align="center">
+                                                            <label data-toggle="tooltip" data-placement="top"
+                                                                title="Click To View">
+                                                                <input type="checkbox" id="checkin"
+                                                                    onchange="togglePaymentButton(this)" />
+                                                                <a href="#" id="termsLink">I agree to the Terms and
+                                                                    Conditions</a>
+                                                            </label>
+                                                            <button type="button" id="confirmPaymentBtn"
+                                                                class="btn btn-success" onclick="paymentStart()"
+                                                                disabled>Confirm Payment
+                                                            </button>
+                                                            <input type="hidden" id="btnSubmit"></input>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Page body end -->
+                                    </div>
+                                </div>
+                                <!-- Main-body end -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal HTML for Bootstrap 5 -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-content" style="height: 100vh;">
+                    <iframe src="media/images/CC Rules & Regulations for Online _Tamil.pdf" width="100%"
+                        height="600px"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/loginreg :: div}"></div>
+    <script th:replace="~{fragments/script :: script}"></script>
+    <script th:replace="~{fragments/logRegiOtpScript :: script}"></script>
+    <script th:replace="~{fragments/PaymentScript :: script}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@latest/dist/compressor.min.js"></script>
+
+    <!-- Payment script end-->
+    <script>
+        let reasonMaxData = new Map(); // in beginning
+        let reasonLabelData = new Map();
+        let reasoncode = new Map();
+
+        document.getElementById('termsLink').addEventListener('click', function (event) {
+            event.preventDefault();
+            $('#termsModal').modal('show');
+        });
+
+        function togglePaymentButton(checkbox) {
+            document.getElementById('confirmPaymentBtn').disabled = !checkbox.checked;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const hallId = urlParams.get('hallId');
+        $(document).ready(function () {
+            if (hallId != null) {
+                getHallDetails(hallId);
+                $("#selecthall").val(hallId);
+            }
+        });
+        var countdown; // Global variable to hold the interval
+        var totalTime = 15 * 60; // 15 minutes in seconds
+        // var totalTime = 1 * 60; // for testing
+        var timerElement = document.getElementById("timerText");
+        var confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+        var checkInCheckbox = document.getElementById("checkin");
+        var startTime; // Variable to hold the start timestamp
+
+        // Function to format time in MM:SS
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var seconds = seconds % 60;
+            return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        }
+
+        // Function to start or restart the timer
+        function startTimer() {
+            if (countdown) {
+                clearInterval(countdown); // Clear existing interval if any
+            }
+
+            // Record the start time in milliseconds
+            startTime = Date.now();
+
+            // Function to update the timer
+            function updateTimer() {
+                // Calculate the elapsed time in seconds
+                var elapsed = Math.floor((Date.now() - startTime) / 1000);
+                var timeLeft = totalTime - elapsed;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    confirmPaymentBtn.disabled = true; // Disable the Confirm Payment button when time is up
+                    checkInCheckbox.disabled = true; // Disable the Check-in checkbox when time is up
+                    timerElement.innerHTML = "Time expired"; // Optionally update the message
+                } else {
+                    timerElement.innerHTML = "Payment Closes in " + formatTime(timeLeft);
+                    confirmPaymentBtn.disabled = !checkInCheckbox.checked;
+                    checkInCheckbox.disabled = false;   // Keep checkbox enabled until time is up
+                }
+            }
+
+            // Display initial time
+            timerElement.innerHTML = "Payment Closes in " + formatTime(totalTime);
+
+            // Update the timer every second
+            countdown = setInterval(updateTimer, 1000); // 1 second interval
+        }
+
+        // Function to reset the timer
+        function resetTimer() {
+            startTime = Date.now(); // Reset the start time to now
+            startTimer();
+        }
+
+        var currentStep = 1;
+        var updateProgressBar;
+        var userId;
+        var bookingId;
+        let selectedHallName = '';
+        let selectedZone = '';
+
+        // Assume userLoggedIn is a variable indicating the user's login status
+        function toggleNextButton(step) {
+            var nextButton = document.querySelector('.step-' + step + ' .next-step');
+            var fields = document.querySelectorAll('.step-' + step + ' [required]');
+            var allFieldsFilled = true;
+            fields.forEach(function (field) {
+                if (!field.value) {
+                    allFieldsFilled = false;
+                }
+            });
+
+            if (allFieldsFilled) {
+                nextButton.disabled = false; // Enable the button
+            } else {
+                nextButton.disabled = true; // Disable the buttonn
+            }
+        }
+
+        // Call the function for Step 1 when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            // toggleNextButton(1);
+            toggleNextButton(2);
+            toggleNextButton(3);
+        });
+
+        document.querySelectorAll('.step-2 [required]').forEach(function (field) {
+            field.addEventListener('input', function () {
+                toggleNextButton(2);
+            });
+        });
+
+        document.querySelectorAll('.step-3 [required]').forEach(function (field) {
+            field.addEventListener('input', function () {
+                toggleNextButton(3);
+            });
+        });
+
+        function handleSaveAndContinueStep3() {
+            if (isLogin) {
+                CheckBookingLimitation(function (isAllowed) {
+                    if (isAllowed) {
+                        saveBookingDetails();
+                    }
+                });
+            } else {
+                showAlertForLogin();
+            }
+            return false;
+        }
+
+
+        // Function to show SweetAlert for login
+        function showAlertForLogin() {
+            Swal.fire({
+                title: 'Mobile Number Not Registered!',
+                text: 'Please log in to proceed.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Login',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#loginModal').modal('show');
+                }
+            });
+        }
+
+        document.querySelector(".step-3 .next-step").addEventListener("click", function () {
+            displayStep(3);
+        });
+
+        function fetchReasonsAndPopulateDropdown() {
+            // Make an AJAX call to fetch all reasons
+            $.ajax({
+                url: '/victoriahallbooking_uat/admin/api/getReasons',
+                type: 'GET',
+                dataType: 'json'
+            })
+                .done(function (data) {
+                    const reasonDropdown = $('#reasonforbooking');
+                    reasonDropdown.empty();
+                    reasonDropdown.append($('<option selected value="0"></option>').text('Select a reason'));
+
+                    // Populate the dropdown and store reason metadata
+                    $.each(data, function (index, reason) {
+                        reasonDropdown.append($('<option></option>').attr('value', reason.reasonId).text(reason.reason));
+                        reasonMaxData.set(reason.reasonId, reason.maxdays);
+                        reasonLabelData.set(reason.reasonId, reason.reason);
+                        reasoncode.set(reason.reasonId, reason.reasoncode);
+                    });
+
+                    // Add change event listener to the dropdown
+                    // reasonDropdown.change(function () {
+                    //     const selectedReasonId = $(this).val();
+                    //     const selectedReasonCode = reasoncode.get(parseInt(selectedReasonId));
+                    //     const selectedHallId = document.getElementById("statichallId").value; // Getting the selected hall ID
+
+                    //     // Make another AJAX call to get hall details based on the selected hall ID
+                    //     $.ajax({
+                    //         type: 'GET',
+                    //         url: '/victoriahallbooking_uat/user/api/gethalldetails/' + selectedHallId,
+                    //         success: function (response) {
+                    //             // console.log(response);
+                    //             const isSGE = response.sge; // Fetch SGE status from the response
+                    //             const isCGE = response.cge; // Fetch CGE status from the response
+
+                    //             // Check for State Government Event (SGE)
+                    //             if (selectedReasonCode === 'SGE' && !isSGE) {
+                    //                 // Show popup for State govt event
+                    //                 Swal.fire({
+                    //                     title: 'Government Event',
+                    //                     text: 'Shenoy Nagar Community Center (Auditorium) full Mandapam (Amma Arangam) is available for state government events.',
+                    //                     icon: 'info',
+                    //                     confirmButtonText: 'OK'
+                    //                 }).then((result) => {
+                    //                     if (result.isConfirmed && !isSGE) {
+                    //                         window.location.href = '/victoriahallbooking_uat/hallbookingform';
+                    //                     }
+                    //                 });
+                    //             }
+                    //             // Check for Central Government Event (CGE)
+                    //             else if (selectedReasonCode === 'CGE' && !isCGE) {
+                    //                 // Show popup for Central govt event
+                    //                 Swal.fire({
+                    //                     title: 'Government Event',
+                    //                     text: 'Shenoy Nagar Community Center (Auditorium) full Mandapam (Amma Arangam) is available for central government events.',
+                    //                     icon: 'info',
+                    //                     confirmButtonText: 'OK'
+                    //                 }).then((result) => {
+                    //                     if (result.isConfirmed && !isCGE) {
+                    //                         // Redirect only if hallId is not 3
+                    //                         window.location.href = '/victoriahallbooking_uat/hallbookingform';
+                    //                     }
+                    //                 });
+                    //             }
+                    //         },
+                    //         error: function (xhr, status, error) {
+                    //             console.error('Error fetching hall details:', error);
+                    //         }
+                    //     });
+                    // });
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Error fetching reasons:', error);
+                });
+        }
+
+        var ch = 0;
+
+        function saveBookingDetails() {
+            //alert("saveBookingDetails call:-"+ch++);
+            $("#startPeriodDropdown").prop("disabled", false);
+            $("#endPeriodDropdown").prop("disabled", false);
+            var form = document.getElementById('booking');
+            var formData = new FormData(form);
+            // Debugging: Log each FormData entry
+            for (var pair of formData.entries()) {
+                //console.log(pair[0] + ', ', pair[1]);
+            }
+            $.ajax({
+                url: '/victoriahallbooking_uat/user/api/saveTheRequest2',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    console.log("response:--" + response.status + response);
+
+                    if (response.status === 'slotOccupied') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Slot Occupied',
+                            text: 'The selected slot is already occupied. Please choose a different slot.',
+                            confirmButtonText: 'OK'
+                        }).then(function () {
+                            location.reload(); // Example: reload the page
+                        });
+                    } else if (response.status === 'pastdate') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Past Date',
+                            text: 'Start date cannot be in the past',
+                            confirmButtonText: 'OK'
+                        }).then(function () {
+                            location.reload();
+                        });
+                    } else if (response.status === 'futuredate') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Future Date',
+                            text: 'Start date cannot be more than 6 months from today',
+                            confirmButtonText: 'OK'
+                        }).then(function () {
+                            location.reload();
+                        });
+                    } else {
+                        userId = response.userId;
+                        bookingId = response.bookingId;
+                        $("#bookingId").val(response.bookingId);
+                        $("#userId").val(response.userId);
+                        $("#selecthall_td").html(response.hallName);
+                        $("#numDaysCount_td").html(response.NoOfDay);
+                        $("#startDateInput_td").html(response.startDate);
+                        $("#endDateInput_td").html(response.endDate);
+                        $("#reasonforbooking_td").html(response.reason);
+                        $("#hallAmount_td").html(response.hallAmount);
+
+                        function getTimeOfDay(slot) {
+                            if (slot === 1) {
+                                return "Evening";
+                            } else if (slot === 2) {
+                                return "Evening";
+                            } else {
+                                return "Invalid slot";
+                            }
+                        }
+
+                        $("#startingslot_td").html(getTimeOfDay(response.startingSlot) + " to " + getTimeOfDay(response.endingSlot));
+                        /*$("#gst_td").html(response.gst);
+                        $("#depositAmount_td").html(response.depositAmount);
+                        $("#discount_td").html(response.discount + "%");
+                        $("#actualhallAmount_td").html(response.actualhallamount);
+                        $("#totalAmount_td").html(response.totalAmount);*/
+                        $("#name_td").html(response.username);
+                        $("#mobileno_td").html(response.mobileNo);
+                        $("#usertype_td").html(response.userType);
+                        /*if (response.reasoncode === 'SGE') {
+                            document.getElementById("additionalcharges").style.display = 'table-row'; // Show row
+                            document.getElementById("additionalcharges_tr").style.display = 'table-row'
+                            $("#additionalcharges_td").html(response.additionalcharges);
+                            $("#rentamount_td").html(0);
+                            $("#actualhallAmount_td").html(response.actualhallamount);
+                            $("#hallAmount_td").html(response.additionalcharges);
+                            $("#totalAmount_td").html(response.totalAmount);
+                        } else {
+                            document.getElementById("additionalcharges").style.display = 'none'; // Hide row
+                            document.getElementById("additionalcharges_tr").style.display = 'none'; // Hide row
+                        }*/
+
+                        if (response.reasoncode === 'SGE') {
+                            // document.getElementById("additionalcharges").style.display = 'table-row'; // Show row
+                            // document.getElementById("additionalcharges_tr").style.display = 'table-row'
+                            // $("#additionalcharges_td").html(response.additionalcharges);
+                            // $("#rentamount_td").html(0);
+                            $("#actualhallAmount_td").html(response.actualhallamount);
+                            // $("#hallAmount_td").html(response.additionalcharges);
+                            $("#totalAmount_td").html(response.totalAmount);
+                            // $("#hallAmount_td").html(response.hallAmount);
+                            $("#gst_td").html(response.gst);
+                            $("#depositAmount_td").html(response.depositAmount);
+                            // $("#discount_td").html(response.discount + "%");
+
+                        } else if (response.reasoncode === 'CGE') {
+                            // document.getElementById("additionalcharges").style.display = 'table-row'; // Show row
+                            // document.getElementById("additionalcharges_tr").style.display = 'table-row'
+                            // $("#additionalcharges_td").html(response.additionalcharges);
+                            // $("#hallAmount_td").html(response.hallAmount)
+                            // $("#rentamount_td").html(response.rentAmount);
+                            $("#actualhallAmount_td").html(response.actualhallamount);
+                            // $("#hallAmount_td").html(response.netAmount);
+                            $("#gst_td").html(response.gst);
+                            $("#depositAmount_td").html(response.depositAmount);
+                            // $("#discount_td").html(response.discount + "%");
+                            $("#totalAmount_td").html(response.totalAmount);
+
+                        } else {
+                            document.getElementById("additionalcharges").style.display = 'none'; // Hide row
+                            document.getElementById("additionalcharges_tr").style.display = 'none'; // Hide row
+                            $("#gst_td").html(response.gst);
+                            $("#depositAmount_td").html(response.depositAmount);
+                            $("#discount_td").html(response.discount + "%");
+                            $("#actualhallAmount_td").html(response.actualhallamount);
+                            $("#totalAmount_td").html(response.totalAmount);
+                        }
+                        displayDocumentDetails(response.uploadedDocs);
+                        resetTimer();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching hall names:', error);
+                }
+            });
+            $("#startPeriodDropdown").prop("disabled", true);
+            $("#endPeriodDropdown").prop("disabled", true);
+        }
+
+
+        function displayDocumentDetails(uploadedDocs) {
+            const uploadedDocsList = $("#uploadedDocsList");
+            uploadedDocsList.empty(); // Clear existing items
+
+            uploadedDocs.forEach(function (doc) {
+                const listItem = $('<li>');
+                const thumbnail = $('<img>').addClass('thumbnail-img');
+
+                // Function to truncate the document name
+                function truncateName(name, maxLength) {
+                    if (name.length <= maxLength) {
+                        return name;
+                    }
+
+                    const extIndex = name.lastIndexOf('.');
+                    const ext = name.substring(extIndex);
+                    const truncatedName = name.substring(0, maxLength - ext.length - 3) + '...' + ext;
+                    return truncatedName;
+                }
+
+                const truncatedName = truncateName(doc.documentName, 10); // Adjust the maxLength as needed
+
+                if (doc.bookingDocUrl.endsWith('.pdf')) {
+                    // Set the thumbnail to a default image for PDFs
+                    const defaultPdfThumbnail = 'media/images/pdf.jpg'; // Replace with your default thumbnail image path
+                    thumbnail.attr('src', defaultPdfThumbnail);
+                    listItem.append(thumbnail).append(' ' + truncatedName);
+
+                    thumbnail.on('click', function () {
+                        // Create an iframe to display the PDF
+                        const pdfViewer = $('<iframe>').attr({
+                            src: doc.bookingDocUrl,
+                            width: '100%',
+                            height: '600px' // Adjust as needed
+                        });
+
+                        // Hide the image and show the PDF viewer
+                        $('#largeImage').hide();
+                        $('#largeImageContainer').find('iframe').remove();
+                        $('#largeImageContainer').append(pdfViewer);
+                        $('#largeImageContainer').show();
+                    });
+                } else {
+                    // For other document types, show the actual image as thumbnail
+                    thumbnail.attr('src', doc.bookingDocUrl);
+                    listItem.append(thumbnail).append(' ' + truncatedName);
+
+                    thumbnail.on('click', function () {
+                        $('#largeImageContainer iframe').remove();
+                        $('#largeImage').attr('src', doc.bookingDocUrl).show();
+                        $('#largeImageContainer').show();
+                    });
+                }
+
+                uploadedDocsList.append(listItem);
+            });
+        }
+
+
+        $("#closeButton").on('click', function () {
+            $('#largeImageContainer').hide(); // Hide the large image container
+            $('#largeImage').attr('src', '').hide(); // Reset and hide image
+            $('#largeImageContainer iframe').remove(); // Remove iframe if present
+        });
+
+        function fetchReasonDocumentDetails(reasonId) {
+            $('#reasonMaxDates').val(reasonMaxData.get(reasonId));
+            $('#showReasonLabel').val(reasonLabelData.get(reasonId));
+            $.ajax({
+                url: '/victoriahallbooking_uat/admin/api/getReasonDocumentDetails',
+                type: 'GET',
+                dataType: 'json',
+                data: { reasonId: reasonId }
+            })
+                .done(function (data) {
+                    validateForm();
+
+                    const reasonFieldsContainer = $('#reasonFieldsContainer');
+                    reasonFieldsContainer.empty();
+                    const rowDiv = $('<div class="row"></div>');
+                    $.each(data, function (index, detail) {
+                        if (detail.addTextField === true) {
+                            const fieldDiv = $('<div class="col-sm-4 form-group"></div>');
+                            const label = $('<label>' + detail.fieldName + ' *</label>');
+                            const input = $('<input type="text" class="form-control" name="' + detail.fieldName + '" required>');
+                            // Add event listener for input validation
+                            input.on('input', function () {
+                                // Replace any non-letter characters with an empty string
+                                //this.value = this.value.replace(/[^a-zA-Z]/g, '');
+                            });
+
+                            fieldDiv.append(label);
+                            fieldDiv.append(input);
+                            rowDiv.append(fieldDiv);
+                        }
+
+                        if (detail.addDocumentField === true) {
+                            const fieldDiv2 = $('<div class="col-sm-4 form-group"></div>');
+                            const fileInput = $('<input type="file" class="form-control file-upload-field" id="upload" name="' + detail.docFieldName + '" required accept=".jpg, .jpeg, .pdf">');
+                            fieldDiv2.append('<label>' + detail.docFieldName + '*</label>').append(fileInput);
+                            rowDiv.append(fieldDiv2);
+                        }
+                    });
+                    reasonFieldsContainer.append(rowDiv);
+                })
+
+                .fail(function (xhr, status, error) {
+                    console.error('Error fetching reason document details:', error);
+                });
+        }
+
+        // Call the function to fetch reasons and populate the dropdown when the document is ready
+        $(document).ready(function () {
+            fetchReasonsAndPopulateDropdown();
+            $('#reasonforbooking').change(function () {
+                const selectedReasonId = parseInt($(this).val()); // Convert the value to an integer
+                fetchReasonDocumentDetails(selectedReasonId);
+            });
+        });
+
+        // Function to toggle hall details container and fetch hall details
+        function toggleHallDetailsContainer() {
+            var selectBox = document.getElementById("selecthall");
+            var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+            var hallDetailsContainer = document.getElementById("hallDetailsContainer");
+            if (selectedValue !== "") {
+                hallDetailsContainer.style.display = "block"; // Show hall details container if a hall is selected
+                // Get the selected hall ID
+                var hallId = selectBox.options[selectBox.selectedIndex].value;
+                getHallDetails(hallId); // Fetch hall details
+                // Other code for displaying selected details
+            } else {
+                hallDetailsContainer.style.display = "none"; // Hide hall details container if no hall is selected
+                // Clear the selected details in Step 2 and Step 3
+                $('#hallNameDisplayStep2').text('');
+                $('#hallNameDisplayStep3').text('');
+                $('#zoneStep2').text('');
+                $('#zoneStep3').text('');
+                $('#divisionStep2').text('');
+                $('#divisionStep3').text('');
+
+                // Clear other details if needed
+            }
+        }
+
+        function togglePaymentButton(checkbox) {
+            var confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+            confirmPaymentBtn.disabled = !checkbox.checked;
+        }
+
+        // Update the displayStep function to pass hallName to Step 4
+        function displayStep(stepNumber) {
+            if (stepNumber >= 1 && stepNumber <= 4) {
+                if (validateStep(currentStep)) {
+                    $(".step-" + currentStep).hide();
+                    $(".step-" + stepNumber).show();
+                    currentStep = stepNumber;
+                    updateProgressBar();
+
+                    // Populate hallName, zone, and division in Step 2 and Step 3
+                    if (stepNumber === 2 || stepNumber === 3) {
+                        $('#hallNameDisplayStep2').text(selectedHallName);
+                        $('#hallNameDisplayStep3').text(selectedHallName);
+                        $('#zoneStep2').text(zone);
+                        $('#zoneStep3').text(zone);
+                        $('#divisionStep2').text('');
+                        $('#divisionStep3').text('');
+
+                        $('#selecthall_td').text(selectedHallName);
+                    }
+
+                    // Handle displaying the SweetAlert in Step 3
+                } else {
+                    //alert("Please fill in all required fields before proceeding.");
+                }
+            }
+        }
+
+
+        function validateStep(stepNumber) {
+        }
+
+        $(document).ready(function () {
+            $('.step').hide();
+            $('.step-1').show();
+            var currentStep = 1; // Assuming you have this variable defined somewhere in your code
+
+            // Function to validate step 3
+            function validateStep3() {
+                let isValid = true;
+                let selectedReason = $('#reasonforbooking').val();
+                // Check if a reason is selected
+                if (!selectedReason) {
+                    isValid = false;
+                } else {
+                    // Iterate through each input associated with the selected reason
+                    $(`#reasonFieldsContainer .${selectedReason} input[type="text"], #reasonFieldsContainer .${selectedReason} input[type="file"]`).each(function () {
+                        if ($(this).prop('required') && !$(this).val()) {
+                            isValid = false;
+                            return false; // Exit the loop early if any required field is empty
+                        }
+                    });
+                }
+
+                // Enable/disable the next button based on validation
+                $('.next-step').prop('disabled', !isValid);
+            }
+
+            // Event listener for reason dropdown change
+            $('#reasonforbooking').change(function () {
+                let selectedReason = $(this).val();
+                $("#startDateInput").val('');
+                $("#endDateInput").val(0);
+                $("#startPeriodDropdown").val(0).prop("disabled", false);
+                $("#endPeriodDropdown").val(0).prop("disabled", false);
+                $("#numDaysCount").val('');
+                $("#numDaysCountDisplay").val('');
+                $('#summary').html('');
+                // Show/hide fields based on selected reason
+                $('#reasonFieldsContainer').children().hide();
+                if (selectedReason) {
+                    $(`#reasonFieldsContainer .${selectedReason}`).show();
+                }
+                // Validate the fields for the selected reason
+                validateStep3();
+            });
+
+            // Event listener for input changes within reason fields in Step 3
+            $('#reasonFieldsContainer').on('change', 'input, select', function () {
+                validateStep3();
+            });
+
+            $(".next-step").click(function () {
+                var valid = true;
+
+                // Validate all required text inputs and file fields in Step 3
+                if (currentStep === 3) {
+                    $('.step-3 input[required], .step-3 select[required]').each(function () {
+                        if ($(this).val() === '') {
+                            $(this).addClass('error'); // Add error class
+                            valid = false;
+                            return false; // Break the loop
+                        } else {
+                            $(this).removeClass('error'); // Remove error class if valid
+                        }
+                    });
+
+                    $('.step-3 input[type="file"][required]').each(function () {
+                        if ($(this)[0].files.length === 0) {
+                            $(this).addClass('error'); // Add error class
+                            valid = false;
+                            return false; // Break the loop
+                        } else {
+                            $(this).removeClass('error'); // Remove error class if valid
+                        }
+                    });
+                }
+
+                if (!valid) {
+                    return; // Stop if validation fails
+                }
+
+                if (currentStep < 4) {
+                    $(".step-" + currentStep).fadeOut(500, function () {
+                        if (currentStep === 3 && isLogin === false) {
+                            $(".step-" + currentStep).fadeIn(500);
+                            updateProgressBar();
+                            return "";
+                        } else {
+                            currentStep++;
+                            $(".step-" + currentStep).fadeIn(500);
+                            updateProgressBar();
+                        }
+                    });
+                }
+            });
+
+            $(".prev-step").click(function () {
+                $('#bookandcontinue').prop('disabled', false);
+                if (currentStep > 1) {
+                    $(".step-" + currentStep).fadeOut(500, function () {
+                        currentStep--;
+                        $(".step-" + currentStep).fadeIn(500);
+
+                        updateProgressBar();
+                        clearInterval(countdown);
+                    });
+                }
+            });
+            $("#bookandcontinue").click(function () {
+                $('#startDateInput').val('');
+                $('#endDateInput').prop('disabled', true).val('0');
+                $('#startPeriodDropdown').val('0');
+                $('#endPeriodDropdown').val('0');
+                $('#numDaysCount').val(''); // Reset the number of days input
+                $('#numDaysCountDisplay').val('');
+                $('#summary').html('');
+                $('#relation').val('1');
+                $('#reasonforbooking').val(0);
+            });
+
+            $(".step-2 .reset-step").click(function () {
+                $('.step-2 input[type="text"], .step-2 select').val(function () {
+                    return this.defaultValue;
+                });
+
+                $('.step-2 input[type="checkbox"], .step-2 input[type="radio"]').prop('checked', false);
+                $('#endDateInput').prop('disabled', true).val('0');
+                $('#startPeriodDropdown').val('0');
+                $('#endPeriodDropdown').val('0');
+                $('#numDaysCount').val(''); // Reset the number of days input
+                $('#numDaysCountDisplay').val('');
+                $('#summary').html('');
+                $('#relation').val('1');
+                $('#reasonforbooking').val(0);
+                $('.step-2 .error-message').hide();
+                toggleNextButton(2); // Ensure button state reflects field values after reset
+            });
+
+            $(".step-3 .reset-step").click(function () {
+                // Reset all input fields and select elements to their default values
+                $('.step-3 input[type="text"]:not(#showReasonLabel), .step-3 input[type="file"]').val(function () {
+                    return this.defaultValue;
+                });
+                //$('.step-3 .error-message').hide();
+                //$('.step-3 .form-control').parent().hide();
+                //$('#reasonforbooking').parent().show();
+                validateStep3();
+            });
+
+            $(".step-2 .next-step").click(function () {
+                var reasonforbooking = $("#reasonforbooking").val();
+                if (reasonforbooking !== "0") {
+                    $(".step-3 .next-step").prop("disabled", false);
+                } else {
+                    $(".step-3 .next-step").prop("disabled", true);
+                }
+                ;
+                var relationship = $("#relation").val();
+                if (relationship !== "0") {
+                    $(".step-2 .next-step").prop("disabled", false);
+                } else {
+                    $(".step-2 .next-step").prop("disabled", true);
+                }
+                ;
+            });
+
+            $(".cancel-step").click(function () {
+                // Redirect to the cancel page or handle cancellation logic here
+                window.location.href = "/dashboard";
+            });
+
+            updateProgressBar = function () {
+                var progressPercentage = ((currentStep - 1) / 3) * 100;
+                $(".progress-bar").css("width", progressPercentage + "%");
+            };
+
+            // State variable to track compression status
+            let isCompressing = false;
+
+            // Attach the validation function to file input change event
+            $(document).on('change', '.file-upload-field', function () {
+                validateFile(this);
+            });
+
+            function validateFile(fileInput) {
+                const allowedExtensions = /(\.jpg|\.jpeg|\.pdf)$/i;
+                const file = fileInput.files[0];
+                const filePath = fileInput.value;
+                let errorMessage = '';
+
+                // Clear any previous error message
+                clearError(fileInput);
+
+                // Check for duplicate files
+                if (isDuplicateFile(file.name, fileInput)) {
+                    errorMessage = 'This file has already been selected. Please choose a different file.';
+                    fileInput.value = ''; // Clear the file input
+                    displayError(fileInput, errorMessage);
+                    return;
+                }
+
+                // Validate file type
+                if (!allowedExtensions.exec(filePath)) {
+                    errorMessage = 'Only JPG, JPEG, and PDF files are allowed.';
+                    fileInput.value = ''; // Clear the file input
+                    displayError(fileInput, errorMessage);
+                }
+                // Handle image files separately
+                else if (/(\.jpg|\.jpeg)$/i.test(filePath) && file.size > 2097152) {
+                    compressImage(file).then(compressedFile => {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(compressedFile);
+                        fileInput.files = dataTransfer.files;
+
+                        // Validate file size after compression
+                        validateFileSize(fileInput);
+                    }).catch(error => {
+                        errorMessage = 'Error compressing image.';
+                        displayError(fileInput, errorMessage);
+                    });
+                }
+                // Directly validate PDF file size
+                else if (/(\.pdf)$/i.test(filePath) && file.size > 2097152) {
+                    errorMessage = 'PDF file size exceeds the 2MB limit.';
+                    fileInput.value = ''; // Clear the file input
+                    displayError(fileInput, errorMessage);
+                } else {
+                    // console.log('File size is within limit:', file.size, 'bytes');
+                    clearError(fileInput);
+                }
+            }
+
+
+            function isDuplicateFile(fileName, currentInput) {
+                const fileInputs = document.querySelectorAll('.file-upload-field');
+                for (let input of fileInputs) {
+                    if (input !== currentInput && input.files.length > 0 && input.files[0].name === fileName) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function clearError(fileInput) {
+                const errorElements = fileInput.parentNode.getElementsByClassName('error-message');
+                while (errorElements.length > 0) {
+                    errorElements[0].remove();
+                }
+            }
+
+            // Function to compress image using canvas
+            function compressImage(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const img = new Image();
+                        img.onload = function () {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const maxSize = 2097152; // 2MB in bytes
+                            let scale = 1;
+                            if (file.size > maxSize) {
+                                scale = Math.sqrt(maxSize / file.size);
+                            }
+                            canvas.width = img.width * scale;
+                            canvas.height = img.height * scale;
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                            // Convert canvas content to blob
+                            canvas.toBlob(blob => {
+                                resolve(new File([blob], file.name, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                }));
+                            }, 'image/jpeg', 0.7); // Adjust JPEG quality as needed (0.7 is 70% quality)
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Function to validate file size after compression
+            function validateFileSize(fileInput) {
+                const file = fileInput.files[0];
+                if (file && file.size > 2097152) {
+                    //console.log('File size is still greater than 2MB after compression.');
+                    // Handle the situation where the file size is still greater than 2MB
+                    displayError(fileInput, 'File size is still greater than 2MB after compression.');
+                    fileInput.value = ''; // Clear the file input
+                } else {
+                    //console.log('File size is within limit after compression.');
+                    // Handle the situation where the file size is within the limit
+                }
+            }
+
+            // Function to display error messages
+            function displayError(fileInput, errorMessage) {
+                // Example implementation: show error message near the file input
+                let errorContainer = fileInput.nextElementSibling;
+                if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+                    errorContainer = document.createElement('div');
+                    errorContainer.classList.add('error-message');
+                    fileInput.parentNode.insertBefore(errorContainer, fileInput.nextSibling);
+                }
+                errorContainer.textContent = errorMessage;
+            }
+
+            // Initial validation check for step 3
+            validateStep3();
+
+            // Log statement to ensure the button is being enabled
+            //console.log("Enabling the button...");
+            $('.step-1 .next-step').prop('disabled', false);
+        });
+
+        var index = 0;
+        var hall;
+
+        $(function () {
+            $("#selecthall").select2();
+        });
+        $.ajax({
+            type: 'GET',
+            url: '/victoriahallbooking_uat/user/api/gethallnames',
+            success: function (response) {
+                // Populate the dropdown options with the received hall names
+                var selectHallDropdown = $('#selecthall');
+                $.each(response, function (index, hall) {
+                    if (hallId == hall.hallId) {
+                        selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+                        selectHallDropdown.find('option[value="' + hall.hallId + '"]').prop('selected', true);
+                    } else {
+                        selectHallDropdown.append($('<option></option>').attr('value', hall.hallId).text(hall.hallName));
+                    }
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error fetching hall names:', error);
+            }
+        });
+
+        $(document).ready(function () {
+            $('#selecthall').change(function () {
+                var selectedHallId = $(this).val();
+                // Call the getHallDetails function with the selected hall ID
+                getHallDetails(selectedHallId);
+            });
+        });
+
+        // Function to retrieve hall details based on hallId
+        function getHallDetails(hallId) {
+            $.ajax({
+                type: 'GET',
+                url: '/victoriahallbooking_uat/user/api/gethalldetails/' + hallId,
+                success: function (response) {
+                    console.log(response);
+                    // Display the container
+                    $('#hallDetailsContainer').show();
+
+                    // Set hall details
+                    $('#zone').html('<strong>' + response.zone + '</strong>&nbsp;&nbsp;&nbsp;&nbsp; Division: <strong>' + response.division + '</strong>');
+                    $('#address').html('<strong>' + response.doorNo + ', ' + response.street + ', ' + response.area + ', ' + response.city + ', ' + response.pinCode + '</strong>');
+                    $('#landmark').html('<strong>' + response.landMark + '</strong>');
+                    $('#seatingCapacity').html('<strong>' + response.seatingCapacity + '</strong>');
+                    var parkingCapacity = response.parkingCapacity;
+                    var parkingAvailability = parkingCapacity > 0 ? "Yes" : "No";
+                    $('#parkingCapacity').html('<strong>' + parkingAvailability + '</strong>');
+                    // $('#caretakerNumber').html('<strong>' + response.hallInchargeMobno + '</strong>');
+                    // $('#rentAmount').html('<strong>' + response.depositAmount + '</strong>');
+                    // $('#gst').html('<strong>' + response.gst + '</strong>');
+                    // $('#fullDayAmount').html('<strong>' + response.fullDayRent + '</strong>');
+                    // $('#halfrentAmount').html('<strong>' + response.halfDepositAmount + '</strong>');
+                    // $('#halfDayAmount').html('<strong>' + response.halfDayRent + '</strong>');
+                    // $('#ebunit').html('<strong>' + response.ebCostPerUnit + '</strong>');
+                    $('#statichallId').val(response.hallId);
+                    $('#mindays').val(response.minDay);
+                    $('#maxdays').val(response.maxDay);
+
+                    // Set hall images
+                    var carouselInner = $('#hallImagesCarousel .carousel-inner');
+                    carouselInner.empty(); // Clear existing images
+
+                    $.each(response.hallImagesList, function (index, image) {
+                        var itemClass = (index === 0) ? 'carousel-item active' : 'carousel-item';
+                        var img = $('<img>').addClass('d-block w-100').attr('src', image.hallImage).attr('alt', 'Hall Image');
+                        var carouselItem = $('<div>').addClass(itemClass).append(img);
+                        carouselInner.append(carouselItem);
+                    });
+
+                    // Clear existing floor details to prevent duplicates
+                    $('#hallareainsqft').empty();
+
+                    // Use a Set to store unique floor details
+                    var uniqueFloorDetails = new Set();
+
+                    $.each(response.floorDetailsList, function (index, hallarea) {
+
+                        // Construct the text for each floor's details
+                        var floorDetailText = hallarea.floor + " - " + hallarea.hallarea + " Sq.ft  ,";
+
+                        // Add to the Set if it's not a duplicate
+                        if (!uniqueFloorDetails.has(floorDetailText)) {
+                            uniqueFloorDetails.add(floorDetailText);
+                            // Append the floor details to the target element
+                            $('#hallareainsqft').append('<strong>' + floorDetailText + '</strong>');
+                        }
+                    });
+
+                    // Initialize ViewerJS on the carousel after images are loaded
+                    initializeViewerJS();
+
+                    getBookingCalendar(hallId);
+
+                    // Set hall details in Step 2 and Step 3
+                    $('#hallNameDisplayStep2').text(response.hallName);
+                    $('#hallNameDisplayStep3').text(response.hallName);
+                    $('#zoneStep2').text(response.zone);
+                    $('#zoneStep3').text(response.zone);
+                    $('#divisionStep2').text(response.division);
+                    $('#divisionStep3').text(response.division);
+                },
+
+                error: function (xhr, status, error) {
+                    console.error('Error fetching hall details:', error);
+                }
+            });
+        }
+
+
+        function initializeViewerJS() {
+            // Ensure ViewerJS initialization after images are added to the DOM
+            var carouselInner = document.querySelector('#hallImagesCarousel .carousel-inner');
+            var floordetails = document.querySelector('#hallareainsqft');
+
+            // Destroy existing viewer instance if it exists
+            if (carouselInner.viewer) {
+                carouselInner.viewer.destroy();
+            }
+            if (floordetails.viewer) {
+                floordetails.viewer.destroy();
+            }
+            // Initialize ViewerJS
+            var viewer = new Viewer(carouselInner, {
+                inline: false,
+                viewed: function () {
+                    viewer.zoomTo(0.5); // Adjust the zoom level here
+                },
+                toolbar: {
+                    zoomIn: 4,
+                    zoomOut: 4,
+                    oneToOne: 4,
+                    reset: 4,
+                    prev: 4,
+                    play: {
+                        show: 4,
+                        size: 'large',
+                    },
+
+                    next: 4,
+                    rotateLeft: 4,
+                    rotateRight: 4,
+                    flipHorizontal: 4,
+                    flipVertical: 4,
+                },
+            });
+            carouselInner.viewer = viewer;
+        }
+
+        function showBookingDetails() {
+            var bookingDetailsDiv = document.getElementById('bookingdetails');
+            // Toggle the display property (show/hide)
+            if (bookingDetailsDiv.style.display === 'none') {
+                bookingDetailsDiv.style.display = 'block';
+            } else {
+                bookingDetailsDiv.style.display = 'none';
+            }
+        }
+
+        function previewImage(event) {
+            const userphoto = event.target;
+            const preview = document.getElementById('preview');
+            const reader = new FileReader();
+            reader.onload = function () {
+                preview.src = reader.result;
+            };
+            reader.readAsDataURL(userphoto.files[0]);
+        }
+
+        function getBookingCalendar(hall_id) {
+            // Make an AJAX call to fetch booking data
+            $.ajax({
+                type: 'GET',
+                url: '/victoriahallbooking_uat/user/api/getPastData',
+                data: {
+                    hall_id: hall_id
+                },
+                success: function (response) {
+                    window.bookingResponse = {};
+                    if (response && Array.isArray(response)) {
+                        $("#startDateInput").datepicker("destroy");
+                        for (var i = 0; i < response.length; i++) {
+                            var dateString = datepickerFormat(response[i].bdate);
+                            window.bookingResponse[dateString] = [response[i].morningSlot, response[i].eveningSlot, response[i].is_blocked];
+                        }
+
+                        initializeDatepickerWithColors(hall_id);
+                        if (response.length == 0) {
+                            initializeDatepickerWithColors(hall_id);
+                        }
+                    } else {
+                        console.error('Invalid or empty response data.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching hall details:', error);
+                }
+            });
+        }
+
+        // Function to update the end date and slot availability
+        function updateEndDate() {
+            var startDate = new Date(document.getElementById("startDateInput").value);
+            var formatStartDate = formatDate(startDate);
+            var endDateInput = document.getElementById("endDateInput");
+            endDateInput.innerHTML = '<option value="0">Select</option>';
+            endDateInput.disabled = true;
+
+            var maxdays = $('#reasonMaxDates').val();
+            // alert("maxdays:---  "+maxdays);
+
+            // Add options for next 7 days from the selected start date
+            for (var i = 0; i < maxdays; i++) {
+                var date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                var formattedDate = formatDate(date);
+
+                if (isNaN(date.getTime())) {
+                    console.error("Invalid date:", date);
+                    continue;
+                }
+
+                var bookingStatus = window.bookingResponse[formattedDate];
+                if (bookingStatus) {
+                    if (bookingStatus[0] && bookingStatus[1]) {
+                        //alert("slot fulled");
+                        break;
+                    } else if (bookingStatus[0]) {
+                        if (formatStartDate == formattedDate) {
+                            var option = document.createElement('option');
+                            option.value = formattedDate;
+                            option.text = formattedDate;
+                            endDateInput.appendChild(option);
+                        } else {
+                            break;
+                        }
+                    } else if (bookingStatus[1]) {
+                        var option = document.createElement('option');
+                        option.value = formattedDate;
+                        option.text = formattedDate;
+                        endDateInput.appendChild(option);
+                        break;
+                    } else {
+                        var option = document.createElement('option');
+                        option.value = formattedDate;
+                        option.text = formattedDate;
+                        endDateInput.appendChild(option);
+                    }
+
+                } else {
+                    var option = document.createElement('option');
+                    option.value = formattedDate;
+                    option.text = formattedDate;
+                    endDateInput.appendChild(option);
+                }
+            }
+            endDateInput.disabled = false;
+        }
+
+        // Utility function to format date as yyyy-mm-dd
+        function formatDate(date) {
+            var year = date.getFullYear();
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            var day = ("0" + date.getDate()).slice(-2);
+            return year + "-" + month + "-" + day;
+        }
+
+        // Function to calculate number of days based on start and end dates
+        // Function to calculate number of days based on start and end dates
+        function calculateNumDays() {
+            var startDateStr = document.getElementById("startDateInput").value;
+            var endDateStr = document.getElementById("endDateInput").value;
+
+            // Parse dates
+            var startDate = new Date(startDateStr);
+            var endDate = new Date(endDateStr);
+
+            // Check if dates are valid
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                console.error("Invalid date format.");
+                return;
+            }
+
+            // Calculate the difference in days
+            var timeDiff = endDate.getTime() - startDate.getTime();
+            var numDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            // Adjust numDays to handle same-day selection
+            if (numDays === 0) {
+                numDays = 1; // Default to 1 day for same-day booking
+            } else if (numDays < 0) {
+                numDays = 0; // Handle case where end date is before start date
+            } else {
+                numDays += 1; // Add one day to include both start and end days
+            }
+            // Cap numDays between 1 and 7
+            numDays = Math.min(Math.max(numDays, 1), 7);
+            document.getElementById("numDaysCount").value = numDays;
+            // Recalculate days after slots if both dates are selected
+            if (startDateStr && endDateStr) {
+                calculatenoofdaysafterslots();
+            }
+        }
+
+        function getEndPeriodValue() {
+            const endPeriodDropdown = document.getElementById("endPeriodDropdown");
+            return endPeriodDropdown.disabled ? endPeriodDropdown.getAttribute("data-value") : endPeriodDropdown.value;
+        }
+
+        function setEndPeriodDataValue() {
+            const endPeriodDropdown = document.getElementById("endPeriodDropdown");
+            if (endPeriodDropdown.disabled) {
+                endPeriodDropdown.setAttribute("data-value", endPeriodDropdown.value);
+            }
+        }
+
+        function calculatenoofdaysafterslots() {
+            const startDateStr = document.getElementById("startDateInput").value;
+            const endDateStr = document.getElementById("endDateInput").value;
+            const startPeriod = parseInt(document.getElementById("startPeriodDropdown").value);
+            const endPeriod = parseInt(getEndPeriodValue()); // Use getEndPeriodValue here
+
+            const periodText = {
+                0: { text: "select", time: "" },
+                1: { text: "Evening", time: "7:00 PM" }
+            };
+
+            const endPeriodText = {
+                0: { text: "select", time: "" },
+                1: { text: "Evening", time: "10:00 PM" }
+            };
+
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(endDateStr);
+
+            const timeDiff = endDate.getTime() - startDate.getTime();
+            let numDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (numDays === 0 && startDate.toDateString() === endDate.toDateString()) {
+                if (startPeriod === 1 && endPeriod === 1) {
+                    numDays = 0.5; // Morning to morning is half day
+                } else if (startPeriod === 2 && endPeriod === 2) {
+                    numDays = 0.5; // Evening to evening is half day
+                } else if (startPeriod === 1 && endPeriod === 2) {
+                    numDays = 1; // Morning to evening is one full day
+                } else {
+                    numDays = 1; // Default to one full day for any other case
+                }
+            } else {
+                if (startPeriod === 1 && endPeriod === 1) {
+                    numDays += 0.5; // Morning to morning adds half a day
+                } else if (startPeriod === 2 && endPeriod === 2) {
+                    numDays += 0.5; // Evening to evening adds half a day
+                } else if (startPeriod === 1 && endPeriod === 2) {
+                    numDays += 1; // Morning to evening adds one full day
+                } else if (startPeriod === 2 && endPeriod === 1) {
+                    // If the period spans over two days, evening to morning should be counted as one full day
+                    numDays -= 0;
+                } else {
+                    numDays += 1; // Default case for any other scenario
+                }
+            }
+
+            //else if (startPeriod === "2" && endPeriod === "2") {
+            //		amount = fullDayAmount * (numDays - 1) + halfDayAmount;
+            //}
+            numDays = Math.min(Math.max(numDays, 0), 7);
+
+            const startPeriodText = periodText[startPeriod].text + " (" + periodText[startPeriod].time + ")";
+            const endPeriodFullText = endPeriodText[endPeriod].text + " (" + endPeriodText[endPeriod].time + ")";
+            const numDaysText = `${startDateStr} (${startPeriodText}) to ${endDateStr} (${endPeriodFullText})`;
+
+            document.getElementById("numDaysCountDisplay").value = numDaysText;
+            document.getElementById("numDaysCount").value = numDays;
+        }
+
+        function showSummary() {
+            const startDate = new Date(document.getElementById("startDateInput").value);
+            const endDate = new Date(document.getElementById("endDateInput").value);
+            const startPeriod = document.getElementById("startPeriodDropdown").value;
+            const endPeriod = getEndPeriodValue(); // Use getEndPeriodValue here
+
+            const startPeriods = {
+                "1": "Evening 7:00 PM"
+            };
+
+            const endPeriods = {
+                "1": "Evening 10:00 PM"
+            };
+            const numofdaysrange = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById("noofdaysbetweenstartend").value = numofdaysrange;
+            const numDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            let summaryText = `You booked for ${numDays} day(s) with the following slots:\n`;
+
+            let currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const currentDay = currentDate.toISOString().split('T')[0];
+                let currentStartPeriod;
+                let currentEndPeriod;
+
+                if (currentDate.getTime() === startDate.getTime()) {
+                    currentStartPeriod = startPeriod;
+                } else {
+                    currentStartPeriod = "1"; // Default to Morning for subsequent days
+                }
+
+                if (currentDate.getTime() === endDate.getTime()) {
+                    currentEndPeriod = endPeriod;
+                } else {
+                    currentEndPeriod = "1"; // Default to Evening for all days except the last
+                }
+
+                summaryText += `${currentDay}: ${startPeriods[currentStartPeriod]} to ${endPeriods[currentEndPeriod]}\n`;
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            document.getElementById("summary").innerText = summaryText;
+        }
+
+        // Add event listeners to update the summary when dropdowns change
+        document.getElementById("startDateInput").addEventListener("change", function () {
+            calculatenoofdaysafterslots();
+            showSummary();
+        });
+
+        document.getElementById("endDateInput").addEventListener("change", function () {
+            calculatenoofdaysafterslots();
+            $("#endPeriodDropdown").val(0).prop("disabled", false);
+            $(".step-2 .next-step").prop("disabled", true);
+
+            const bookingStatus = window.bookingResponse[$("#endDateInput").val()];
+            if (bookingStatus) {
+                if (bookingStatus[0]) {
+                    $("#endPeriodDropdown").val(2);
+                    $("#endPeriodDropdown").prop("disabled", true);
+                    setEndPeriodDataValue();
+                } else if (bookingStatus[1]) {
+                    $("#endPeriodDropdown").val(1);
+                    $("#endPeriodDropdown").prop("disabled", true);
+                    setEndPeriodDataValue();
+                }
+            } else {
+                $("#endPeriodDropdown").prop("disabled", false);
+            }
+
+            calculatenoofdaysafterslots();
+            if ($("#endDateInput").val() == "0") {
+                $('#summary').html('');
+            } else {
+                showSummary();
+            }
+
+        });
+
+        document.getElementById("startPeriodDropdown").addEventListener("change", function () {
+            calculatenoofdaysafterslots();
+            showSummary();
+        });
+
+        document.getElementById("endPeriodDropdown").addEventListener("change", function () {
+            calculatenoofdaysafterslots();
+            showSummary();
+        });
+
+        function initializeDatepickerWithColors(hallId) {
+            // Destroy existing datepicker to avoid duplicate initialization
+            $("#datepicker-container").datepicker("destroy");
+
+            if ($("#startDateInput").hasClass("hasDatepicker")) {
+                $("#startDateInput").datepicker("destroy");
+            }
+
+            if ($("#datepicker-container").hasClass("hasDatepicker")) {
+                $("#datepicker-container").datepicker("destroy");
+            }
+
+            let minDays = parseInt(document.getElementById("mindays").value, 10);
+            let maxDays = parseInt(document.getElementById("maxdays").value, 10);
+
+            const serverDate = new Date($("#serverDate").val() + "T00:00:00");
+
+            const minDate = new Date(serverDate);
+            minDate.setDate(serverDate.getDate() + minDays);
+
+            const maxDate = new Date(minDate);
+            maxDate.setDate(minDate.getDate() + maxDays);
+
+            // Initialize the datepicker
+            $("#startDateInput,#datepicker-container").datepicker({
+                dateFormat: "yy-mm-dd",
+                minDate: minDate,
+                maxDate: maxDate,
+                beforeShowDay: function (eDate) {
+
+                    //NEVER modify eDate
+                    const selectedDate = new Date(
+                        eDate.getFullYear(),
+                        eDate.getMonth(),
+                        eDate.getDate()
+                    );
+
+                    const today = new Date($("#serverDate").val() + "T00:00:00");
+                    const now = new Date();
+                    if (selectedDate.getTime() === today.getTime() && now.getHours() >= 19) {
+                        return [false, "highlight-disabled", "Booking closed for today"];
+                    }
+
+                    if (selectedDate < minDate) {
+                        return [false, "highlight-disabled", "Date not allowed"];
+                    }
+
+                    // // ✅ Allow only Fri / Sat / Sun
+                    // const day = selectedDate.getDay(); // 0=Sun, 5=Fri, 6=Sat
+                    // if (![0, 5, 6].includes(day)) {
+                    //     return [false, "highlight-disabled", "Bookings allowed only on Fri, Sat & Sun"];
+                    // }
+
+                    const dateString = $.datepicker.formatDate("yy-mm-dd", selectedDate);
+                    const bookingStatus = window.bookingResponse?.[dateString];
+
+                    //If morning slot already booked → disable entire date
+                    if (bookingStatus && bookingStatus[0] === true) {
+                        return [false, "highlight-pink disabled", "Slot already booked"];
+                    }
+
+                    // if (bookingStatus[2]) {
+                    //     return [false, "highlight-blue disabled", "GCC Blocked"];
+                    // }
+
+                    //3-day block based on event type
+                    if (window.isThreeDayBlock) {
+                        const blockedDate = new Date(today);
+                        blockedDate.setDate(blockedDate.getDate() + 2);
+
+                        if (selectedDate <= blockedDate) {
+                            return [false, "highlight-disabled", "Blocked due to event type"];
+                        }
+                    }
+
+                    // 🟢 Valid selectable date
+                    return [true, "highlight-greens", "Slot Available"];
+                },
+            });
+
+            // Show datepicker when hall is selected
+            $('#selecthall').off('click').on('click', function () {
+                $('#datepicker-container').datepicker('show');
+            });
+
+            // Handle changes in the start date input
+            $("#startDateInput").on("change", function () {
+                const selectedDate = $(this).val();
+                const bookingStatus = window.bookingResponse[selectedDate] || {};
+                // const currentDate = new Date();
+                const currentHours = new Date().getHours();
+                const currentDateString = $("#serverDate").val();
+
+                $("#startPeriodDropdown option").prop("disabled", false); //newly added after server date changes
+
+                $("#startPeriodDropdown").val(0).prop("disabled", false);
+                $("#endPeriodDropdown").val(0).prop("disabled", false);
+                $("#numDaysCount").val('');
+                validateForm();
+
+                if ((selectedDate === currentDateString && currentHours >= 6) || bookingStatus[0]) {
+                    $("#startPeriodDropdown option[value='1']").prop("disabled", true);
+                } else if (bookingStatus[1]) {
+                    $("#startPeriodDropdown option[value='2']").prop("disabled", true);
+                }
+                updateEndDate(selectedDate);
+            });
+
+            // Event type change logic
+            $("#reasonforbooking").on("change", function () {
+                const selectedEventType = $(this).find("option:selected").text().trim();
+                window.isThreeDayBlock = ["Commercial", "State Govt Event", "Central Govt Event"].includes(selectedEventType);
+                $("#datepicker-container").datepicker("refresh");
+            });
+        }
+
+        function handleBookingStatus(bookingStatus, defaultMessage) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } /*else if (bookingStatus[3]) {
+                    return [true, "highlight-lightpink disabled", "Temporary Blocked"];
+                } */ else if (bookingStatus[0] && bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (bookingStatus[0] && !bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (!bookingStatus[0] && bookingStatus[1]) {
+                return [true, "highlight-violet", "Only Morning Slot Available"];
+            } else if (bookingStatus && bookingStatus[0] === true) {
+                return [false, "highlight-disabled", "Slot already booked"];
+            }
+            return [true, "highlight-greens", defaultMessage];
+        }
+
+        // Helper function: Handles logic after 2 PM
+        function handleAfter2PM(bookingStatus) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } else if (bookingStatus[0] || bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            }
+            return [false, "highlight-disabled", "Not Allowed to Book"];
+        }
+
+        // Helper function: Handles morning slots between 6 AM and 2 PM
+        function handleMorningSlots(bookingStatus) {
+            if (bookingStatus[2]) {
+                return [true, "highlight-blue disabled", "GCC Blocked"];
+            } else if (bookingStatus[0] && bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (bookingStatus[0] && !bookingStatus[1]) {
+                return [true, "highlight-pink disabled", "Slot Occupied"];
+            } else if (!bookingStatus[0] && bookingStatus[1]) {
+                return [false, "highlight-disabled", "Slot Occupied"];
+            }
+            return [true, "highlight-pink disabled", "Slot Occupied"];
+        }
+
+
+        function datepickerFormat(dateString) {
+            var dateObject = new Date(dateString);
+            var year = dateObject.getFullYear();
+            var month = (dateObject.getMonth() + 1).toString().padStart(2, "0");
+            var day = dateObject.getDate().toString().padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        //snackbars
+        $("#reasonforbooking").on("click", function () {
+            var relationship = $("#relation").val();
+            if (relationship == 0) {
+                var relationField = $("#relation")[0];
+                relationField.setCustomValidity("Relationship for Booking is Missing. Please select.");
+                relationField.reportValidity();
+                return; // Exit early if relationship is not provided
+            } else {
+                $("#relation")[0].setCustomValidity(""); // Clear custom validity if valid
+            }
+        });
+
+        $("#relation").on("change", function () {
+            // Clear custom validity when a valid value is selected
+            this.setCustomValidity("");
+        });
+
+        $("#startDateInput").on("click", function () {
+            var reason = $("#reasonforbooking").val();
+            if (reason == 0) {
+                var reasonField = $("#reasonforbooking")[0];
+                reasonField.setCustomValidity("Reason for booking is missed. Please select a reason.");
+                reasonField.reportValidity();
+                return; // Exit early if reason is not provided
+            } else {
+                $("#reasonforbooking")[0].setCustomValidity(""); // Clear custom validity if valid
+            }
+        });
+        $("#endDateInput").on("click", function () {
+            var reason = $("#reasonforbooking").val();
+            var startDate = $("#startDateInput").val();
+            if (reason == 0) {
+                var reasonField = $("#reasonforbooking")[0];
+                reasonField.setCustomValidity("Reason for booking is missed. Please select a reason.");
+                reasonField.reportValidity();
+                return; // Exit early if reason is not provided
+            } else {
+                $("#reasonforbooking")[0].setCustomValidity(""); // Clear custom validity if valid
+            }
+            if (startDate == "") {
+                var startDate = $("#startDateInput")[0];
+                startDateInput.setCustomValidity("Start Date missed. Please select a Start Date.");
+                startDateInput.reportValidity();
+                return; // Exit early if reason is not provided
+            } else {
+                $("#startDateInput")[0].setCustomValidity(""); // Clear custom validity if valid
+            }
+        });
+
+        $("#reasonforbooking").on("change", function () {
+            // Clear custom validity when a valid value is selected
+            this.setCustomValidity("");
+        });
+
+        // Snackbar function
+        function showSnackbar(message) {
+            var snackbar = $("<div>")
+                .addClass("snackbar")
+                .text(message)
+                .appendTo("body");
+
+            // Add animation classes for showing and hiding
+            snackbar.addClass("show");
+
+            // Remove the snackbar after 3 seconds
+            setTimeout(function () {
+                snackbar.removeClass("show");
+                snackbar.remove();
+            }, 3000);
+        }
+
+        // Update the event listeners to include date inputs
+        $("#endDateInput").on("change", function () {
+            var starting = $("#startPeriodDropdown").val();
+            var ending = $("#endPeriodDropdown").val();
+            var startDate = $("#startDateInput").val();
+            var endDate = $("#endDateInput").val();
+
+            // Call validateSlot with updated parameters
+            validateSlot(starting, ending, startDate, endDate);
+            validateForm();
+        });
+
+        // Event listener for changes in startPeriodDropdown
+        $("#startPeriodDropdown").on("change", function () {
+            var starting = $(this).val();
+            var ending = $("#endPeriodDropdown").val();
+            var startDate = $("#startDateInput").val();
+            var endDate = $("#endDateInput").val();
+
+            // Call validateSlot with updated parameters
+            validateSlot(starting, ending, startDate, endDate);
+            validateForm();
+            showSummary();
+        });
+
+        // Event listener for changes in endPeriodDropdown
+        $("#endPeriodDropdown").on("change", function () {
+            var starting = $("#startPeriodDropdown").val();
+            var ending = $(this).val();
+            var startDate = $("#startDateInput").val();
+            var endDate = $("#endDateInput").val();
+            validateSlot(starting, ending, startDate, endDate);
+            validateForm();
+            calculatenoofdaysafterslots();
+            showSummary();
+        });
+
+        function validateSlot(starting, ending, startDate, endDate) {
+            // Check if startDate is equal to endDate and starting is 2 and ending is 1
+            if (startDate === endDate && starting == 2 && ending == 1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: "The starting slot cannot be set to Evening if the ending slot is Morning when the dates are the same.",
+                }).then(() => {
+                    // Reset endPeriodDropdown to 0
+                    $("#endPeriodDropdown").val(0);
+                    validateForm();
+                });
+            }
+            validateForm(); // Call validateForm to update form validation status
+        }
+
+        function validateForm() {
+            var startDate = $("#startDateInput").val();
+            var endDate = $("#endDateInput").val();
+            var startPeriod = $("#startPeriodDropdown").val();
+            var endPeriod = $("#endPeriodDropdown").val();
+            var reasonforbooking = $("#reasonforbooking").val();
+            var relationship = $("#relation").val();
+            if (startDate && endDate !== "0" && startPeriod !== "0" && endPeriod !== "0" && relationship !== "0" && reasonforbooking) {
+                $(".next-step").prop("disabled", false);
+            } else {
+                $(".next-step").prop("disabled", true);
+            }
+        }
+
+        // Confirm Payment button click event
+        $("#confirmPaymentBtn").on('click', function () {
+            // Disable the payment button
+            $('#confirmPaymentBtn').prop('disabled', true);
+
+            stopTimer();
+
+        });
+
+        function stopTimer() {
+            if (countdown) {
+                clearInterval(countdown);
+                countdown = null; // Clear the countdown reference
+            }
+            timerElement.innerHTML = "Timer Stopped"; // Optionally update the message
+        }
+
+        function showToast(msg) {
+            var toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.className = "show";
+            setTimeout(function () {
+                toast.className = toast.className.replace("show", "");
+            }, 2500);
+        }
+
+        $(document).on("contextmenu",
+            "#ui-datepicker-div td, #ui-datepicker-div a, #ui-datepicker-div .ui-datepicker-title", function (e) {
+                e.preventDefault();
+                showToast("Right-click disabled");
+                return false;
+            });
+
+    </script>
+</body>
+
+</html>

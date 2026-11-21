@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:replace="~{fragments/head :: head}">
+	<script src="https://maps.googleapis.com/maps/api/js?key="></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+	<!-- Pre-loader start -->
+	<div class="theme-loader">
+		<div class="ball-scale">
+			<div class='contain'>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+				<div class="ring">
+					<div class="frame"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Pre-loader end -->
+	<div id="pcoded" class="pcoded">
+		<div class="pcoded-container">
+			<!-- Menu header start -->
+			<nav th:replace="~{fragments/nav-user :: nav}"></nav>
+			<!-- Menu header end -->
+			<div class="pcoded-main-container">
+			<!--<nav th:replace="~{fragments/nav-usermenu :: nav}"></nav>-->
+				<div class="pcoded-wrapper">
+					<div class="pcoded-content">
+						<div class="pcoded-inner-content">
+							<!-- Main-body start -->
+							<div class="main-body">
+								<div class="page-wrapper">
+									<!-- Page-header start -->
+									<div class="page-header m-t-20"></div>
+									<!-- Page-header end -->
+									<!-- Page body start -->
+									<div class="page-body">
+										<div class="content">
+											<div class="block block-rounded" style="width: 75%;margin-left: 12%;">
+												<div class="block-header block-header-default">
+													<h3 class="block-title">Collection Pending Amount</h3>
+												</div>
+												<div class="block-content p-0">
+													<div class="p-sm-4 p-0">
+														<div class="row justify-content-center">
+															<div id="totalAmountDiv" class="text-center mt-3">
+																	<table
+																		class="table table-bordered center-table table-align">
+																		<tbody>
+																			<tr>
+																				<td class="td-align"><strong> Deposite
+																						Amount:</strong>
+																				</td>
+																				<td>
+																				    <span>₹
+																				        <span th:text="${bookingsDetails.settlement.depositAmount}"></span> 
+																				    </span>
+																				</td>
+																			</tr>
+																			<tr>
+																				<td class="td-align">
+																					<strong>EB Amount:</strong>
+																				</td>
+																				<td>
+																				    <span>₹
+																				        <span th:text="${bookingsDetails.settlement.ebAmount}"></span> 
+																				    </span>
+																				</td>
+																			</tr>
+																			<tr id="additionalcharges">
+																				<td class="td-align">
+																					<strong>Damage Amount:</strong>
+																				</td>
+																				<td>
+																				    <span>₹
+																				        <span th:text="${bookingsDetails.settlement.damageAmount}"></span> 
+																				    </span>
+																				</td>
+																			</tr>
+																			<tr>
+																				<td class="td-align"><strong>Collection Pending
+																						Amount:</strong>
+																				</td>
+																				<td>
+																				    <span>₹
+																				        <span th:text="${bookingsDetails.settlement.collectionPending}"></span> 
+																				    </span>
+																				</td>
+																			</tr>
+																		</tbody>
+																	</table>
+																<div class="text-center">
+																	<button id="calculateButton"
+																		class="btn btn-primary" th:onclick="|extrapaymentStart(${bookingsDetails.users.userId}, ${bookingsDetails.bookingId})|">Pay</button>
+																		<input type="hidden" id="extrapaymentbtnSubmit"></input>
+																</div>
+																<!--<div class="text-center">
+																	<div th:if="${bookingsDetails.settlement.collectionStatus} != 'Paid'">
+																		<button id="calculateButton"
+																				class="btn btn-primary"
+																				th:onclick="|extrapaymentStart(${bookingsDetails.users.userId}, ${bookingsDetails.bookingId})|">
+																			Pay
+																		</button>
+																		<input type="hidden" id="extrapaymentbtnSubmit">
+																	</div>
+
+																	<div th:if="${bookingsDetails.settlement.collectionStatus} == 'Paid'">
+																		<button class="text-bg-danger"> Amount Paid </button>
+																	</div>
+																</div>-->
+
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!-- Page body end -->
+									</div>
+								</div>
+								<!-- Main-body end -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+		<!-- Login Modal-->
+		<div th:replace="~{fragments/loginreg :: div}"></div>
+		<script th:replace="~{fragments/script :: script}"></script>		
+		<script th:replace="~{fragments/PaymentScript :: script}"></script>
+		
+</body>
+
+</html>

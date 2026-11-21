@@ -1,0 +1,152 @@
+<!-- Pre-loader end -->
+<div id="pcoded" class="pcoded">
+	<div class="pcoded-container">
+		<!-- Menu header -->
+		<div class="nav-display">
+			<nav th:replace="~{fragments/nav-user :: nav}"></nav>
+		</div>
+		<!-- Main content -->
+		<div class="container-fluid" style="margin-top: 4%; padding: 15px;">
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="card" style="width: 90%; max-width: 1060px; margin: 0 auto;">
+						<div class="card-body">
+							<!-- Acknowledgement Header -->
+							<div style="text-align: center; margin-bottom: 20px;">
+								<span><img src="media\images\logo.png" style="width:30px;height:30px;"></span>
+								<br>
+								<h6 style="font-weight: bold; text-decoration: underline;">
+									<ul style="list-style-type: none; margin: 0; padding: 0;">COLLECTION PENDING ACKNOWLEDGEMENT COPY</ul>
+								</h6>
+							</div>
+
+							<!-- User Details and Payment Details Section -->
+							<div class="section" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+								<!-- User Details Box -->
+								<div th:if="${bookingsDetails != null}" class="user-details-box" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; width: 48%; background-color: #f9f9f9;">
+									<h6 style="font-weight: bold;background-color: #404E67;color: white; padding: 8px; border-radius: 5px;">User Details:</h6>
+									<p><strong>User Name:</strong> <span id="uName" th:text="${bookingsDetails.users.name}"></span></p>
+									<p><strong>User Type:</strong> <span id="uType" th:text="${bookingsDetails.users.usertype}"></span></p>
+									<p><strong>Mobile No:</strong> <span id="mobile" th:text="${bookingsDetails.users.mobileNo}"></span></p>
+									<p><strong>Email:</strong> <span id="eMail" th:text="${bookingsDetails.users.email}"></span></p>
+								</div>
+
+								<!-- Payment Details Box -->
+								<div class="payment-details-box" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; width: 48%; background-color: #f9f9f9;">
+								    <h6 style="font-weight: bold; background-color: #404E67; color: white; padding: 8px; border-radius: 5px;">Payment Details:</h6>
+								    
+								    <!-- Check if payments is not null -->
+								    <div th:if="${bookingsDetails.extrapayments != null}">
+								        <!-- Transaction Id -->
+								        <p><strong>Transaction Id:</strong> 
+								            <span th:text="${bookingsDetails.extrapayments.transactionId != null ? bookingsDetails.extrapayments.transactionId : 'NA'}"></span>
+								        </p>
+								        
+								        <!-- Payment Status -->
+								        <p><strong>Payment Status:</strong> 
+								            <span th:text="${bookingsDetails.extrapayments.paymentStatus != null ? bookingsDetails.extrapayments.paymentStatus : 'NA'}" 
+								                  th:class="${bookingsDetails.extrapayments.paymentStatus == 'Success'} ? 'text-success fw-bold' : 'text-danger fw-bold'"></span>
+								        </p>
+								        
+								        <!-- Total Amount Paid -->
+								        <p><strong>Total Amount Paid:</strong> 
+								            <span th:text="${bookingsDetails.extrapayments.amountReceived != null ? '₹ ' + bookingsDetails.extrapayments.amountReceived : 'NA'}" 
+								                  style="font-weight: bold;"></span>
+								        </p>
+								    </div>
+								
+								    <!-- Display NA if payments is null -->
+								    <div th:if="${bookingsDetails.extrapayments == null}">
+								        <p><strong>Transaction Id:</strong> <span>NA</span></p>
+								        <p><strong>Payment Status:</strong> <span>NA</span></p>
+								        <p><strong>Total Amount Paid:</strong> <span>NA</span></p>
+								    </div>
+								</div>
+							</div>
+							
+						<div class="section" th:if="${bookingsDetails != null}" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; background-color: #f9f9f9;">
+								<h6 style="font-weight: bold; background-color: #404E67;color: white; padding: 8px; border-radius: 5px;">Collection Pending Details:</h6>
+								<div style="display: flex; justify-content: space-between;">
+									<div class="hall-details-left" style="width: 48%;">
+										<p><strong>Deposite Amount:</strong> <span id="deposiamount" th:text="${bookingsDetails.depositAmount}"></span></p>
+										<p><strong>EB Amount:</strong> <span id="ebAmount" th:text="${bookingsDetails.settlement.ebAmount}"></span></p>
+										<p><strong>Damage Amount:</strong> <span id="DamageAmount" th:text="${bookingsDetails.settlement.damageAmount}"></span></p>
+										<p><strong>Collection Pending Amount:</strong> <span id="collectionPending">
+                                            <span th:text="${bookingsDetails.settlement.collectionPending}"></span>
+                                        </span></p>
+                                        <p><strong>Collection Pending Status:</strong> <span id="collectionPendingstatus">
+                                            <span th:text="${bookingsDetails.settlement.collectionStatus}"></span>
+                                        </span></p>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Hall Details Section -->
+							<div class="section" th:if="${bookingsDetails != null}" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; background-color: #f9f9f9;">
+								<h6 style="font-weight: bold; background-color: #404E67;color: white; padding: 8px; border-radius: 5px;">Hall Details:</h6>
+								<div style="display: flex; justify-content: space-between;">
+									<div class="hall-details-left" style="width: 48%;">
+										<p><strong>Zone:</strong> <span id="zone" th:text="${bookingsDetails.hallDetails.zone}"></span></p>
+										<p><strong>Division:</strong> <span id="division" th:text="${bookingsDetails.hallDetails.division}"></span></p>
+										<p><strong>Hall Name:</strong> <span id="hallname" th:text="${bookingsDetails.hallDetails.hallId} + '-' + ${bookingsDetails.hallDetails.hallName}"></span></p>
+										<p><strong>Hall Address:</strong> <span id="address">
+                                            <span th:text="${bookingsDetails.hallDetails.doorNo}"></span>,
+                                            <span th:text="${bookingsDetails.hallDetails.street}"></span>,
+                                            <span th:text="${bookingsDetails.hallDetails.area}"></span>,
+                                            <span th:text="${bookingsDetails.hallDetails.pinCode}"></span>
+                                        </span></p>
+									</div>
+									<div class="hall-details-right" style="width: 48%;">
+										<p><strong>Caretaker Name:</strong> <span th:text="${bookingsDetails.hallDetails.hallInchargeName}"></span></p>
+										<p><strong>Caretaker Mobile No:</strong> <span th:text="${bookingsDetails.hallDetails.hallInchargeMobno}"></span></p>
+									</div>
+								</div>
+							</div>
+
+							<!-- Booking Details Section -->
+							<div class="section" th:if="${bookingsDetails != null}" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; background-color: #f9f9f9;">
+								<h6 style="font-weight: bold; background-color: #404E67;color: white; padding: 8px; border-radius: 5px;">Booking Details:</h6>
+								<div style="display: flex; justify-content: space-between;">
+									<div class="booking-details-left" style="width: 48%;">
+										<p><strong>Booking Id:</strong> <span th:text="${bookingsDetails.bookingId}"></span></p>
+										<p><strong>Starting Date:</strong> <span th:text="${bookingsDetails.startDate}"></span></p>
+										<p><strong>Starting Slot:</strong> <span th:text="${bookingsDetails.startingSlot == 1 ? 'Morning' : 'Evening'}"></span></p>
+										<p><strong>No of days Booked:</strong> <span id="bookId" th:text="${bookingsDetails.noOfDays}"></span></p>
+										<p><strong>Booking Status:</strong>
+											<span th:text="${bookingsDetails.bookingStatus}"
+												  th:class="${bookingsDetails.bookingStatus.name() == 'APPROVED'} ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                							</span>
+										</p>
+									</div>
+									<div class="booking-details-right" style="width: 48%;">
+										<p><strong>Booking Date:</strong> <span th:text="${bookingsDetails.bookingDate}"></span></p>
+										<p><strong>Ending Date:</strong> <span th:text="${bookingsDetails.endDate}"></span></p>
+										<p><strong>Ending Slot:</strong> <span th:text="${bookingsDetails.endingSlot == 1 ? 'Morning' : 'Evening'}"></span></p>
+										<p><strong>Comment:</strong> <span th:text="${bookingsDetails.comments}"
+												  th:class="${bookingsDetails.comments == 'Booking Confirmed Successfully'} ? 'text-success fw-bold' : 'text-danger fw-bold'" class="fw-bold"></span></p>
+										<p><strong>Reason For Booking:</strong> <span th:text="${bookingsDetails.reason}"></span></p>
+									</div>
+							</div>
+							</div>
+
+
+							<!-- Computer Generated Note
+							<div class="generated-note" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; background-color: #f9f9f9;"> -->
+								<h6 style="text-align:center;font-size:11px;">* This is a computer-generated document. No signature is required *</h6>
+							
+							<p><span id="generatedDate" style="font-size:10px;"></span></p>
+
+						</div>
+					</div>
+
+					<!-- Buttons -->
+					<div class="button-container" th:if="${bookingsDetails != null}" style="display: flex; justify-content: flex-end; margin-top: 20px;">
+						<button class="btn btn-success" th:onclick="printTables([[${bookingsDetails.bookingId}]])" style="background: #FB6340;">Download</button>
+						<button class="btn btn-success" th:onclick="return redirect([[${bookingsDetails.bookingtype}]])" style="background: rgb(21, 68, 92); border-radius: 5px; padding: 8px 16px;">Back to Home</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

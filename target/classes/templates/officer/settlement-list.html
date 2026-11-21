@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-public :: head}"></head>
+<style>
+	.card-body table {
+		width: 100%;
+		padding: 100px;
+	}
+
+	.card-body th,
+	td {
+		padding: 8px;
+		text-align: left;
+	}
+
+	.amount-cell {
+		text-align: right;
+		padding-right: 1rem;
+		/* Adjust padding as needed */
+	}
+
+	.table {
+		width: 100% !important;
+	}
+</style>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<body>
+	<!-- Page Container -->
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<!-- Sidebar Nav-->
+		<nav th:replace="~{fragments/nav-officer :: nav}"></nav>
+		<!-- END Sidebar -->
+		<!-- Header -->
+		<header th:replace="~{fragments/header-officer :: header}"></header>
+		<!-- END Header -->
+		<!-- Main Container -->
+		<main id="main-container" class="container mt-5">
+			<ul class="nav nav-tabs" id="myTab" role="tablist">
+				<li class="nav-item" role="presentation">
+					<a class="nav-link active" id="settlement-tab" data-toggle="tab" href="#settlement" role="tab"
+						aria-controls="settlement" aria-selected="true">Settlement Refund</a>
+				</li>
+				<li class="nav-item" role="presentation">
+					<a class="nav-link" id="cancel-tab" data-toggle="tab" href="#cancel" role="tab"
+						aria-controls="cancel" aria-selected="false">Cancelled Bookings Refund</a>
+				</li>
+				<li class="nav-item" role="presentation">
+					<a class="nav-link" id="gcc-tab" data-toggle="tab" href="#gcc" role="tab" aria-controls="gcc"
+						aria-selected="false">GCC Blocked/Rejected Refund</a>
+				</li>
+							<li class="nav-item" role="presentation">
+  <a class="nav-link" id="settlement-initiated-tab"
+     data-toggle="tab"
+     href="#settlement-initiated"
+     role="tab"
+     aria-controls="settlement-initiated"
+     aria-selected="false">Settlement Initiated</a>
+</li>
+			</ul>
+			<div class="tab-content" id="myTabContent">
+				<!-- Settlement Approval Tab -->
+				<div class="tab-pane fade show active" id="settlement" role="tabpanel" aria-labelledby="settlement-tab">
+					<div class="block-header block-header-default">
+						<h3 class="block-title">List of Settlement Refund Pending</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped table-vcenter js-dataTable-responsive" id="SettlementApprovedListTable">
+									<thead class="thead-light">
+										<tr>
+											<th>S.no</th>
+											<th>Zone</th>
+											<th>Division</th>
+											<th>Hall Name</th>
+											<th>Booking Id</th>
+											<th>Booking Date</th>
+											<th>Settlement Id</th>
+											<th>Settlement raised Date</th>
+											<th>Deposit Amount</th>
+											<th>Collection Pending</th>
+											<th>Refund Amount</th>
+											<th>Status</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+									<!--	<tr th:each="settlement, rowStat : ${settlementlist}">-->
+											<tr th:each="settlement, rowStat : ${settlementlist}"
+											th:if="${settlement.settlement.approvedFlag == 0 or settlement.settlement.approvedFlag == null}">
+											<td class="text-center" th:text="${rowStat.index + 1}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.zone}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.division}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.hallName}"></td>
+											<td class="text-center" th:text="${settlement.bookingId}"></td>
+											<td class="text-center" th:text="${settlement.bookingDate}"></td>
+											<td class="text-center" th:text="${settlement.settlement.settlementId}">
+											</td>
+											<td class="text-center" th:text="${settlement.settlement.cdate}"></td>
+											<td class="text-center" th:text="${settlement.depositAmount}"></td>
+											<td class="text-center"
+												th:text="${settlement.settlement.collectionPending}"></td>
+											<td class="text-center" th:text="${settlement.settlement.refundedAmount}">
+											</td>
+											<td class="text-center" th:text="${settlement.refundStatus}"></td>
+											<td>
+												<p>
+													<span class="badge bg-warning" style="cursor: pointer;"
+														th:onclick="pending([[${settlement.settlement.settlementId}]])">Approve</span>
+												</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- CancelBooking Tab -->
+				<div class="tab-pane fade" id="cancel" role="tabpanel" aria-labelledby="cancel-tab">
+					<div class="block-header block-header-default">
+						<h3 class="block-title">Cancelled Bookings with Refund Pending</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped table-vcenter js-dataTable-responsive" id="cancelledApprovedListTable">
+									<thead class="thead-light">
+										<tr>
+											<th>S.no</th>
+											<th>Booking Id</th>
+											<th>Booking Date</th>
+											<th>Hall Name</th>
+											<th>User Name</th>
+											<th>User type</th>
+											<th>Reason for Booking</th>
+											<th>Refund Amount</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="cancelledbookings, rowStat : ${cancelledbookings}">
+											<td class="text-center" th:text="${rowStat.index + 1}"></td>
+											<td class="text-center" th:text="${cancelledbookings.bookingId}"></td>
+											<td class="text-center" th:text="${cancelledbookings.bookingDate}"></td>
+											<td class="text-center" th:text="${cancelledbookings.hallDetails.hallName}">
+											</td>
+											<td class="text-center" th:text="${cancelledbookings.users.name}"></td>
+											<td class="text-center" th:text="${cancelledbookings.users.usertype}"></td>
+											<td class="text-center" th:text="${cancelledbookings.reason}"></td>
+											<td class="text-center"
+												th:text="${cancelledbookings.depositAmount}"></td>
+											<td>
+												<p>
+													<span class="badge bg-warning" style="cursor: pointer;"
+														th:onclick="cancelledbooking([[${cancelledbookings.bookingId}]])">Approve</span>
+												</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- GCC Blocked/Rejected Approved Tab -->
+				<div class="tab-pane fade" id="gcc" role="tabpanel" aria-labelledby="gcc-tab">
+					<div class="block-header block-header-default">
+						<h3 class="block-title">GCC Blocked/Rejected Bookings with Refund Pending</h3>
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped table-vcenter js-dataTable-responsive" id="rejectedApprovedListTable">
+									<thead class="thead-light">
+										<tr>
+											<th>S.no</th>
+											<th>Booking Id</th>
+											<th>Booking Date</th>
+											<th>Hall Name</th>
+											<th>User Name</th>
+											<th>User type</th>
+											<th>Reason for Booking</th>
+											<th>Reason for Rejection</th>
+											<th>Refund Amount</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="rejectedbookings, rowStat : ${rejectedbookings}">
+											<td class="text-center" th:text="${rowStat.index + 1}"></td>
+											<td class="text-center" th:text="${rejectedbookings.bookingId}"></td>
+											<td class="text-center" th:text="${rejectedbookings.bookingDate}"></td>
+											<td class="text-center" th:text="${rejectedbookings.hallDetails.hallName}">
+											</td>
+											<td class="text-center" th:text="${rejectedbookings.users.name}"></td>
+											<td class="text-center" th:text="${rejectedbookings.users.usertype}"></td>
+											<td class="text-center" th:text="${rejectedbookings.reason}"></td>
+											<td class="text-center" th:text="${rejectedbookings.comments}"></td>
+											<td class="text-center" th:text="${rejectedbookings.amountReceived}"></td>
+											<td>
+												<p>
+													<span class="badge bg-warning" style="cursor: pointer;"
+														th:onclick="rejectedbooking([[${rejectedbookings.bookingId}]])">Approve</span>
+												</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Settlement iniated -->
+				<div class="tab-pane fade " id="settlement-initiated" role="tabpanel">
+					<div class="block-header block-header-default">
+						<h3 class="block-title"> Settlement Initiated</h3>
+
+					</div>
+					<div class="block-content p-0">
+						<div class="p-sm-4 p-0">
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped table-vcenter js-dataTable-responsive"
+									id="SettlementInitiatedListTable">
+									<thead class="thead-light">
+										<tr>
+											<th>S.nos</th>
+											<th>Zone</th>
+											
+											<th>Division</th>
+											<th>Hall Name</th>
+											<th>Booking Id</th>
+											<th>Booking Date</th>
+											<th>Settlement Id</th>
+											<th>Settlement raised Date</th>
+											<th>Deposit Amount</th>
+											<th>Collection Pending</th>
+											<th>Refund Amount</th>
+											<th>Status</th>
+											<th>Last Initade date</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<!--<tr th:each="settlement, rowStat : ${settlementlist}">-->
+										<tr th:each="settlement, rowStat : ${settlementIntiated}"
+											th:if="${settlement.settlement.approvedFlag == 1 }">
+
+											<td class="text-center" th:text="${rowStat.index + 1}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.zone}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.division}"></td>
+											<td class="text-center" th:text="${settlement.hallDetails.hallName}"></td>
+											<td class="text-center" th:text="${settlement.bookingId}"></td>
+											<td class="text-center" th:text="${settlement.bookingDate}"></td>
+											<td class="text-center" th:text="${settlement.settlement.settlementId}">
+											</td>
+											<td class="text-center" th:text="${settlement.settlement.cdate}"></td>
+											<td class="text-center" th:text="${settlement.depositAmount}"></td>
+											<td class="text-center"
+												th:text="${settlement.settlement.collectionPending}"></td>
+											<td class="text-center" th:text="${settlement.settlement.refundedAmount}">
+											</td>
+											<td class="text-center" th:text="${settlement.refundStatus}"></td>
+											 <td th:text="${#dates.format(settlement.settlement.approvedFlagDate, 'yyyy-MM-dd')}"></td>
+											
+											<td>
+												<p>
+													<span class="badge bg-warning" style="cursor: pointer;"
+														th:onclick="pending([[${settlement.settlement.settlementId}]])">Approve</span>
+												</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<!-- End User Details Modal-->
+
+		<!-- END Main Container -->
+		<!-- Modal for Pending -->
+		<div class="modal fade backdrop" id="pendingSettlementForm" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+
+					<form id="ownform" onsubmit="return rejectsubmit();">
+						<div class="block block-rounded block-themed block-transparent mb-0">
+
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="2mtitle">Settlement Information</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+
+							<div class="block-content row">
+
+								<div class="col-md-12 col-lg-12 col-sm-12">
+									<input type="hidden" class="form-control text-center" name="settlementid"
+										id="settlementid" disabled />
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="10" style="background-color: #f2f2f2;">User Details</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Name:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_userName"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Mobile Number:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_mobileNumber"></td>
+
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Type:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_usertype"></td>
+
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Address:
+												</th>
+												<td colspan="5" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_useraddress"></td>
+
+											</tr>
+											<input type="hidden" class="form-control text-center" name="bookingid"
+												id="bookingid" disabled />
+											<tr>
+												<th colspan="10" style="background-color: #f2f2f2;">Hall Details</th>
+											</tr>
+
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Hall Name:
+												</th>
+												<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_hallName"></td>
+
+											</tr>
+											<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Hall Address:</th>
+											<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="td_halladdress"></td>
+
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Caretaker
+													Name:</th>
+												<td colspan="2" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_caretakername"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Caretaker
+													Mobile Number:</th>
+												<td colspan="2" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_caretakermobileNumber"></td>
+
+											</tr>
+
+										</table>
+									</div>
+								</div>
+
+
+
+								<div class="col-md-12 col-lg-12 col-sm-12">
+									<input type="hidden" class="form-control text-center" name="settlementid"
+										id="settlementid" disabled />
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="4" style="background-color: #f2f2f2;">Booking
+													Details (Booking Id:-<span id="booking_id"
+														style="color:blue"></span>)</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Booking Date:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_bookingDate"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Deposit
+													Amount:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_depositeAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Start Date:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_startDate"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Hall Amount:
+												</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_hallAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">END
+													Date:</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_endDate"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">GST @18%:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_gst"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Starting Slot:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_startingSlot"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Total Amount:
+												</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_totalAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Ending Slot:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="td_endingSlot"></td>
+											</tr>
+
+											<tr>
+												<th colspan="4" style="background-color: #f2f2f2;">EB
+													Details</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Consumer Number:</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem; text-align:center"
+													id="td_EBNumber"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">EB Amount Per
+													Unit:</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem;text-align:right"
+													id="td_ebamountperunit"></td>
+											</tr>
+											<tr>
+
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Start Reading:
+												</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem;text-align:center"
+													id="td_startingReading"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Unit Consumed:
+												</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem;text-align:right" id="td_usedunit">
+												</td>
+
+											</tr>
+											<tr>
+
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">END Reading:
+												</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem;text-align:center"
+													id="td_endingReading"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">EB Amount:</th>
+												<td class="fw-semibold"
+													style="padding: 0.45rem 0.45rem;text-align:right"
+													id="td_electricityamount"></td>
+											</tr>
+										</table>
+									</div>
+								</div>
+
+
+								<div id="damageDetails" style="margin-bottom: -17px;"></div>
+
+								<div class="col-md-12 col-lg-12 col-sm-12">
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="2" style="background-color: #f2f2f2;font-weight: normal">
+													Amount to be Refunded</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Deposit
+													Amount:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_depositeamountforrefund">0</td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">EB Amount:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_ebAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Damage Amount:
+												</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="td_damage"></td>
+											</tr>
+											<tr id="pendingcolumn">
+												<th id="th_settel_label"
+													style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+													Collection Pending Amount:</th>
+												<td class="fw-semibold amount-cell"
+													style="padding: 0.45rem 0.45rem; color: green;" id="td_pending_amt">
+													0</td>
+											</tr>
+											<tr id="collectionstatuscolumn">											
+											<th id="label"
+												style="padding: 0.45rem 0.45rem;font-weight: normal">Collection Pending Status
+												:</th>
+											<td class="fw-semibold amount-cell"
+												style="padding: 0.45rem 0.45rem; color: green;" id="td_collection_status">
+											</td>
+											</tr>
+											<tr>
+												<th
+													style="padding: 0.45rem 0.45rem; background-color: #f2f2f2;font-weight: normal">
+													Actual refundable Amount:</th>
+												<td class="fw-semibold amount-cell"
+													style="padding: 0.45rem 0.45rem; color: green;" id="td_settel_amt">0
+												</td>
+											</tr>
+										</table>
+									</div>
+								</div>
+								<div class="mb-12">
+
+									<label class="form-label">Reject Reason:<span class="text-danger"></span></label>
+									<textarea class="form-control" name="reason" id="reason" style="width: 100%;"
+										required></textarea>
+
+								</div>
+
+							</div>
+							<div class="block-content block-content-full text-end bg-body" id="mbutton2">
+								<button type="button" class="btn btn-sm btn-alt-success" id="approvebutton"
+									th:onclick="accept()">Approve</button>
+								<button type="button" class="btn btn-sm btn-alt-secondary"
+									data-bs-dismiss="modal">Close</button>
+								<button type="submit" class="btn btn-sm btn-primary" id="removebutton">Reject</button>
+								<a id="downloadLink" style="display: none;"></a>
+							</div>
+						</div>
+
+					</form>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Cancellation booking Details-->
+		<div class="modal fade backdrop" id="cancelledBookingForm" data-backdrop="static" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<form id="ownform">
+						<div class="block block-rounded block-themed block-transparent mb-0">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" id="2mtitle">Booking Information</h3>
+								<div class="block-options">
+									<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+										aria-label="Close">
+										<i class="fa fa-fw fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="block-content row">
+
+								<div class="col-md-12 col-lg-12 col-sm-12 mb-2">
+									<input type="hidden" class="form-control text-center" name="booksid" id="booksId"
+										disabled />
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="10" style="background-color: #f2f2f2;">User Details</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Name:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="username">
+												</td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Mobile Number:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="mobileno">
+												</td>
+
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Type:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="usertype">
+												</td>
+
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">User Address:
+												</th>
+												<td colspan="5" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="useraddress"></td>
+
+											</tr>
+
+										</table>
+									</div>
+								</div>
+
+								<div class="col-md-12 col-lg-12 col-sm-12 mb-2">
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="10" style="background-color: #f2f2f2;">Hall Details</th>
+											</tr>
+
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Hall Name:
+												</th>
+												<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="hallname"></td>
+
+											</tr>
+											<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Hall Address:</th>
+											<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="halladdress"></td>
+
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Caretaker
+													Name:</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="caretakername"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Caretaker
+													Mobile Number:</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="caretakermobileNumber"></td>
+
+											</tr>
+
+										</table>
+									</div>
+								</div>
+								<div class="col-md-12 col-lg-12 col-sm-12">
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="4" style="background-color: #f2f2f2;">Booking
+													Details (Booking Id:-<span id="bookid" style="color:blue"></span>)
+												</th>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Booking Date:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="bookingDate"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Booking Status:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="bookingStatus"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Start Date:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="startDate"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Deposit
+													Amount:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="depositeAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">END
+													Date:</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;" id="endDate">
+												</td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Hall Amount:
+												</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="hallAmount"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Starting Slot:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="startingSlot"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">GST @18%:</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="gst"></td>
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Ending Slot:
+												</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="endingSlot"></td>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal">Total Amount:
+												</th>
+												<td class="fw-semibold amount-cell" style="padding: 0.45rem 0.45rem;"
+													id="totalAmount"></td>
+
+											</tr>
+										</table>
+									</div>
+								</div>
+
+								<div class="col-sm-12">
+									<!--<label class="form-label">Documents:<span class="text-danger"></span></label>-->
+									<div class="documents" id="documents"></div>
+								</div>
+
+								<div class="col-md-12 col-lg-12 col-sm-12 mb-2">
+									<input type="hidden" class="form-control text-center" name="bookingid"
+										id="bookingid" disabled />
+									<div class="card-body">
+										<table>
+											<tr>
+												<th colspan="10" style="background-color: #f2f2f2;">Booking Payment
+													Details</th>
+											</tr>
+
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Transaction
+													ID:</th>
+												<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="transactionId"></td>
+
+											</tr>
+											<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Amount Received:
+											</th>
+											<td colspan="10" class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+												id="payamountReceived"></td>
+
+											</tr>
+											<tr>
+												<th style="padding: 0.45rem 0.45rem;font-weight: normal;">Transaction
+													Status:</th>
+												<td class="fw-semibold" style="padding: 0.45rem 0.45rem;"
+													id="paymentStatus"></td>
+
+											</tr>
+
+										</table>
+									</div>
+								</div>
+
+							</div>
+						</div>
+						<div class="block-content block-content-full text-end bg-body" id="mbutton2">
+							<button type="button" class="btn btn-sm btn-alt-secondary"
+								data-bs-dismiss="modal">Close</button>
+							<button id="approvedButton" type="button" class="btn btn-sm btn-primary"
+								th:onclick="approverefund()">Approve</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- end of Cancellation booking details-->
+
+		<div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+						<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<embed id="filePreview" src="" width="100%" height="600px">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	<!-- End modal for pending -->
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script>
+	$(document).ready(function () {
+			var buttons = [
+				{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				},
+				{
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				},
+				{
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				},
+				{
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				},
+				{
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				}
+			];
+
+			// Initialize DataTable for each tab on tab shown event
+			$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+				var targetTable = $(e.target).attr('href'); // activated tab
+				$(targetTable).find('.dataTable').DataTable().columns.adjust();
+			});
+			//ak
+			// Initialize DataTable for SettlementInitiatedListTable
+			$('#SettlementInitiatedListTable').DataTable({
+				dom: 'Bftip',
+				columnDefs: [
+					{ targets: 'no-sort', orderable: false }
+				],
+				lengthMenu: [
+					[50, 100, 200, 500, -1],
+					['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+				],
+				buttons: buttons,
+				responsive: true,
+				searching: true,
+				select: false,
+				processing: false,
+				// Set width to 100%
+				"autoWidth": true
+			});
+
+
+			// Initialize DataTable for Settlement Approved tab
+			$('#SettlementApprovedListTable').DataTable({
+				dom: 'Bftip',
+				columnDefs: [
+					{targets: 'no-sort', orderable: false}
+				],
+				lengthMenu: [
+					[50, 100, 200, 500, -1],
+					['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+				],
+				buttons: buttons,
+				responsive: true,
+				searching: true,
+				select: false,
+				processing: false,
+				// Set width to 100%
+				"autoWidth": true
+			});
+
+			// Initialize DataTable for Cancelled Bookings Approved tab
+			$('#cancelledApprovedListTable').DataTable({
+				dom: 'Bftip',
+				columnDefs: [
+					{targets: 'no-sort', orderable: false}
+				],
+				lengthMenu: [
+					[50, 100, 200, 500, -1],
+					['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+				],
+				buttons: buttons,
+				responsive: true,
+				searching: true,
+				select: false,
+				processing: false,
+				// Set width to 100%
+				"autoWidth": true
+			});
+
+			// Initialize DataTable for GCC Blocked/Rejected Approved tab
+			$('#rejectedApprovedListTable').DataTable({
+				dom: 'Bftip',
+				columnDefs: [
+					{targets: 'no-sort', orderable: false}
+				],
+				lengthMenu: [
+					[50, 100, 200, 500, -1],
+					['50 rows', '100 rows', '200 rows', '500 rows', 'Show all']
+				],
+				buttons: buttons,
+				responsive: true,
+				searching: true,
+				select: false,
+				processing: false,
+				// Set width to 100%
+				"autoWidth": true
+			});
+		});
+		function pending(settlementId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/api/officer/getSettlementList',
+				data: {
+					'settlementsid': settlementId
+				},
+				success: function (x) {
+					showSettlementInfo(x)
+					showDamageDetails(x);
+					//ak for officer
+									if (x.settlement && x.settlement.approvedFlag === 1) {
+        $("#approvebutton").hide();
+		$("#removebutton").hide();
+    } else {
+        $("#approvebutton").show();
+		$("#removebutton").show();
+    }
+				}
+			});
+
+		}
+
+		function showSettlementInfo(list) {
+			// console.log(list); // Log the damageList array
+			// console.log(list.damageList[0]);
+
+			$('#pendingSettlementForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			});
+			$('#pendingSettlementForm').modal('show');
+			document.getElementById("settlementid").value = list.settlement.settlementId;
+			document.getElementById("td_userName").innerHTML = list.users.name;
+			document.getElementById("td_mobileNumber").innerHTML = list.users.mobileNo;
+			document.getElementById("td_usertype").innerHTML = list.users.usertype;
+			var userDetails = list.users;
+			var userDetailsString =
+				userDetails.doorNo + ", " +
+				userDetails.street + ", " +
+				userDetails.area + ", " +
+				userDetails.location + " ,Chennai- " +
+				userDetails.pinCode;
+			document.getElementById("td_useraddress").innerHTML = userDetailsString;
+
+			document.getElementById("td_hallName").innerHTML = list.hallDetails.hallName;
+			var hallDetails = list.hallDetails;
+			var hallDetailsString =
+				hallDetails.doorNo + ", " +
+				hallDetails.street + ", " +
+				hallDetails.area + ", " +
+				hallDetails.city + "- " +
+				hallDetails.pinCode;
+			document.getElementById("td_halladdress").innerHTML = hallDetailsString;
+			document.getElementById("td_caretakername").innerHTML = list.hallDetails.hallInchargeName;
+			document.getElementById("td_caretakermobileNumber").innerHTML = list.hallDetails.hallInchargeMobno;
+			document.getElementById("td_bookingDate").innerHTML = list.bookingDate;
+			document.getElementById("td_depositeAmount").innerHTML = '₹ ' + parseFloat(list.depositAmount).toFixed(2);
+			document.getElementById("td_hallAmount").innerHTML = '₹ ' + parseFloat(list.hallAmount).toFixed(2);
+			// Calculate GST and total amount
+			var gstAmount = (parseFloat(list.hallAmount) * (list.hallDetails.gst / 100)).toFixed(2);
+			var totalAmount = parseFloat(list.amountReceived).toFixed(2);
+
+			document.getElementById("td_gst").innerHTML = '₹ ' + gstAmount;
+			document.getElementById("td_totalAmount").innerHTML = '₹ ' + totalAmount;
+
+			document.getElementById("td_startDate").innerHTML = list.startDate;
+			document.getElementById("td_endDate").innerHTML = list.endDate;
+			document.getElementById("booking_id").innerHTML = list.bookingId;
+
+			function getTimeSlot(slotValue) {
+				var timeSlot;
+				var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+				if (trimmedSlotValue === '1') {
+					timeSlot = 'Morning';
+				} else if (trimmedSlotValue === '2') {
+					timeSlot = 'Evening';
+				} else {
+					timeSlot = 'Unknown';
+				}
+				return timeSlot;
+			}
+
+			document.getElementById("td_startingSlot").innerHTML = getTimeSlot(list.startingSlot);
+			document.getElementById("td_endingSlot").innerHTML = getTimeSlot(list.endingSlot);
+			document.getElementById("td_EBNumber").innerHTML = list.hallDetails.ebNumber;
+			document.getElementById("td_startingReading").innerHTML = list.ebDetails.startingReading;
+			document.getElementById("td_endingReading").innerHTML = list.ebDetails.endingReading;
+			document.getElementById("td_usedunit").innerHTML = list.ebDetails.usedUnit;
+			document.getElementById("td_ebamountperunit").innerHTML = '₹ ' + parseFloat(list.hallDetails.ebCostPerUnit).toFixed(2);
+			document.getElementById("td_depositeamountforrefund").innerHTML = '₹ ' + parseFloat(list.depositAmount).toFixed(2);
+			document.getElementById("td_electricityamount").innerHTML = '₹ ' + parseFloat(list.ebDetails.ebAmount).toFixed(2);
+			document.getElementById("td_ebAmount").innerHTML = '₹ ' + parseFloat(list.ebDetails.ebAmount).toFixed(2);
+			document.getElementById("td_damage").innerHTML = '₹ ' + parseFloat(list.settlement.damageAmount).toFixed(2);
+
+			var eb_amt = parseFloat(list.ebDetails.ebAmount).toFixed(2);
+			var deposit_amt = parseFloat(list.depositAmount).toFixed(2);
+			var tem_total = (deposit_amt - eb_amt).toFixed(2);
+			$("#td_settel_amt").html(tem_total);
+		}
+
+
+		function showDamageDetails(data) {
+			var damageFieldContainer = $('#damageDetails');
+			damageFieldContainer.empty();
+
+			// Create a div for table responsiveness
+			var tableResponsiveDiv = $('<div>').addClass('table-responsive').css('margin-right', '0px');
+
+			// Create table with similar classes and styles to the modal table
+			var table = $('<table>').addClass('table table-bordered table-striped').css({'width': '97%', 'border-color': 'black', 'border-top-color': 'white'});
+			var thead = $('<thead>').addClass('thead-light');
+			var tbody = $('<tbody>');
+
+			// Create Damage Details header row
+			var headerRow = $('<tr>').appendTo(thead);
+			$('<th>').attr('colspan', '6').text('Damage Details (if any)').css({
+				'padding': '0.45rem 0.45rem',
+				'background-color': '#f2f2f2',
+				'font-weight': 'bold',
+				'color': 'black',
+			}).appendTo(headerRow);
+
+			// Create table header row
+			var columnHeadersRow = $('<tr>').css('background-color', '#f2f2f2').appendTo(thead);
+			$('<th>').text('S.No').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+			$('<th>').text('Asset Name').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+			$('<th>').text('Damage Img').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+			$('<th>').text('Cost').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+			$('<th>').text('Qty').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+			$('<th>').text('Amount').css({'padding': '0.45rem 0.45rem', 'text-align': 'center'}).appendTo(columnHeadersRow);
+
+			var totalAmount = 0;
+
+			// Check if damageList is empty
+			if (data.damageList.length === 0) {
+				var row = $('<tr>').appendTo(tbody);
+				$('<td>').attr('colspan', '6').text('No Damaged Items').css({
+					'padding': '0.45rem 0.45rem',
+					'text-align': 'center',
+					'font-weight': 'bold',
+					'background-color': '#f2f2f2'
+				}).appendTo(row);
+			} else {
+				$.each(data.damageList, function (index, detail) {
+					var row = $('<tr>').appendTo(tbody);
+					$('<td>').text(index + 1).css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'center'
+					}).appendTo(row);
+					$('<td>').text(detail.assetName).css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'center'
+					}).appendTo(row);
+
+					var viewLink = $('<a>').attr('href', 'javascript:void(0)').text('View').on('click', function () {
+						showDamageImage(detail.damageImageUrl);
+					});
+					$('<td>').css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'center'
+					}).append(viewLink).appendTo(row);
+
+					var assetamt = (detail.assetAmount / detail.quantity).toFixed(2);
+					$('<td>').text('₹ ' + assetamt).css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'center'
+					}).appendTo(row);
+
+					$('<td>').text(detail.quantity).css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'center'
+					}).appendTo(row);
+
+					var amount = detail.assetAmount;
+					totalAmount += amount;
+					$('<td>').text('₹ ' + amount.toFixed(2)).css({
+						'padding': '0.45rem 0.45rem',
+						'text-align': 'right'
+					}).appendTo(row);
+				});
+
+				// Add row for total amount
+				var totalRow = $('<tr>').appendTo(tbody);
+				$('<td>').attr('colspan', '5').text('Total Amount').css({
+					'padding': '0.45rem 0.45rem',
+					'font-weight': 'bold',
+					'background-color': '#f2f2f2'
+				}).appendTo(totalRow);
+				$('<td>').text('₹ ' + totalAmount.toFixed(2)).css({
+					'padding': '0.45rem 0.45rem',
+					'text-align': 'right'
+				}).appendTo(totalRow);
+
+				$("#td_dam_amt").html('₹ ' + totalAmount.toFixed(2));
+			}
+			// Append the table elements to the container div
+			table.append(thead, tbody);
+			tableResponsiveDiv.append(table);
+			damageFieldContainer.append(tableResponsiveDiv);
+
+			var temp_total = parseFloat($("#td_settel_amt").html());
+			var settleAmount = temp_total - totalAmount;
+			var refundStatus = data.refundStatus;
+			var pendingstatus=data.settlement.collectionStatus
+			if (settleAmount < 0) {
+				// console.log(settleAmount);
+				$("#td_settel_amt").html(0.00);
+				$("#pendingcolumn").show();
+				$("#collectionstatuscolumn").show();
+				$('#td_collection_status').html(pendingstatus);
+				$("#td_pending_amt").html('₹ ' + Math.abs(settleAmount).toFixed(2));
+				$("#td_pending_amt").css("color", "red");
+				$("#approvebutton").prop("disabled", true);
+				$("#rejectbutton").show();
+			} else {
+				$("#td_settel_amt").html('₹ ' + settleAmount.toFixed(2));
+				$("#pendingcolumn").hide();
+				$("#collectionstatuscolumn").hide();
+				$("#td_settel_amt").css("color", "green"); // Set color to green for positive amounts
+				$("#approvebutton").prop("disabled", false);
+			}
+		}
+		function showDamageImage(damageImageUrl) {
+			document.getElementById('filePreview').src = damageImageUrl;
+			$('#fileModal').modal('show');
+		}
+
+		function accept() {
+    let id = document.getElementById("settlementid").value;
+    const acceptButton = document.getElementById("approvebutton"); // Add an ID to your button in the HTML
+
+    Swal.fire({
+        title: 'Do you want to Approve this Settlement?',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'YES',
+        denyButtonText: 'NO',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Disable the button to prevent multiple clicks
+            acceptButton.disabled = true;
+
+            // Show the loading screen
+            const loadingSwal = Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we approve the settlement.',
+                allowOutsideClick: false, // Prevent closing the popup
+                didOpen: () => {
+                    Swal.showLoading(); // Show the loading spinner
+                },
+                showConfirmButton: false, // Hide the confirm button during loading
+            });
+
+            $.ajax({
+                type: "POST",
+                url: '/victoriahallbooking_uat/api/officer/updateApprovedSettlementStatus/' + id,
+                data: {
+                    'status': 'APPROVED',
+                    'comments': 'Accepted',
+                    'settlementId': id
+                },
+                success: function (data, textStatus, xhr) {
+                    loadingSwal.close(); // Close the loading popup
+                    if (xhr.status === 200) {
+                        Swal.fire(
+                            'Done',
+                            'Successfully Accepted to the ID: ' + id,
+                            'success'
+                        ).then(() => {
+                            location.reload(); // Reload the page after success
+                        });
+                    } else {
+                        Swal.fire(
+                            'Error',
+                            'Failed to Approve the Settlement',
+                            'error'
+                        );
+                    }
+                },
+               /* error: function (xhr, textStatus, errorThrown) {
+                    loadingSwal.close(); // Close the loading popup
+                    Swal.fire(
+                        'Error',
+                        'Failed to Approve the Settlement',
+                        'error'
+                    );*/
+					//ak for officer
+
+					error: function (xhr, textStatus, errorThrown) {
+                    loadingSwal.close();
+					console.log("textstaus"+xhr.responseText);
+
+                    let responseData;
+                    try {
+                        responseData = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        responseData = null;
+                    }
+
+                   /* if (responseData && responseData.approvedFlag === 1) {
+                        $("#approvebutton").hide(); // hide approve button if already approved
+                        Swal.fire(
+                             'Error',
+                            'Failed to Approve the Settlement',
+                            'error'
+                        );*/
+						if (responseData && responseData.approvedFlag === 1) {
+    $("#approvebutton").hide(); // hide approve button if already approved
+    Swal.fire(
+        'Error',
+        'Failed to Approve  the Settlement',
+        'error'
+    ).then(() => {
+        location.reload(); // reload page after user closes the alert
+    });
+                    } else {
+                        Swal.fire(
+                            'Error',
+                            'Failed to Approve the Settlement',
+                            'error'
+                        );
+                    }
+                },
+                
+                complete: function() {
+                    // Re-enable the button after request completes (success or error)
+                    acceptButton.disabled = false;
+                }
+            });
+        } else if (result.isDenied) {
+            Swal.fire('Changes are not saved', '', 'info');
+        }
+    });
+}
+
+		function rejectsubmit() {
+			let id = document.getElementById("settlementid").value;
+			let reason = $("#reason").val();
+
+			Swal.fire({
+				title: 'Do you want to Reject this Settlement ?',
+				showDenyButton: true,
+				showCancelButton: true,
+				confirmButtonText: 'YES',
+				denyButtonText: 'NO',
+			}).then((result) => {
+				/* Read more about isConfirmed, isDenied below */
+				if (result.isConfirmed) {
+					// console.log("Submitting rejection...");
+
+					$.ajax({
+						type: "POST",
+						url: '/victoriahallbooking_uat/api/officer/updateRejectSettlementStatus/' + id,
+						data: {
+							'status': 'REJECTED',
+							'comments': reason,
+							'settlementId': id
+						},
+						success: function (data, textStatus, xhr) {
+							// console.log("Rejection successful");
+							if (xhr.status === 200) { // Check if the response status is OK
+								Swal.fire(
+									'Done',
+									'Successfully Rejected to the ID:' + id,
+									'success'
+								).then(() => {
+									location.reload();
+								});
+							} else {
+								Swal.fire(
+									'Error',
+									'Failed to reject the user',
+									'error'
+								);
+							}
+						},
+						error: function (xhr, textStatus, errorThrown) {
+							console.error("Error:", errorThrown);
+							Swal.fire(
+								'Error',
+								'Failed to reject the user',
+								'error'
+							);
+						}
+					});
+				} else if (result.isDenied) {
+					Swal.fire('Changes are not saved', '', 'info')
+				}
+			});
+
+			return false; // Prevent form submission
+		}
+
+		$(document).ready(function () {
+			$("#generatechallon").click(function () {
+				// Generate plain text content (replace with your actual content generation logic)
+				let textContent = "This is the content of the text file.";
+
+				// Create a Blob containing the text
+				let blob = new Blob([textContent], {type: "text/plain"});
+
+				// Create URL for the Blob
+				let url = URL.createObjectURL(blob);
+
+				// Get the download link element
+				let downloadLink = $("#downloadLink");
+				if (downloadLink.length === 0) {
+					console.error("Download link element not found");
+					return;
+				}
+
+				// Set download link attributes
+				downloadLink.attr({
+					href: url,
+					download: "challon.txt" // Specify the filename for download
+				});
+
+				// Simulate click on the download link
+				downloadLink[0].click();
+
+				// Clean up
+				URL.revokeObjectURL(url);
+			});
+		});
+
+
+
+		function cancelledbooking(bookingId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/api/officer/getBookingDetails',
+				data: {
+					'bookingsId': bookingId
+				},
+				success: function (x) {
+					// console.log(x);
+					showcancelledbookingDetails(x);
+				}
+			});
+
+		}
+
+		function rejectedbooking(bookingId) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/api/officer/getBookingDetails',
+				data: {
+					'bookingsId': bookingId
+				},
+				success: function (x) {
+					// console.log(x);
+					showcancelledbookingDetails(x);
+				}
+			});
+		}
+		function showcancelledbookingDetails(list) {
+			$('#cancelledBookingForm').modal({
+				backdrop: 'static',
+				keyboard: false
+			});
+			$('#cancelledBookingForm').modal('show');
+			document.getElementById("username").innerHTML = list.users.name;
+			document.getElementById("mobileno").innerHTML = list.users.mobileNo;
+			document.getElementById("usertype").innerHTML = list.users.usertype;
+			document.getElementById("booksId").value = list.bookingId;
+			var userDetails = list.users;
+			var userDetailsString =
+				userDetails.doorNo + ", " +
+				userDetails.street + ", " +
+				userDetails.area + ", " +
+				userDetails.location + "- " +
+				userDetails.pinCode;
+			document.getElementById("useraddress").innerHTML = userDetailsString;
+			document.getElementById("hallname").innerHTML = list.hallDetails.hallName;
+			var hallDetails = list.hallDetails;
+			var hallDetailsString =
+				hallDetails.doorNo + ", " +
+				hallDetails.street + ", " +
+				hallDetails.area + ", " +
+				hallDetails.city + "- " +
+				hallDetails.pinCode;
+			document.getElementById("halladdress").innerHTML = hallDetailsString;
+			document.getElementById("caretakername").innerHTML = list.hallDetails.hallInchargeName;
+			document.getElementById("caretakermobileNumber").innerHTML = list.hallDetails.hallInchargeMobno;
+
+			document.getElementById("bookingDate").innerHTML = list.bookingDate;
+			document.getElementById("depositeAmount").innerHTML = '₹ ' + parseFloat(list.depositAmount).toFixed(2);
+			document.getElementById("hallAmount").innerHTML = '₹ ' + parseFloat(list.hallAmount).toFixed(2);
+			document.getElementById("totalAmount").innerHTML = '₹ ' + parseFloat(list.amountReceived).toFixed(2);
+			var gstcl = (list.hallAmount * (list.hallDetails.gst / 100));
+			var formattedGst = gstcl.toFixed(2);
+			document.getElementById("gst").innerHTML = '₹ ' + formattedGst;
+			document.getElementById("startDate").innerHTML = list.startDate;
+			document.getElementById("endDate").innerHTML = list.endDate;
+			document.getElementById("bookid").innerHTML = list.bookingId;
+
+			function getTimeSlot(slotValue) {
+				// console.log("Slot Value in getTimeSlot function:", slotValue);
+				var timeSlot;
+				var trimmedSlotValue = String(slotValue).trim(); // Convert to string and then trim
+				if (trimmedSlotValue === '1') {
+					timeSlot = 'Morning';
+				} else if (trimmedSlotValue === '2') {
+					timeSlot = 'Evening';
+				} else {
+					timeSlot = 'Unknown';
+				}
+				// console.log("Time Slot:", timeSlot);
+				return timeSlot;
+			}
+
+			document.getElementById("startingSlot").innerHTML = getTimeSlot(list.startingSlot);
+			document.getElementById("endingSlot").innerHTML = getTimeSlot(list.endingSlot);
+			document.getElementById("bookingStatus").innerHTML = list.bookingStatus;
+			document.getElementById("transactionId").innerHTML = list.payments.transactionId;
+			document.getElementById("payamountReceived").innerHTML = '₹ ' + list.payments.amountReceived;
+			document.getElementById("paymentStatus").innerHTML = list.payments.paymentStatus;
+
+			showReasonDocuments(list);
+		}
+
+		function showReasonDocuments(list) {
+			$.ajax({
+				type: "GET",
+				url: '/victoriahallbooking_uat/api/officer/getReasonByName',
+				data: {
+					'reasonName': list.reason
+				},
+				success: function (x) {
+					// console.log(x);
+					showReasonWithDocument(x, list);
+				}
+			});
+		}
+
+		// Display booking documents
+		function showReasonWithDocument(reasonData, list) {
+			var reasonDocumentData = reasonData.reasonDocumentMasterList;
+			var bookingDocumentsList = list.bookingDocumentsList;
+
+			const reasonFieldsContainer = $('#documents');
+			reasonFieldsContainer.empty();
+
+			// Create a responsive table container
+			var tableResponsiveDiv = $('<div>').addClass('table-responsive');
+
+			// Create the table with Bootstrap classes and custom styles
+			var table = $('<table>').addClass('table table-bordered table-striped table-vcenter js-dataTable-responsive').css({
+				'width': '100%',
+				'height': 'auto',
+				'border': '1px solid black'
+			});
+
+			// Create the table header (thead)
+			var thead = $('<thead>').appendTo(table);
+			var headerRow = $('<tr>').appendTo(thead);
+			$('<th>').attr('colspan', '3').text('Document Details').css({
+				'color': 'black',
+				'font-weight': 'bold',
+				'background-color': '#f2f2f2',
+				'padding': '0.45rem 0.45rem'
+			}).appendTo(headerRow);
+
+			// Create header row for columns
+			var columnHeadersRow = $('<tr>').appendTo(thead);
+			$('<th>').text('S.No').appendTo(columnHeadersRow);
+			$('<th>').text('Required Info').appendTo(columnHeadersRow);
+			$('<th>').text('Required Documents').appendTo(columnHeadersRow);
+
+			// Create the table body (tbody)
+			var tbody = $('<tbody>').appendTo(table);
+
+			// Iterate through the documents list and populate rows
+			for (var i = 0; i < bookingDocumentsList.length; i++) {
+				(function (index) {
+					var row = $('<tr>').appendTo(tbody);
+					$('<td>').text(index + 1).appendTo(row);
+					$('<td>').text(reasonDocumentData[index].fieldName + ': ' + bookingDocumentsList[index].name).appendTo(row);
+
+					// Create a link to view document image
+					var viewLink = $('<a>').attr('href', 'javascript:void(0)').text(reasonDocumentData[index].docFieldName).on('click', function () {
+						showDocumentImage(bookingDocumentsList[index].bookingDocUrl);
+					});
+					$('<td>').append(viewLink).appendTo(row);
+				})(i);
+			}
+
+			// Append table to the responsive container
+			tableResponsiveDiv.append(table);
+
+			// Append table to the container in the DOM
+			reasonFieldsContainer.append(tableResponsiveDiv);
+		}
+
+
+		function showDocumentImage(fileURL) {
+			//console.log(fileURL);
+			openFileModal(fileURL);
+		}
+		// Event delegation for dynamically added elements
+		$(document).on('click', '.view-document', function () {
+			const fileURL = $(this).data('url');
+			openFileModal(fileURL);
+		});
+			function openFileModal(fileURL) {
+					$('#filePreview').attr('src', fileURL);
+					$('#fileModal').modal('show');
+				}
+		function approverefund() {
+    let id = document.getElementById("booksId").value;
+    const approveButton = document.getElementById("approvedButton");
+
+    Swal.fire({
+        title: 'Do you want to Approve this Settlement?',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'YES',
+        denyButtonText: 'NO',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Disable the button after user confirms
+            approveButton.disabled = true;
+
+            // Show the loading popup
+            const loadingSwal = Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we approve the settlement.',
+                allowOutsideClick: false, // Prevent closing the popup
+                didOpen: () => {
+                    Swal.showLoading(); // Show the loading spinner
+                },
+                showConfirmButton: false, // Hide the confirm button during loading
+            });
+
+            $.ajax({
+                type: "POST",
+                url: '/victoriahallbooking_uat/api/officer/approveCancelledBookingRefund/' + id,
+                data: {
+                    'status': 'APPROVED',
+                },
+                success: function (data, textStatus, xhr) {
+                    loadingSwal.close(); // Close the loading popup
+                    if (xhr.status === 200) {
+                        Swal.fire(
+                            'Done',
+                            'Successfully Accepted to the ID:' + id,
+                            'success'
+                        ).then(() => {
+                            location.reload(); // Reload page after success
+                        });
+                    } else {
+                        Swal.fire(
+                            'Error',
+                            'Failed to Approve the Refund',
+                            'error'
+                        );
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    loadingSwal.close(); // Close the loading popup
+                    Swal.fire(
+                        'Error',
+                        'Failed to Approve the Refund',
+                        'error'
+                    );
+                },
+                complete: function() {
+                    // Re-enable the button after request completes (success or error)
+                    approveButton.disabled = false;
+                }
+            });
+        } else if (result.isDenied) {
+            Swal.fire('Changes are not saved', '', 'info');
+        }
+    });
+}
+
+		document.addEventListener('DOMContentLoaded', function () {
+			var ddDetailsCheckbox = document.getElementById('ddDetailsCheckbox');
+			var ddDetailsFields = document.querySelectorAll('.dd-details input');
+			var ddDetailsContainer = document.querySelector('.dd-details');
+			var challonDetailsForm = document.getElementById('challonDetailsForm');
+			var submitButton = document.getElementById('submitChallonDetails');
+
+			// Toggle DD Details visibility and required status based on checkbox state
+			ddDetailsCheckbox.addEventListener('change', function () {
+				if (ddDetailsCheckbox.checked) {
+					ddDetailsContainer.style.display = 'flex';
+					ddDetailsFields.forEach(function (field) {
+						field.setAttribute('required', 'required');
+					});
+				} else {
+					ddDetailsContainer.style.display = 'none';
+					ddDetailsFields.forEach(function (field) {
+						field.removeAttribute('required');
+						field.value = ''; // Optionally clear the fields
+						field.classList.remove('is-invalid'); // Remove invalid class if any
+					});
+				}
+			});
+
+			// Handle form submission
+			submitButton.addEventListener('click', function () {
+				var isValid = challonDetailsForm.checkValidity();
+				if (isValid) {
+					// Form is valid, proceed with submission (e.g., via AJAX)
+					// Custom submission code here
+				} else {
+					// Trigger browser's validation messages
+					challonDetailsForm.classList.add('was-validated');
+				}
+			});
+
+			// Prevent form submission on Enter key
+			challonDetailsForm.addEventListener('submit', function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+			});
+		});
+		 $('#challonDetails').on('hidden.bs.modal', function () {
+        // Clear all input fields
+        $(this).find('form')[0].reset();
+
+        // Optionally, reset any custom styling or classes
+        $(this).find('input').removeClass('is-valid is-invalid');
+    });
+	</script>
+</body>
+
+</html>

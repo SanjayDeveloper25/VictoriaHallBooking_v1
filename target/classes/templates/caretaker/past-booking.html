@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-admin :: head}">
+</head>
+<style>
+	.header-class {
+		position: fixed;
+		top: 50;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+	}
+
+	.main-content {
+		margin-top: 70px;
+	}
+
+	body,
+	html {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+	}
+
+	.bookings-list {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		padding: 20px;
+		box-sizing: border-box;
+	}
+
+	.booking-card {
+		max-width: 600px;
+		width: 100%;
+		background-color: #fff;
+		border-radius: 8px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 20px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	.booking-details p {
+		margin: 10px 0;
+	}
+
+	.settlement-btn {
+		display: block;
+		width: 100%;
+		padding: 10px;
+		background-color: #4caf50;
+		color: white;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		margin-top: 20px;
+	}
+
+	.settlement-btn:hover {
+		background-color: #45a049;
+	}
+</style>
+
+<body>
+	<div id="page-container"
+		class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed page-header-dark">
+		<aside th:replace="~{fragments/aside-right :: aside}"></aside>
+		<nav th:replace="~{fragments/nav-caretaker :: nav}"></nav>
+		<header th:replace="~{fragments/header-caretaker :: header}"></header>
+
+		<div class="content" style="margin-top: 77px;">
+			<div class="block block-rounded">
+				<div class="block-header bg-info text-white" style="background-color: #2c726c !important">
+					<h3 class="block-title">Past Bookings</h3>
+				</div>
+				<div class="block-content">
+					<div class="table-responsive">
+						<table id="pastBookingTable" class="table table-bordered table-vcenter">
+							<thead>
+								<tr>
+									<th>Hall Name</th>
+									<th>Booking Id</th>
+									<th>Reason for Booking</th>
+									<th>Start Date</th>
+									<th>End Date</th>
+									<th>No of Days</th>
+									<th>Starting Period</th>
+									<th>Ending Period</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Iterate over past bookings and display them -->
+								<tr th:each="booking : ${pastBookings}" class="${pastBookings}">
+									<td th:text="${booking.hallDetails.hallName}"></td>
+									<td th:text="${booking.bookingId}"></td>
+									<td th:text="${booking.reason}"></td>
+
+									<td th:text="${booking.startDate}"></td>
+									<td th:text="${booking.endDate}"></td>
+									<td th:text="${booking.noOfDays}"></td>
+									<td>
+										<span th:text="${booking.startingSlot == 1 ? 'Morning' : 'Evening'}"></span>
+									</td>
+									<td>
+										<span th:text="${booking.endingSlot == 1 ? 'Morning' : 'Evening'}"></span>
+									</td>
+									<td>
+										<!-- Implement your logic for viewing details -->
+										<button type="button" class="btn btn-primary view-details"
+											th:onclick="bookingDetails([[${booking.bookingId}]])">View</button>
+										<button type="button" class="btn btn-primary settlement"
+											th:if="${booking.ebDetails != null and booking.settlement == null}"
+											th:onclick="settleTheAmount([[${booking.bookingId}]])">Settlement</button>
+										<button type="button" class="btn btn-primary" th:if="${booking.ebDetails==null}"
+											th:onclick="enterStartingReading([[${booking.bookingId}]], '[[${booking.hallDetails.ebNumber}]]')"
+											id="ebDetails">EB Details</button>
+									</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div><br>
+		<br>
+		<div class="modal fade backdrop" id="bookingModal" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="block block-rounded block-themed block-transparent mb-0">
+						<div class="block-header bg-primary-dark">
+							<h3 class="block-title">Booking Details</h3>
+							<div class="block-options">
+								<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+									aria-label="Close">
+									<i class="fa fa-fw fa-times"></i>
+								</button>
+							</div>
+						</div>
+						<div class="block-content row">
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="name">Name<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="name" name="name"
+										placeholder="First Name" readonly>
+								</div>
+								<small id="emailHelp" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="mobileno">Mobile Number<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="mobileno" name="mobileno"
+										placeholder="Mobile Number" minlength="10" maxlength="10" pattern="[0-9]{10}"
+										readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="email">E-Mail ID<span class="required"></span>:</label>
+									<input type="email" class="form-control text-center" id="email" name="email"
+										placeholder="Email" maxlength="255" readonly>
+								</div>
+								<small id="emailHelps" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="doorNo">DoorNo<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="doorNo" name="doorNo"
+										placeholder="Door No" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="street">Street<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="street" name="street"
+										placeholder="Street" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="area">Area<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="area" name="area"
+										placeholder="Area" readonly>
+								</div>
+								<small id="emailHelped" class="form-text text-muted"></small>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="location">Location<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="location" name="location"
+										placeholder="Location" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label for="pincode">Pincode<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="pincode" name="pincode"
+										placeholder="Pincode" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4" style="margin-left:0%">
+								<div class="form-group">
+									<label for="userType">User Type<span class="required">*</span>:</label>
+									<input class="form-control" id="usertype" name="usertype"
+										placeholder="User Type" readonly>
+								</div>
+							</div>
+							<div class="col-sm-4 hidden" id="employeeFields">
+								<!-- Employee fields here -->
+							</div>
+							<div class="col-sm-4 hidden" id="pensionerFields">
+								<!-- Pensioner fields here -->
+							</div>
+							<div class="col-sm-4 hidden" id="wardnoFields">
+								<!-- Ward number fields here -->
+							</div>
+						</div>
+						<div id="ebDetailsSection">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" style="color: white;">EB Details</h3>
+							</div>
+							<div class="block-content row">
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="startingreading">Starting Reading<span
+												class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="startingreading"
+											name="startingreading" readonly>
+									</div>
+									<small id="emailHelp" class="form-text text-muted"></small>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="endingreading">Ending Reading<span
+												class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="endingreading"
+											name="endingreading" readonly>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="EBAmount">Eb Amount<span class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="ebAmount"
+											name="ebAmount" readonly>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!--   <div id="damageListSection">
+						<div class="block-header bg-primary-dark">
+                        <h3 class="block-title"  style="color: white;">Settlement List</h3>
+                    </div>
+                    <div class="block-content row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="settlementId">Settlement Id<span class="required">*</span>:</label>
+                                <input type="text" class="form-control text-center" id="settlementId" name="settlementId" readonly>
+                            </div>
+                            <small id="emailHelp" class="form-text text-muted"></small>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="damageAmount">Damage Amount<span class="required">*</span>:</label>
+                                <input type="text" class="form-control text-center" id="damageAmount" name="damageAmount" readonly>
+                            </div>
+                        </div>    
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="EBAmount">Eb Amount<span class="required">*</span>:</label>
+                                <input type="text" class="form-control text-center" id="EBAmount" name="EBAmount" readonly>
+                            </div>
+                        </div> 
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="depositAmount">Deposit Amount<span class="required">*</span>:</label>
+                                <input type="text" class="form-control text-center" id="depositAmount" name="depositAmount" readonly>
+                            </div>
+                        </div>                 
+                    </div></div>-->
+
+						<div id="settlementListSection">
+							<div class="block-header bg-primary-dark">
+								<h3 class="block-title" style="color: white;">Settlement List</h3>
+							</div>
+							<div class="block-content row">
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="settlementId">Settlement Id<span class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="settlementId"
+											name="settlementId" readonly>
+									</div>
+									<small id="emailHelp" class="form-text text-muted"></small>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="damageAmount">Damage Amount<span class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="damageAmount"
+											name="damageAmount" readonly>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="EBAmount">Eb Amount<span class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="EBAmount"
+											name="EBAmount" readonly>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="depositAmount">Deposit Amount<span
+												class="required">*</span>:</label>
+										<input type="text" class="form-control text-center" id="depositAmount"
+											name="depositAmount" readonly>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade backdrop" id="EBdestailsModal" tabindex="-1" role="dialog"
+			aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="block block-rounded block-themed block-transparent mb-0">
+						<div class="block-header bg-primary-dark">
+							<h3 class="block-title">EB Details</h3>
+							<div class="block-options">
+								<button type="button" class="btn-block-option" data-bs-dismiss="modal"
+									aria-label="Close">
+									<i class="fa fa-fw fa-times"></i>
+								</button>
+							</div>
+						</div>
+						<div class="block-content row">
+							<input type="hidden" class="form-control text-center" id="bookingId" name="bookingId"
+								readonly>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label for="ebNumber">Consumer Number<span class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="ebNumber" name="ebNumber"
+										placeholder="EB Number" readonly>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label for="startingReading">Starting Reading<span
+											class="required">*</span>:</label>
+									<input type="text" class="form-control text-center" id="startingReading"
+										name="startingReading">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label for="startingReadingimage">Starting Reading Image<span
+											class="required"></span>:</label>
+									<input type="file" class="form-control text-center startreading-image" id="startingReadingimage"
+										name="startingReadingimage">
+								</div>
+							</div>
+						</div>
+					</div><br><br>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="submitEbDetails">Submit</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<footer th:replace="~{fragments/footer2 :: footer}"></footer>
+	</div>
+	<div th:replace="~{fragments/resetpassword :: div}"></div>
+	<script th:replace="~{fragments/script :: script}"></script>
+	<script th:replace="~{fragments/loginscript :: script}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(
+			function () {
+
+				// DataTables buttons configuration
+				var buttons = [{
+					extend: 'pageLength',
+					className: 'btn btn-primary'
+				}, {
+					title: 'Data export',
+					extend: 'copyHtml5',
+					text: 'Copy',
+					className: 'btn btn-primary',
+					id: 'copyBtn'
+				}, {
+					extend: 'excelHtml5',
+					text: 'Excel',
+					className: 'btn btn-primary',
+					id: 'excelBtn'
+				}, {
+					extend: 'csvHtml5',
+					text: 'CSV',
+					className: 'btn btn-primary',
+					id: 'csvBtn'
+				}, {
+					extend: 'pdfHtml5',
+					text: 'PDF',
+					className: 'btn btn-primary',
+					id: 'pdfBtn'
+				},
+
+				];
+
+				$('#pastBookingTable').DataTable(
+					{
+						dom: 'Bftip',
+						columnDefs: [{
+							targets: 'no-sort',
+							orderable: false
+						}],
+						lengthMenu: [
+							[50, 100, 200, 500, -1],
+							['50 rows', '100 rows', '200 rows',
+								'500 rows', 'Show all']],
+						scrollY: '50vh',
+						fixedColumns: {
+							left: 1,
+							right: 1
+						},
+						buttons: [buttons],
+						responsive: true,
+						searching: true, // Enable search
+						select: false,
+						processing: false,
+					});
+
+				// Link the search input to DataTable
+				$('#searchInput').on('keyup', function () {
+					dataTable.search(this.value).draw();
+				});
+
+			});
+		function settleTheAmount(bookingId) {
+			window.location.href = '/victoriahallbooking_uat/caretaker/caretakerpage?bookingId=' + bookingId;
+		}
+
+		function bookingDetails(bookingId) {
+			$.ajax({
+				url: '/victoriahallbooking_uat/careTaker/api/viewuserDetails',
+				method: 'GET',
+				data: {bookingId: bookingId},
+				success: function (response) {
+					var users = response.users;
+					var settlement = response.settlement;
+					var ebDetails = response.ebDetails;
+					var damageList = response.damageList;
+
+					$('#name').val(users.name);
+					$('#mobileno').val(users.mobileNo);
+					$('#email').val(users.email);
+					$('#doorNo').val(users.doorNo);
+					$('#street').val(users.street);
+					$('#area').val(users.area);
+					$('#location').val(users.location);
+					$('#pincode').val(users.pinCode);
+					$('#usertype').val(users.usertype);
+
+					// Show or hide settlement section
+					if (settlement) {
+						$('#settlementId').val(settlement.settlementId);
+						$('#damageAmount').val(settlement.damageAmount);
+						$('#EBAmount').val(settlement.ebAmount);
+						$('#depositAmount').val(settlement.depositAmount);
+						$('#settlementListSection').show();
+					} else {
+						$('#settlementListSection').hide();
+					}
+					if (ebDetails) {
+						$('#startingreading').val(ebDetails.startingReading);
+						$('#endingreading').val(ebDetails.endingReading);
+						$('#ebAmount').val(ebDetails.ebAmount);
+						$('#ebDetailsSection').show();
+					} else {
+						$('#ebDetailsSection').hide();
+					}
+					$('#bookingModal').modal('show');
+				},
+				error: function () {
+				}
+			});
+		}
+
+
+		function enterStartingReading(bookingId, ebNumber) {
+			$('#bookingId').val(bookingId);
+			$('#ebNumber').val(ebNumber);
+			$('#EBdestailsModal').modal('show');
+		}
+		let isCompressing = false;
+						// Attach the validation function to file input change event
+						$(document).on('change', '.startreading-image', function () {
+							validateFile(this);
+						});
+
+						function validateFile(fileInput) {
+						const allowedExtensions = /(\.jpg|\.jpeg|\.pdf)$/i;
+						const file = fileInput.files[0];
+						const filePath = fileInput.value;
+						let errorMessage = '';
+
+						// Clear any previous error message
+						clearError(fileInput);
+
+						// Check for duplicate files
+						if (isDuplicateFile(file.name, fileInput)) {
+							errorMessage = 'This file has already been selected. Please choose a different file.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+							return;
+						}
+
+						// Validate file type
+						if (!allowedExtensions.exec(filePath)) {
+							errorMessage = 'Only JPG, JPEG, and PDF files are allowed.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+						}
+						// Handle image files separately
+						else if (/(\.jpg|\.jpeg)$/i.test(filePath) && file.size > 2097152) {
+							compressImage(file).then(compressedFile => {
+								const dataTransfer = new DataTransfer();
+								dataTransfer.items.add(compressedFile);
+								fileInput.files = dataTransfer.files;
+
+								// Validate file size after compression
+								validateFileSize(fileInput);
+							}).catch(error => {
+								errorMessage = 'Error compressing image.';
+								displayError(fileInput, errorMessage);
+							});
+						}
+						// Directly validate PDF file size
+						else if (/(\.pdf)$/i.test(filePath) && file.size > 2097152) {
+							errorMessage = 'PDF file size exceeds the 2MB limit.';
+							fileInput.value = ''; // Clear the file input
+							displayError(fileInput, errorMessage);
+						}
+						else {
+							// console.log('File size is within limit:', file.size, 'bytes');
+							clearError(fileInput);
+						}
+					}
+
+
+					function isDuplicateFile(fileName, currentInput) {
+						const fileInputs = document.querySelectorAll('.file-upload-field');
+						for (let input of fileInputs) {
+							if (input !== currentInput && input.files.length > 0 && input.files[0].name === fileName) {
+								return true;
+							}
+						}
+						return false;
+					}
+
+					function clearError(fileInput) {
+						const errorElements = fileInput.parentNode.getElementsByClassName('error-message');
+						while (errorElements.length > 0) {
+							errorElements[0].remove();
+						}
+					}
+					// Function to compress image using canvas
+					function compressImage(file) {
+						return new Promise((resolve, reject) => {
+							const reader = new FileReader();
+							reader.onload = function (event) {
+								const img = new Image();
+								img.onload = function () {
+									const canvas = document.createElement('canvas');
+									const ctx = canvas.getContext('2d');
+									const maxSize = 2097152; // 2MB in bytes
+									let scale = 1;
+									if (file.size > maxSize) {
+										scale = Math.sqrt(maxSize / file.size);
+									}
+									canvas.width = img.width * scale;
+									canvas.height = img.height * scale;
+									ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+									// Convert canvas content to blob
+									canvas.toBlob(blob => {
+										resolve(new File([blob], file.name, {type: 'image/jpeg', lastModified: Date.now()}));
+									}, 'image/jpeg', 0.7); // Adjust JPEG quality as needed (0.7 is 70% quality)
+								};
+								img.src = event.target.result;
+							};
+							reader.readAsDataURL(file);
+						});
+					}
+					// Function to validate file size after compression
+					function validateFileSize(fileInput) {
+						const file = fileInput.files[0];
+						if (file && file.size > 2097152) {
+							//console.log('File size is still greater than 2MB after compression.');
+							// Handle the situation where the file size is still greater than 2MB
+							displayError(fileInput, 'File size is still greater than 2MB after compression.');
+							fileInput.value = ''; // Clear the file input
+						} else {
+							//console.log('File size is within limit after compression.');
+							// Handle the situation where the file size is within the limit
+						}
+					}
+
+					// Function to display error messages
+					function displayError(fileInput, errorMessage) {
+						// Example implementation: show error message near the file input
+						let errorContainer = fileInput.nextElementSibling;
+						if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+							errorContainer = document.createElement('div');
+							errorContainer.classList.add('error-message');
+							fileInput.parentNode.insertBefore(errorContainer, fileInput.nextSibling);
+						}
+						errorContainer.textContent = errorMessage;
+					}
+		$(document).ready(function () {
+    $("#submitEbDetails").click(function () {
+        var bookid = parseInt($("#bookingId").val());
+        var startingReading = $("#startingReading").val();
+        var startingReadingimage = $("#startingReadingimage")[0].files[0]; // Get the file
+
+        var formData = new FormData();
+        formData.append("bookingId", bookid);
+        formData.append("startingReading", startingReading);
+        formData.append("startingReadingimage", startingReadingimage);
+
+        $.ajax({
+            type: "POST",
+            url: "/victoriahallbooking_uat/careTaker/api/saveEbDetails",
+            data: formData,
+            contentType: false, // Prevent jQuery from setting content type
+            processData: false, // Prevent jQuery from processing the data
+            success: function (response) {
+                $("#EBdestailsModal").modal('hide');
+
+                // Show SweetAlert success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'EB details saved successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(function() {
+                    // Reload the page after the alert is dismissed
+                    location.reload();
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+                alert("Error occurred while saving EbDetails.");
+            }
+        });
+    });
+});
+
+document.getElementById('EBdetailsModal').addEventListener('hide.bs.modal', function () {
+        // Clear the startingReading input field
+        document.getElementById('startingReading').value = '';
+
+        // Clear the startingReadingimage file input field
+        document.getElementById('startingReadingimage').value = '';
+    });
+	</script>
+</body>
+
+</html>

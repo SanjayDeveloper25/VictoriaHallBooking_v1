@@ -1,0 +1,719 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+
+<head th:replace="~{fragments/loginhead :: head}"></head>
+
+<body>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<style>
+    .otp-input-box {
+        /*display: flex;
+          justify-content: space-between;*/
+        width: 100%;
+    }
+
+    .otp-input {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        margin-right: 10px;
+    }
+
+    .required-field {
+        color: red;
+    }
+
+    .error {
+        border: 1px solid red;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        padding-top: 5px;
+    }
+
+    .form-control[readonly] {
+        background-color: white;
+    }
+
+    .swal2-container {
+        z-index: 999999999999999 !important;
+        /* Adjust this value if needed */
+    }
+
+    .form-check-label {
+        padding-left: 0px
+    }
+</style>
+<!-- Page Container -->
+<div id="page-container">
+
+    <!-- Main Container -->
+    <main id="main-container">
+        <!-- Page Content -->
+        <div class="bg-image" style="background-image: url('media/images/chennai_bg.png');">
+            <div class="row g-0 justify-content-center bg-primary-dark-op">
+                <div class="hero-static col-sm-8 col-md-6 col-xl-4 d-flex align-items-center p-2 px-sm-0">
+                    <!-- Sign In Block -->
+                    <div class="block block-transparent block-rounded w-100 mb-0 overflow-hidden">
+                        <div class="block-content block-content-full px-lg-5 px-xl-6 py-4 py-md-5 py-lg-6 bg-body-extra-light"
+                             style="
+									  background-repeat: no-repeat,no-repeat;
+									  background-position: top,bottom;
+									  background-size: 100% auto;
+									  background-attachment: inherit;">
+                            <!-- Header -->
+                            <div class="mb-1 text-center">
+                                <div class="row col-12 pt-1" style="margin:0px;">
+                                    <div class="col-1 text-center">
+                                        <!--<img src="assets/media/images/tamilnadu-logo.png" style="padding-top:2px;" width="50px" alt="Tamilnadu Logo">-->
+                                    </div>
+                                    <div class="col-2 text-center">
+                                        <a href="/victoriahallbooking_uat/user/dashboard">
+                                            <img src="media/images/logo-sm.png" width="55" alt="Logo Sm">
+                                        </a>
+                                    </div>
+
+                                    <div class="col-8 text-center" style="font-size:15px;">
+                                        பெருநகர சென்னை மாநகராட்சி
+                                    </div>
+                                    <div class="col-1 text-center">
+                                        <!--<img src="assets/media/images/tamilnadu-logo.png" style="padding-top:2px;" width="50px" alt="Tamilnadu Logo">-->
+                                    </div>
+                                </div>
+                                <p class="link-fx fw-bold fs-3 pt-2" Style="margin-bottom:0.75rem;">
+                                    <span class="text-dark"></span><span class="text-primary">Login</span>
+                                </p>
+                                <p class="text-uppercase fw-bold fs-sm text-muted" id="error"
+                                   th:utext="${errortxt}"></p>
+                            </div>
+                            <!-- END Header -->
+
+                            <!-- Sign In Form -->
+                            <!-- jQuery Validation (.js-validation-signin class is initialized in js/pages/op_auth_signin.min.js which was auto compiled from _js/pages/op_auth_signin.js) -->
+                            <!-- For more info and examples you can check out https://github.com/jzaefferer/jquery-validation -->
+                            <!--<form class="js-validation-signin" id="loginForm" action="/victoriahallbooking_uat/careTaker/api/checkLogin" onsubmit="return login();">-->
+                            <form class="js-validation-signin" action="/gcc-public" onsubmit="return login(2);">
+                                <div class="mb-4">
+                                    <div class="input-group input-group-lg">
+											<span class="input-group-text">
+												<i class="fa fa-mobile"></i>
+											</span>
+                                        <input type="text" class="form-control" id="mobii" name="mobii"
+                                               placeholder="Mobile Number" value="" required minlength="10"
+                                               maxlength="10"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
+
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="input-group input-group-lg">
+											<span class="input-group-text">
+												<i class="fa fa-lock"></i>
+											</span>
+                                        <input type="password" maxlength="4" minlength="4" class="form-control"
+                                               id="password" name="PIN" placeholder="pin" value="" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4" id="otpInput" style="display: none">
+                                    <div class="input-group input-group-lg">
+											<span class="input-group-text">
+												<i class="fa fa-asterisk"></i>
+											</span>
+                                        <input type="text" maxlength="5" minlength="5" class="form-control"
+                                               id="loginOTP" placeholder="OTP" value="" required>
+                                    </div>
+                                </div>
+                                <div class="d-sm-flex justify-content-sm-between align-items-sm-center text-center text-sm-start mb-2 row">
+                                    <div class="col-12 fw-semibold fs-sm py-1 text-center">
+                                        <a href="javascript:newPinCall();">Forgot PIN?</a>
+                                    </div>
+                                </div>
+                                <div class="text-center mb-2" id="sendBtn">
+                                    <button type="button" class="btn btn-hero btn-primary"
+                                            onclick="checkofficialMobileNo(1)">
+                                        <i class="fa fa-fw fa-sign-in-alt opacity-50 me-1"></i> Send OTP
+                                    </button>
+                                </div>
+                                <div class="text-center mb-2" id="verifyBtn" style="display:none" onclick="verifyOTP()">
+                                    <button type="button" class="btn btn-hero btn-primary">
+                                        <i class="fa fa-fw fa-sign-in-alt opacity-50 me-1"></i> Verify OTP
+                                    </button>
+                                </div>
+                                <div class="mb-3 text-center">
+                                    <div id="resend-container1" style="display:none">
+                                        <p class="mb-0">Didn't receive OTP?</p>
+                                        <p class="mb-0 text-info" id="resendlink1">Please wait..<span
+                                                id="countdown1">60</span>s
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-center mb-2" id="loginBtn" style="display:none">
+                                    <button type="submit" class="btn btn-hero btn-primary">
+                                        <i class="fa fa-fw fa-sign-in-alt opacity-50 me-1"></i> Log In
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- END Sign In Form -->
+                            <!-- <a href ="/admin">offcier login</a> -->
+                        </div>
+
+                    </div>
+                    <!-- END Sign In Block -->
+
+                </div>
+            </div>
+        </div>
+        <!-- END Page Content -->
+    </main>
+    <!-- END Main Container -->
+    <div class="modal fade backdrop" id="pinForm" data-backdrop="static" tabindex="-1" role="dialog"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="#" th:action="@{/savePIN}" th:object="${savePIN}"
+                      onsubmit="return checkofficialMobileNo(2);">
+                    <div class="block block-rounded block-themed block-transparent mb-0">
+                        <div class="block-header bg-primary-dark">
+                            <h3 class="block-title" id="mtitl">Forgot PIN</h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-bs-dismiss="modal"
+                                        aria-label="Close">
+                                    <i class="fa fa-fw fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content">
+
+                            <div class="mb-4">
+                                <label class="form-label">Registered Mobile Number <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" minlength="10" maxlength="10" class="form-control text-center"
+                                       name="mobileNo" id="officialmobileno" pattern="[6-9]{1}[0-9]{9}"
+                                       placeholder="Numbers Only"
+                                       oninvalid="setCustomValidity('Please enter correct Mobile Number')"
+                                       oninput="setCustomValidity('')" required/>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">New 4 Digit PIN <span class="text-danger">*</span></label>
+                                <input type="password" maxlength="4" class="form-control text-center" name="newPinNo"
+                                       id="updatedpassword" placeholder="Numbers Only" minlength="4" required/>
+                            </div>
+                        </div>
+                        <div class="block-content block-content-full text-end bg-body" id="mbutton">
+                            <button type="button" class="btn btn-sm btn-alt-secondary" data-bs-dismiss="modal">Close
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div class="modal fade" id="otpForm" tabindex="-1" role="dialog" aria-labelledby="otpFormLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="#" th:action="@{/otpForm}" th:object="${otpForm}" method="post"
+                  onsubmit="return verifyOtp2();">
+                <div class="modal-header">
+                    <h6 class="modal-title m-0" id="exampleModalDefaultLabel">OTP Login</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div><!--end modal-header-->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="mb-3 text-center">
+                            <img src="media/images/mobileotp.png" width="50%" alt="Mobileotp">
+                        </div>
+                        <div class="mb-0 text-center">
+                            <h4>OTP Verification</h4>
+                            <p class="text-mute">Enter the OTP sent to <b class="text-info" id="mobilenotxt"></b></p>
+                            <p class="text-danger" id="otperror"></p>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <div class="otp-input-box">
+                                <input type="text" maxlength="1" class="otp-input" id="otp1" required/>
+                                <input type="text" maxlength="1" class="otp-input" id="otp2" required/>
+                                <input type="text" maxlength="1" class="otp-input" id="otp3" required/>
+                                <input type="text" maxlength="1" class="otp-input" id="otp4" required/>
+                                <input type="text" maxlength="1" class="otp-input" id="otp5" required/>
+                            </div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <div id="resend-container">
+                                <p class="mb-0">Didn't receive OTP?</p>
+                                <p class="mb-0 text-info" id="resendlink">Please wait..<span id="countdown">60</span>s
+                                </p>
+                            </div>
+                        </div>
+                    </div><!--end row-->
+                </div><!--end modal-body-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-de-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Verify OTP</button>
+                </div><!--end modal-footer-->
+            </form>
+        </div><!--end modal-content-->
+    </div><!--end modal-dialog-->
+</div><!--end modal-->
+<!-- END Page Container -->
+
+<!-- Scripts -->
+
+<script th:replace="~{fragments/loginscript :: script}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+    function sendOTP() {
+        document.getElementById("error").style.display = "none";
+        //alert($('#mobii').val());
+        var mobileNo = $('#mobii').val();
+        var pin = $('#password').val();
+        if (mobileNo.length != 10) {
+            alert("Please Enter Mobile Number");
+            return false;
+        }
+
+        if (pin.trim() == '' || pin.length == 0) {
+            alert("Please Enter Password ");
+            return false;
+        }
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/sendOTP',
+            data: {'mobileNo': mobileNo, 'purpose': 'Officer Login'},
+            success: function (bodyMessage) {
+                document.getElementById("otpInput").style.display = "block";
+                document.getElementById("sendBtn").style.display = "none";
+                document.getElementById("verifyBtn").style.display = "block";
+                document.getElementById("resend-container1").style.display = "block";
+
+                // console.log(mobileNo);
+                // Calculate the elapsed time since the request started
+                var resendTimeout;
+                // var resendLink = $("#resend-link1");
+                $("#resend-link1").html('Please wait..<span id="countdown1">60</span>s');
+                var countdown = $("#countdown1");
+
+                // Function to start the countdown timer
+                function startCountdown2() {
+                    var timeleft = 60;
+                    countdown.text(timeleft);
+
+                    resendTimeout = setInterval(function () {
+                        timeleft--;
+                        countdown.text(timeleft);
+
+                        if (timeleft <= 0) {
+                            clearInterval(resendTimeout);
+                            $("#resendlink1").html('<a href="#" id="resend-link1" class="text-info" onclick="return sendOTP(' + mobileNo + ');">Resend OTP</a>');
+                        }
+                    }, 1000);
+                }
+
+                startCountdown2(); // Start Resend OTP count
+            },
+            error: function () {
+                // Handle error case if the AJAX request fails
+                let elapsedTime = new Date().getTime() - startTime;
+                let delay = Math.max(0, minDisplayTime - elapsedTime);
+
+                setTimeout(function () {
+                    Swal.close(); // Close the Swal loading dialog
+                    // Show network error Swal
+                    Swal.fire(
+                        'Network Error!',
+                        'Please try again later.',
+                        'error'
+                    );
+                }, delay); // Delay closing the loading dialog before showing the error
+            }
+        });
+
+        return false;
+    }
+
+    function verifyOTP() {
+        // Get all the input fields with class `otp-input`
+        var otpInputs = $('#loginOTP').val();
+        var mobileNo = $('#mobii').val();
+
+        if (mobileNo.length != 10) {
+            alert("Please Enter Mobile Number");
+            return false;
+        }
+
+        //alert(otpInputs);
+        if (otpInputs.trim() == '') {
+            alert("Please Enter OTP ");
+            return false;
+        }
+        if (otpInputs.length != 5) {
+            alert("Please Enter Correct OTP");
+            return false;
+        }
+
+        //document.getElementById("saveFeedbackForm").submit();
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/verifyofficialOTP',
+            data: {'otp': otpInputs, 'mobileNo': mobileNo},
+            dataType: 'text',
+            success: function (bodyMessage) {
+                //alert(bodyMessage);
+                if (bodyMessage.trim() == "Success") {
+                    // console.log("OTP is Verified!!!");
+                    document.getElementById("loginBtn").style.display = "block";
+                    document.getElementById("verifyBtn").style.display = "none";
+                    document.getElementById("otpInput").style.display = "none";
+                    document.getElementById("resend-container1").style.display = "none";
+
+                    Swal.fire({
+                        title: 'Login OTP',
+                        text: ' OTP is Verified!!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        login(2);
+                    });
+
+                    return false;
+                    // callSave();
+                } else {
+                    Swal.fire({
+                        title: 'OTP',
+                        text: 'Entered OTP is Incorrect!!',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        $("#loginOTP").val('');
+                    });
+                }
+            },
+            error: function () {
+                // console.log("Error");// Handle error here
+                return false;
+            }
+        });
+
+        return false;
+    }
+
+    function login(flag) {
+        document.getElementById("resend-container1").style.display = "none";
+        var mobileNo = $("#mobii").val();
+        var pin = $("#password").val();
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/careTaker/api/checkLogin',
+            data: {mobileNo: mobileNo, pin: pin},
+        }).done(function (response) {
+            // Store token in localStorage or sessionStorage for subsequent requests
+            localStorage.setItem('jwtToken', response);
+            if (response == "error") {
+                $("#error").html("<p class='text-danger'>Invalid PIN or Mobile Number!<br>If you are a new user, please register as a new user.</p>");
+                $("#mobii").val("");
+                $("#password").val("");
+            } else {
+                if (flag == 1) {
+                    sendOTP();
+                }
+                if (flag == 2) {
+                    redirectToDashboard(response);
+                }
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            // Log the error and any relevant information
+            if (jqXHR.status === 400) {
+                // Handle 400 Bad Request Error
+                $("#error").html("<p class='text-danger'>" + jqXHR.responseText + "</p>");
+            } else if (jqXHR.status === 417) {
+                // Handle 417 Expectation Failed Error
+                $("#error").html("<p class='text-danger'>" + jqXHR.responseText + "</p>");
+            } else {
+                // Handle other errors
+                console.error(jqXHR);
+            }
+        });
+        return false;
+    }
+
+    function redirectToDashboard(userType) {
+        switch (userType) {
+            case "caretaker":
+                window.location.href = "/victoriahallbooking_uat/caretaker/dashboard";
+                break;
+            case "officer":
+                window.location.href = "/victoriahallbooking_uat/officer/officer-dashboard";
+                break;
+            case "admin":
+                window.location.href = "/victoriahallbooking_uat/admin/dashboard";
+                break;
+            case "pensioner":
+                window.location.href = "/victoriahallbooking_uat/departments/pensionerdashboard";
+                break;
+            case "councillor":
+                window.location.href = "/victoriahallbooking_uat/departments/counsellordashboard";
+                break;
+            case "gccstaff":
+                window.location.href = "/victoriahallbooking_uat/departments/gccstaffdashboard";
+                break;
+            case "counter":
+                // window.location.href = "/communityhall/counter/counterbooking";
+                window.location.href = "/victoriahallbooking_uat/user/dashboard";
+                break;
+            case "headquarters":
+                window.location.href = "/victoriahallbooking_uat/headquarters/dashboard";
+                break;
+            default:
+                console.error("Invalid user type:", userType);
+        }
+    }
+
+    $('.otp-input').on('keyup', function (e) {
+        var $this = $(this);
+        if ($this.val().length === 1) {
+            $this.next('.otp-input').focus();
+        }
+        if ($this.val().length === 0) {
+            $this.prev('.otp-input').focus();
+        }
+    });
+
+    function newPinCall() {
+        $('#loginForm').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#otpForm').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $('#pinForm').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        $("#mobii").val('');
+        $("#password").val('');
+        $("#loginOTP").val('');
+        $('#otpForm').modal('hide');
+        $('#pinForm').modal('show');
+        return false;
+    }
+
+    var password = document.getElementById("password"),
+        confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword() {
+        if (password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("PIN doesn't match");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+
+    function checkofficialMobileNo(flag) {
+        if (flag == 1) {
+            var mobileNo = $("#mobii").val();
+            if (mobileNo.trim() == '' || mobileNo.length == 0) {
+                alert("Please Enter Mobile No ");
+            }
+        }
+        if (flag == 2) {
+            var pincode = $("#pincode").val('');
+            var mobileNo = $("#officialmobileno").val();
+            if (mobileNo.trim() == '' || mobileNo.length == 0) {
+                alert("Please Enter Mobile No ");
+            }
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/careTaker/api/checkofficialMobileExits',
+            data: {'phone': mobileNo},
+            //dataType: 'json',
+            success: function (bodyMessage) {
+                //alert(bodyMessage);
+                if (bodyMessage == "success") {
+                    if (flag == 1) {
+                        login(1);
+                    }
+                    if (flag == 2) {
+                        sendOTP2(mobileNo);
+                    }
+                    return false;
+                } else {
+                    alert("This Mobile Number Is Not Registered!");
+                    return false;
+                }
+            },
+            error: function (errortxt) {
+                console.error(errortxt);// Handle error here
+                return false;
+            }
+        });
+        return false;
+    }
+
+    function sendOTP2(mobileNo) {
+        // var mobileNo = $("#mobii").val();
+
+        //alert("Sending OTP please Verify :- "+mobileNo);
+        $("#mobilenotxt").html(mobileNo);
+
+        // console.log(mobileNo + "Send OTP2");
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/sendOTP',
+            data: {'mobileNo': mobileNo, 'purpose': 'Forget Pin'},
+            dataType: 'json',
+            success: function (bodyMessage) {
+                // console.log("bodyMessage....." + bodyMessage);
+                if (bodyMessage != "Error") {
+                    $('#otpForm').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    $('#otpForm').modal('show');
+                    // Resend OTP Link function /////////////////////
+                    var resendTimeout;
+                    var resendLink = $("#resend-link");
+                    $("#resend-link").html('Please wait..<span id="countdown">60</span>s');
+                    var countdown = $("#countdown");
+
+                    // Function to start the countdown timer
+                    function startCountdown2() {
+                        var timeleft = 60;
+                        countdown.text(timeleft);
+
+                        resendTimeout = setInterval(function () {
+                            timeleft--;
+                            countdown.text(timeleft);
+
+                            if (timeleft <= 0) {
+                                clearInterval(resendTimeout);
+                                $("#resendlink").html('<a href="#" id="resend-link" class="text-info" onclick="return sendOTP2(' + mobileNo + ');">Resend OTP</a>');
+                            }
+                        }, 1000);
+                    }
+
+                    startCountdown2(); // Start Resend OTP count
+                    /////////////////////////////////////////////////
+                } else {
+                    alert("OTP Not Send!!!");
+                }
+            }
+        });
+        return false;
+
+    }
+
+    function verifyOtp2() {
+        // Get all the input fields with class `otp-input`
+        var otpInputs = $('.otp-input');
+
+        // Get the OTP value as a string
+        var otpValue = '';
+        otpInputs.each(function () {
+            otpValue += $(this).val();
+        });
+
+        //document.getElementById("saveFeedbackForm").submit();
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/user/api/verifyofficialOTP',
+            data: {'otp': otpValue},
+            dataType: 'text',
+            success: function (bodyMessage) {
+                if (bodyMessage.trim() == "Success") {
+                    // console.log("OTP is Verified!!!");
+                    callSave();
+                } else {
+                    $("#otperror").html("OTP is Incorrect!!!");
+                    // do something here
+                }
+            },
+            error: function () {
+                // console.log("Error");// Handle error here
+            }
+        });
+
+        return false;
+    }
+
+
+    function callSave() {
+        phone = $("#officialmobileno").val();
+        pin = $("#updatedpassword").val();
+        $.ajax({
+            type: "GET",
+            url: '/victoriahallbooking_uat/careTaker/api/updatePIN',
+            data: {
+                'phone': phone,
+                'pin': pin
+            },
+            dataType: 'text',
+            success: function (bodyMessage) {
+                if (bodyMessage.trim() == "Success") {
+                    Swal.fire(
+                        'PIN Registration!',
+                        'Your New PIN Successfully Saved!<br>Now login with your new PIN.',
+                        'success'
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    $("#otperror").html("Error on saving new pin!.Please try again!.<br>or Already Mobile Number exits.");
+                }
+            },
+            error: function () {
+                // console.log("Error");// Handle error here
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        function clearModalFields(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // Clear text inputs and select elements
+                modal.querySelectorAll('input[type="text"], input[type="password"], select').forEach(input => {
+                    if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0; // Reset to default option
+                    } else {
+                        input.value = ''; // Clear text inputs
+                    }
+                });
+            }
+        }
+
+        // Clear fields when the saveModal is hidden
+        document.getElementById('pinForm').addEventListener('hidden.bs.modal', function () {
+            clearModalFields('pinForm');
+        });
+    });
+
+    $('#otpForm').on('shown.bs.modal', function () {
+        $('.otp-input').val('');
+        $('#otperror').text('');
+        // $('#mobilenotxt').text('');
+    });
+
+
+</script>
+</body>
+
+</html>
+
